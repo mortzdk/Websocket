@@ -48,7 +48,7 @@ void sigint_handler(int sig) {
 void *cmdline(void *args) {
 	pthread_detach(pthread_self());
 	(void) args;
-	char buffer[100];
+	char buffer[1024];
 	
 	while (1) {
 		memset(buffer, '\0', 1024);
@@ -383,7 +383,6 @@ int main(int argc, char *argv[]) {
 	 * Listens for CTRL-C
 	 */ 
 	(void) signal(SIGINT, &sigint_handler);
-	(void) signal(SIGTSTP, &sigint_handler);
 
 	printf("Server: \t\tStarted\n");
 	fflush(stdout);
