@@ -329,6 +329,13 @@ struct header *header_new () {
 		h->get = NULL;
 		h->accept = NULL;
 		h->extension = NULL;
+		h->host_len = 0;
+		h->protocol_len = 0;
+		h->origin_len = 0;
+		h->upgrade_len = 0;
+		h->accept_len = 0;
+		h->extension_len = 0;
+		h->get_len = 0;
 	} else {
 		exit(EXIT_FAILURE);
 	}

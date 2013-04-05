@@ -60,33 +60,33 @@ uint32_t getNumbersInStringDividedByNumberOfSpaces(char *key, int length) {
 		return 0;
 	}
 
-	printf("%ld\n", strtol(result, (char **) NULL, 10));
-	fflush(stdout);
-
 	return isIntergralMultiple(strtol(result, (char **) NULL, 10), spaces);
 }
 
 void concate(uint32_t key1, uint32_t key2, char *key3, char *result){
 	memset(result, '\0', KEYSIZE);
-	memcpy(result, (unsigned char *) &key1, 4);
-	memcpy(result+4, (unsigned char *) &key2, 4);
+	memcpy(result, (unsigned char *) &key1, sizeof(uint32_t));
+	memcpy(result+4, (unsigned char *) &key2, sizeof(uint32_t));
 	memcpy(result+8, key3, 8);
 }
 
-char* getMemory(char *token, int length) {
+char *getMemory(char *token, int length) {
 	char *temp = (char *) malloc(length);
 
 	if (temp == NULL) {	
 		return NULL;
 	}
-	
-	temp = token;
+
+	memset(temp, '\0', length);	
+	memcpy(temp, token, length);
 	return temp;
 }
 
-int parseHeaders(char *string, struct node *n){
+int parseHeaders(char *string, struct node *n, int port){
 	struct header *h = n->headers;
 	char* token = strtok(string, "\r\n");
+
+	(void) port;
 
 	/**
 	 * Make the choose of port and server dynamical
@@ -114,6 +114,7 @@ int parseHeaders(char *string, struct node *n){
 	 */
 	if (token != NULL) {
 		h->get = token;
+		h->get_len = strlen(h->get);
 
 		while ( token != NULL ) {
 
@@ -136,26 +137,33 @@ int parseHeaders(char *string, struct node *n){
 				}
 			} else if ( strncasecmp("Upgrade: ", token, 9) == 0) {
 				h->upgrade = token + 9;
+				h->upgrade_len = strlen(h->upgrade);
 			} else if ( strncasecmp("Origin: ", token, 8) == 0 ) {
 				h->origin = token + 8;
+				h->origin_len = strlen(h->origin);
 			} else if ( strncasecmp("Connection: ", token, 12) == 0 ) {
 				h->connection = token + 12;
 			} else if ( strncasecmp("Sec-WebSocket-Protocol: ", token, 24) 
 					== 0 ) {
 				h->protocol = token + 24;
+				h->protocol_len = strlen(h->protocol);
 			} else if ( strncasecmp("Sec-WebSocket-Origin: ", token, 22) 
 					== 0) {
 				h->origin = token + 22;
+				h->origin_len = strlen(h->origin);
 			} else if ( strncasecmp("Sec-WebSocket-Key: ", token, 19) == 0 ) {
 				h->key = token + 19;
 			} else if ( strncasecmp("Sec-WebSocket-Extensions: ", token, 26) 
 					== 0 ) {
 				h->extension = token + 19;
+				h->extension_len = strlen(h->extension);
 			} else if ( strncasecmp("Host: ", token, 6) == 0 ) {
 				h->host = token + 6;
+				h->host_len = strlen(h->host);
 			} else if ( strncasecmp("WebSocket-Protocol: ", token, 20) == 0 ) {
 				h->type = "hixie-75";
 				h->protocol = token + 20;
+				h->protocol_len = strlen(h->protocol);
 			} else if ( strncasecmp("Sec-WebSocket-Key1: ", token, 20) == 0 ) {
 				h->type = "hybi-00";
 				h->key1 = token + 20;
@@ -203,15 +211,15 @@ int parseHeaders(char *string, struct node *n){
 		return -1;
 
 		if (h->get == NULL || (h->host == NULL 
-				&& strncasecmp(" HTTP/1.1", h->get+(strlen(h->get)-9), 9) == 0)) {
+				&& strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) == 0)) {
 			client_error("HTTP Request: didn't receive all the headers required"
 					"to validate and evaluate the http request", ERROR_BAD, n);
 			return -1;
 		}	
 
-		if ( (strncasecmp(" HTTP/1.1", h->get+(strlen(h->get)-9), 9) != 0 
-				&& strncasecmp(" HTTP/1.0", h->get+(strlen(h->get)-9), 9) != 0 
-				&& strncasecmp(" HTTP/0.9", h->get+(strlen(h->get)-9), 9) != 0)
+		if ( (strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 
+				&& strncasecmp(" HTTP/1.0", h->get+(h->get_len-9), 9) != 0 
+				&& strncasecmp(" HTTP/0.9", h->get+(h->get_len-9), 9) != 0)
 				|| strncasecmp("GET /", h->get, 5) != 0) {
 			client_error("The headerline of the request was invalid.", 
 					ERROR_BAD, n);
@@ -265,6 +273,7 @@ int parseHeaders(char *string, struct node *n){
 			md5_finish(&state, hashedKey);
 
 			h->accept = getMemory((char *) hashedKey, KEYSIZE);
+			h->accept_len = KEYSIZE; 
 
 			if (h->accept == NULL) {
 				client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
@@ -289,7 +298,7 @@ int parseHeaders(char *string, struct node *n){
 			return -1;		
 		}
 
-		if (strncasecmp(" HTTP/1.1", h->get+(strlen(h->get)-9), 9) != 0 
+		if (strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 
 				|| strncasecmp("GET /", h->get, 5) != 0) {
 			client_error("The headerline of the request was invalid.", 
 					ERROR_BAD, n);
@@ -340,7 +349,7 @@ int parseHeaders(char *string, struct node *n){
 		 */
 		SHA1Context sha;
 		char* magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-		int i, length = strlen(magic) + strlen(h->key);
+		int i, magic_len = 36, length = magic_len + strlen(h->key);
 		uint32_t number;
 		char key[length], sha1Key[20];
 		char *acceptKey = NULL;
@@ -349,8 +358,8 @@ int parseHeaders(char *string, struct node *n){
 		memset(key, '\0', length);
 		memset(sha1Key, '\0', 20);
 
-		memcpy(key, h->key, strlen(h->key));
-		memcpy(key+strlen(h->key), magic, strlen(magic));
+		memcpy(key, h->key, (length-magic_len));
+		memcpy(key+(length-magic_len), magic, magic_len);
 
 		SHA1Reset(&sha);
 		SHA1Input(&sha, (const unsigned char*) key, length);
@@ -378,11 +387,12 @@ int parseHeaders(char *string, struct node *n){
 		}
 
 		h->accept = acceptKey;
+		h->accept_len = strlen(h->accept);
 
 		/**
 		 * Check the header fields are valid
 		 */
-		if (strncasecmp(" HTTP/1.1", h->get+(strlen(h->get)-9), 9) != 0 
+		if (strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 
 				|| strncasecmp("GET /", h->get, 5) != 0) {
 			client_error("The headerline of the request was invalid", 
 					ERROR_BAD, n);
@@ -429,23 +439,26 @@ int parseHeaders(char *string, struct node *n){
 		client_error("Something very wierd happened??", ERROR_INTERNAL, n);
 		return -1; 
 	}
+
 	return 0;
 }
 
 int sendHandshake(struct node *n) {
+	int memlen = 0, length = 0;
+	char* response = NULL;
+
 	if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
 			|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
 			|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
-		int memlen = 0, length = strlen(ACCEPT_HEADER_V3)  
-			+ strlen(ACCEPT_UPGRADE) + strlen(n->headers->upgrade)
-			+ strlen(ACCEPT_CONNECTION)
-			+ strlen(ACCEPT_KEY) + strlen(n->headers->accept) 
+		length = ACCEPT_HEADER_V3_LEN  
+			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
+			+ ACCEPT_CONNECTION_LEN
+			+ ACCEPT_KEY_LEN + n->headers->accept_len 
 			+ (2*3);
 		if (n->headers->protocol != NULL) {
-			length += strlen(ACCEPT_PROTOCOL_V2) + strlen(n->headers->protocol) 
-				+ strlen("\r\n");
+			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len+2;
 		}
-		char* response = malloc(length);
+		response = malloc(length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
@@ -454,36 +467,37 @@ int sendHandshake(struct node *n) {
 
 		memset(response, '\0', length);
 	
-		memcpy(response + memlen, ACCEPT_HEADER_V3, strlen(ACCEPT_HEADER_V3));
-		memlen += strlen(ACCEPT_HEADER_V3);
+		memcpy(response + memlen, ACCEPT_HEADER_V3, ACCEPT_HEADER_V3_LEN);
+		memlen += ACCEPT_HEADER_V3_LEN;
 
-		memcpy(response + memlen, ACCEPT_UPGRADE, strlen(ACCEPT_UPGRADE));
-		memlen += strlen(ACCEPT_UPGRADE);
+		memcpy(response + memlen, ACCEPT_UPGRADE, ACCEPT_UPGRADE_LEN);
+		memlen += ACCEPT_UPGRADE_LEN;
 
-		memcpy(response + memlen, n->headers->upgrade, strlen(n->headers->upgrade));
-		memlen += strlen(n->headers->upgrade);
+		memcpy(response + memlen, n->headers->upgrade, n->headers->upgrade_len);
+		memlen += n->headers->upgrade_len;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		memcpy(response + memlen, ACCEPT_CONNECTION, strlen(ACCEPT_CONNECTION));
-		memlen += strlen(ACCEPT_CONNECTION);
+		memcpy(response + memlen, ACCEPT_CONNECTION, ACCEPT_CONNECTION_LEN);
+		memlen += ACCEPT_CONNECTION_LEN;
 		
 		if (n->headers->protocol != NULL) {
-			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, strlen(ACCEPT_PROTOCOL_V2));
-			memlen += strlen(ACCEPT_PROTOCOL_V2);
+			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, ACCEPT_PROTOCOL_V2_LEN);
+			memlen += ACCEPT_PROTOCOL_V2_LEN;
 
-			memcpy(response + memlen, n->headers->protocol, strlen(n->headers->protocol));
-			memlen += strlen(n->headers->protocol);
+			memcpy(response + memlen, n->headers->protocol, n->headers->protocol_len);
+			memlen += n->headers->protocol_len;
 
 			memcpy(response + memlen, "\r\n", 2);
 			memlen += 2;
 		}
-		memcpy(response + memlen, ACCEPT_KEY, strlen(ACCEPT_KEY));
-		memlen += strlen(ACCEPT_KEY);
+
+		memcpy(response + memlen, ACCEPT_KEY, ACCEPT_KEY_LEN);
+		memlen += ACCEPT_KEY_LEN;
 		
-		memcpy(response + memlen, n->headers->accept, strlen(n->headers->accept));
-		memlen += strlen(n->headers->accept);
+		memcpy(response + memlen, n->headers->accept, n->headers->accept_len);
+		memlen += n->headers->accept_len;
 
 		memcpy(response + memlen, "\r\n\r\n", 4);
 		memlen += 4;
@@ -493,24 +507,22 @@ int sendHandshake(struct node *n) {
 			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
 			return -1;
 		}
-		
-		send(n->socket_id, response, memlen, 0);
-		free(response);
 	} else if ( strncasecmp(n->headers->type, "hybi-00", 7) == 0 ) {
-		int memlen = 0, length = strlen(ACCEPT_HEADER_V1)  
-			+ strlen(ACCEPT_UPGRADE) + strlen(n->headers->upgrade)
-			+ strlen(ACCEPT_CONNECTION) 
-			+ strlen(ACCEPT_ORIGIN_V2) + strlen(n->headers->origin)
-			+ strlen(ACCEPT_LOCATION_V2) + 5 
-			+ strlen(n->headers->host)
-			+ KEYSIZE
-			+ (2*4);
+		length = ACCEPT_HEADER_V2_LEN  
+			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
+			+ ACCEPT_CONNECTION_LEN 
+			+ ACCEPT_ORIGIN_V2_LEN + n->headers->origin_len
+			+ ACCEPT_LOCATION_V2_LEN + 5 
+			+ n->headers->host_len
+			+ n->headers->accept_len 
+			+ (2*4) + 1;
 		
 		if (n->headers->protocol != NULL) {
-			length += strlen(ACCEPT_PROTOCOL_V2) + strlen(n->headers->protocol) 
+			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len 
 				+ 2;
 		}
-		char* response = malloc(length);
+
+		response = malloc(length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
@@ -519,48 +531,48 @@ int sendHandshake(struct node *n) {
 
 		memset(response, '\0', length);
 	
-		memcpy(response + memlen, ACCEPT_HEADER_V1, strlen(ACCEPT_HEADER_V1));
-		memlen += strlen(ACCEPT_HEADER_V1);
+		memcpy(response + memlen, ACCEPT_HEADER_V2, ACCEPT_HEADER_V2_LEN);
+		memlen += ACCEPT_HEADER_V2_LEN;
 
-		memcpy(response + memlen, ACCEPT_UPGRADE, strlen(ACCEPT_UPGRADE));
-		memlen += strlen(ACCEPT_UPGRADE);
+		memcpy(response + memlen, ACCEPT_UPGRADE, ACCEPT_UPGRADE_LEN);
+		memlen += ACCEPT_UPGRADE_LEN;
 
-		memcpy(response + memlen, n->headers->upgrade, strlen(n->headers->upgrade));
-		memlen += strlen(n->headers->upgrade);
-
-		memcpy(response + memlen, "\r\n", 2);
-		memlen += 2;
-
-		memcpy(response + memlen, ACCEPT_CONNECTION, strlen(ACCEPT_CONNECTION));
-		memlen += strlen(ACCEPT_CONNECTION);
-
-		memcpy(response + memlen, ACCEPT_ORIGIN_V2, strlen(ACCEPT_ORIGIN_V2));
-		memlen += strlen(ACCEPT_ORIGIN_V2);
-
-		memcpy(response + memlen, n->headers->origin, strlen(n->headers->origin));
-		memlen += strlen(n->headers->origin);
+		memcpy(response + memlen, n->headers->upgrade, n->headers->upgrade_len);
+		memlen += n->headers->upgrade_len;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		memcpy(response + memlen, ACCEPT_LOCATION_V2, strlen(ACCEPT_LOCATION_V2));
-		memlen += strlen(ACCEPT_LOCATION_V2);
+		memcpy(response + memlen, ACCEPT_CONNECTION, ACCEPT_CONNECTION_LEN);
+		memlen += ACCEPT_CONNECTION_LEN;
+
+		memcpy(response + memlen, ACCEPT_ORIGIN_V2, ACCEPT_ORIGIN_V2_LEN);
+		memlen += ACCEPT_ORIGIN_V2_LEN;
+
+		memcpy(response + memlen, n->headers->origin, n->headers->origin_len);
+		memlen += n->headers->origin_len;
+
+		memcpy(response + memlen, "\r\n", 2);
+		memlen += 2;
+
+		memcpy(response + memlen, ACCEPT_LOCATION_V2, ACCEPT_LOCATION_V2_LEN);
+		memlen += ACCEPT_LOCATION_V2_LEN;
 
 		memcpy(response + memlen, "ws://", 5);
 		memlen += 5;
 
-		memcpy(response + memlen, n->headers->host, strlen(n->headers->host));
-		memlen += strlen(n->headers->host);
+		memcpy(response + memlen, n->headers->host, n->headers->host_len);
+		memlen += n->headers->host_len;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
 		if (n->headers->protocol != NULL) {
-			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, strlen(ACCEPT_PROTOCOL_V2));
-			memlen += strlen(ACCEPT_PROTOCOL_V2);
+			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, ACCEPT_PROTOCOL_V2_LEN);
+			memlen += ACCEPT_PROTOCOL_V2_LEN;
 
-			memcpy(response + memlen, n->headers->protocol, strlen(n->headers->protocol));
-			memlen += strlen(n->headers->protocol);
+			memcpy(response + memlen, n->headers->protocol, n->headers->protocol_len);
+			memlen += n->headers->protocol_len;
 
 			memcpy(response + memlen, "\r\n", 2);
 			memlen += 2;
@@ -569,11 +581,14 @@ int sendHandshake(struct node *n) {
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		memcpy(response + memlen, n->headers->accept, KEYSIZE);
-		memlen += KEYSIZE;
+		memcpy(response + memlen, n->headers->accept, n->headers->accept_len);
+		memlen += n->headers->accept_len;
+
+		response[memlen] = '\0';
+		memlen++;
 
 		printf("%d = %d\n", memlen, length);
-		printf("%s\n", response);	
+		printf("%s\n", response);
 		fflush(stdout);
 
 		if (memlen != length) {
@@ -581,23 +596,24 @@ int sendHandshake(struct node *n) {
 			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
 			return -1;
 		}
-		
-		send(n->socket_id, response, memlen, 0);
-		free(response);
 	} else if ( strncasecmp(n->headers->type, "hixie-75", 8) == 0 ) {
-		int length = strlen(ACCEPT_HEADER_V1)  
-			+ strlen(ACCEPT_UPGRADE) + strlen(n->headers->upgrade)
-			+ strlen(ACCEPT_CONNECTION) 
-			+ strlen(ACCEPT_ORIGIN_V1) + strlen(n->headers->origin)
-			+ strlen(ACCEPT_LOCATION_V1) + strlen("ws://") 
-			+ strlen(n->headers->host)
-			+ strlen("\r\n")*4 + 1;
+		/**
+		 * This protocol has not been tested.
+		 */
+
+		length = ACCEPT_HEADER_V1_LEN 
+			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
+			+ ACCEPT_CONNECTION_LEN 
+			+ ACCEPT_ORIGIN_V1_LEN + n->headers->origin_len
+			+ ACCEPT_LOCATION_V1_LEN + 5 
+			+ n->headers->host_len
+			+ (2*4) + 1;
 		
 		if (n->headers->protocol != NULL) {
-			length += strlen(ACCEPT_PROTOCOL_V1) + strlen(n->headers->protocol) 
-				+ strlen("\r\n");
+			length += ACCEPT_PROTOCOL_V1_LEN + n->headers->protocol_len + 2;
 		}
-		char* response = malloc(length);
+
+		response = malloc(length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
@@ -606,34 +622,74 @@ int sendHandshake(struct node *n) {
 
 		memset(response, '\0', length);
 	
-		strcat(response, ACCEPT_HEADER_V1);
-		strcat(response, ACCEPT_UPGRADE);
-		strcat(response, n->headers->upgrade);
-		strcat(response, "\r\n");
-		strcat(response, ACCEPT_CONNECTION);
-		strcat(response, ACCEPT_ORIGIN_V1);
-		strcat(response, n->headers->origin);
-		strcat(response, "\r\n");
-		strcat(response, ACCEPT_LOCATION_V1);
-		strcat(response, "ws://");
-		strcat(response, n->headers->host);
-		strcat(response, "\r\n");
+		memcpy(response + memlen, ACCEPT_HEADER_V1, ACCEPT_HEADER_V1_LEN);
+		memlen += ACCEPT_HEADER_V1_LEN;
+
+		memcpy(response + memlen, ACCEPT_UPGRADE, ACCEPT_UPGRADE_LEN);
+		memlen += ACCEPT_UPGRADE_LEN;
+
+		memcpy(response + memlen, n->headers->upgrade, n->headers->upgrade_len);
+		memlen += n->headers->upgrade_len;
+
+		memcpy(response + memlen, "\r\n", 2);
+		memlen += 2;
+
+		memcpy(response + memlen, ACCEPT_CONNECTION, ACCEPT_CONNECTION_LEN);
+		memlen += ACCEPT_CONNECTION_LEN;
+
+		memcpy(response + memlen, ACCEPT_ORIGIN_V1, ACCEPT_ORIGIN_V1_LEN);
+		memlen += ACCEPT_ORIGIN_V1_LEN;
+
+		memcpy(response + memlen, n->headers->origin, n->headers->origin_len);
+		memlen += n->headers->origin_len;
+
+		memcpy(response + memlen, "\r\n", 2);
+		memlen += 2;
+
+		memcpy(response + memlen, ACCEPT_LOCATION_V1, ACCEPT_LOCATION_V1_LEN);
+		memlen += ACCEPT_LOCATION_V1_LEN;
+
+		memcpy(response + memlen, "ws://", 5);
+		memlen += 5;
+
+		memcpy(response + memlen, n->headers->host, n->headers->host_len);
+		memlen += n->headers->host_len;
+
+		memcpy(response + memlen, "\r\n", 2);
+		memlen += 2;
+
 		if (n->headers->protocol != NULL) {
-			strcat(response, ACCEPT_PROTOCOL_V1);
-			strcat(response, n->headers->protocol);
-			strcat(response, "\r\n");
+			memcpy(response + memlen, ACCEPT_PROTOCOL_V1, ACCEPT_PROTOCOL_V1_LEN);
+			memlen += ACCEPT_PROTOCOL_V1_LEN;
+
+			memcpy(response + memlen, n->headers->protocol, n->headers->protocol_len);
+			memlen += n->headers->protocol_len;
+
+			memcpy(response + memlen, "\r\n", 2);
+			memlen += 2;
 		}
-		strcat(response, "\r\n");
 		
-		send(n->socket_id, response, length, 0);
-	
+		memcpy(response + memlen, "\r\n", 2);
+		memlen += 2;
+
+		printf("%d = %d\n", memlen, length);
 		printf("%s\n", response);
 		fflush(stdout);
 
-		free(response);	
+		if (memlen != length) {
+			free(response);
+			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
+			return -1;
+		}
 	} else {
-		client_error("The type of protocol used was unknown", ERROR_BAD, n);
+		client_error("The type of protocol used was unknown.", ERROR_BAD, n);
 		return -1;
+	}
+
+	send(n->socket_id, response, length, 0);
+
+	if (response != NULL) {
+		free(response);
 	}
 
 	return 0;

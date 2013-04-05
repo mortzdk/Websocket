@@ -28,6 +28,7 @@ SOFTWARE.
 
 struct list *l;
 struct list *j;
+int port;
 
 void sigint_handler(int sig) {
 	if (sig == SIGINT) {
@@ -322,7 +323,7 @@ void *handshake(void *args) {
 
 	n->headers = h;
 
-	if ( parseHeaders(string, n) < 0 ) {
+	if ( parseHeaders(string, n, port) < 0 ) {
 		list_delete(j, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
@@ -338,6 +339,7 @@ void *handshake(void *args) {
 	list_print(l);
 
 	printf("Client has been validated and is now connected\n\n");
+	printf("> ");
 	fflush(stdout);
 
 	uint64_t next_len = 0;
@@ -362,6 +364,7 @@ void *handshake(void *args) {
 	}
 	
 	printf("Shutting client down..\n\n");
+	printf("> ");
 	fflush(stdout);
 
 	list_remove(l, n);
@@ -369,7 +372,7 @@ void *handshake(void *args) {
 }
 
 int main(int argc, char *argv[]) {
-	int port, server_socket, client_socket, on = 1;
+	int server_socket, client_socket, on = 1;
 	
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t client_length;

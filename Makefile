@@ -16,7 +16,7 @@ clean:
 	rm -f $(EXEC) *.o
 
 run: all
-	./$(EXEC)
+	./$(EXEC) $(PORT)
 
 valgrind: all
 	valgrind --leak-check=full --track-origins=yes --show-reachable=yes ./$(EXEC) $(PORT)

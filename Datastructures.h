@@ -47,6 +47,13 @@ struct header {
 	char *get;
 	char *accept;
 	char *extension;
+	int host_len;
+	int protocol_len;
+	int origin_len;
+	int upgrade_len;
+	int accept_len;
+	int extension_len;
+	int get_len;
 };
 
 struct node {

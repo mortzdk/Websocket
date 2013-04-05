@@ -32,18 +32,30 @@ SOFTWARE.
 #define ERROR_VERSION "HTTP/1.1 426 Upgrade Required\r\nSec-WebSocket-Version: 13, 8, 7\r\n\r\n"
 
 #define ACCEPT_HEADER_V1 "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+#define ACCEPT_HEADER_V1_LEN 44
 #define ACCEPT_HEADER_V2 "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+#define ACCEPT_HEADER_V2_LEN 43
 #define ACCEPT_HEADER_V3 "HTTP/1.1 101 Switching Protocols\r\n"
+#define ACCEPT_HEADER_V3_LEN 34
 #define ACCEPT_CONNECTION "Connection: Upgrade\r\n"
+#define ACCEPT_CONNECTION_LEN 21
 #define ACCEPT_UPGRADE "Upgrade: "
+#define ACCEPT_UPGRADE_LEN 9
 #define ACCEPT_KEY "Sec-WebSocket-Accept: "
+#define ACCEPT_KEY_LEN 22
 #define ACCEPT_PROTOCOL_V1 "WebSocket-Protocol: "
+#define ACCEPT_PROTOCOL_V1_LEN 20
 #define ACCEPT_PROTOCOL_V2 "Sec-WebSocket-Protocol: "
+#define ACCEPT_PROTOCOL_V2_LEN 24
 #define ACCEPT_ORIGIN_V1 "WebSocket-Origin: "
+#define ACCEPT_ORIGIN_V1_LEN 18
 #define ACCEPT_ORIGIN_V2 "Sec-WebSocket-Origin: "
+#define ACCEPT_ORIGIN_V2_LEN 22
 #define ACCEPT_LOCATION_V1 "WebSocket-Location: "
+#define ACCEPT_LOCATION_V1_LEN 20
 #define ACCEPT_LOCATION_V2 "Sec-WebSocket-Location: "
+#define ACCEPT_LOCATION_V2_LEN 24
 
-int parseHeaders(char *string, struct node *n);
+int parseHeaders(char *string, struct node *n, int port);
 int sendHandshake(struct node *n);
 #endif
