@@ -82,6 +82,7 @@ struct message {
 	char *msg;
 	char *next;
 	char *enc;
+	char *hybi00;
 };
 	
 struct list *list_new(void);
@@ -95,6 +96,7 @@ void list_multicast(struct list *l, struct node *n);
 void list_multicast_one(struct list *l, struct node *n, struct message *m);
 void list_multicast_all(struct list *l, struct message *m);
 struct node *list_get(struct list *l, char *addr, int socket);
+void list_send(struct node *n, struct message *m);
 
 struct node *node_new(int sock, char *addr);
 struct header *header_new();

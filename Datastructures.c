@@ -138,11 +138,19 @@ void list_remove_all (struct list *l) {
 		return;
 	}
 
-	close[0] = '\x88';
-	close[1] = '\x00';
-
 	do {
-		send(n->socket_id, close, 2, 0);
+		if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
+			|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
+			|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
+			close[0] = '\x88';
+			close[1] = '\x00';
+			send(n->socket_id, close, 2, 0);
+		} else {
+			close[0] = '\xFF';
+			close[1] = '\x00';
+			send(n->socket_id, close, 2, 0);
+			pthread_cancel(n->thread_id);
+		}
 		
 		n = n->next;
 	} while (n != NULL); 
@@ -224,7 +232,7 @@ void list_multicast(struct list *l, struct node *n) {
 
 	do {
 		if (p != n) {
-			send(p->socket_id, n->message->enc, n->message->enc_len, 0);
+			list_send(p, n->message); 
 		}
 		p = p->next;
 	} while (p != NULL);
@@ -242,7 +250,7 @@ void list_multicast_one(struct list *l, struct node *n, struct message *m) {
 
 	do {
 		if (p == n) {
-			send(p->socket_id, m->enc, m->enc_len, 0);
+			list_send(p, m);
 			break;
 		}
 		p = p->next;
@@ -260,7 +268,7 @@ void list_multicast_all(struct list *l, struct message *m) {
 	}
 
 	do {
-		send(p->socket_id, m->enc, m->enc_len, 0);
+		list_send(p, m);
 		p = p->next;
 	} while (p != NULL);
 	pthread_mutex_unlock(&l->lock);
@@ -284,6 +292,20 @@ struct node *list_get(struct list *l, char *addr, int socket) {
 	pthread_mutex_unlock(&l->lock);
 
 	return p;
+}
+
+void list_send(struct node *n, struct message *m) {
+	if (n->headers->type == NULL) {
+		
+	} else if ( strncasecmp(n->headers->type, "hybi-00", 7) == 0 ) {
+		send(n->socket_id, m->hybi00, m->len+2, 0);
+	} else if ( strncasecmp(n->headers->type, "hixie-75", 8) == 0 ) {
+		
+	} else if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
+			|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
+			|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
+		send(n->socket_id, m->enc, m->enc_len, 0);
+	}
 }
 
 /**
@@ -357,6 +379,7 @@ struct message *message_new() {
 		m->msg = NULL;
 		m->next = NULL;
 		m->enc = NULL;
+		m->hybi00 = NULL;
 	} else {
 		exit(EXIT_FAILURE);
 	}
@@ -385,6 +408,11 @@ void message_free(struct message *m) {
 	if (m->next != NULL) {
 		free(m->next);
 		m->next = NULL;
+	}
+
+	if (m->hybi00 != NULL) {
+		free(m->hybi00);
+		m->hybi00 = NULL;
 	}
 }
 

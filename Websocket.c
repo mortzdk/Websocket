@@ -46,9 +46,21 @@ void sigint_handler(int sig) {
 	} 
 }
 
-void *cmdline(void *args) {
+void cleanup_client(void *args) {
+	struct node *n = args;
+	printf("Shutting client down..\n\n> ");
+	fflush(stdout);
+	list_delete(j, n);
+	list_remove(l, n);
+}
+
+void cleanup_cmd(void *arg) {
+	(void) arg;
+}
+
+void *cmdline(void *arg) {
 	pthread_detach(pthread_self());
-	(void) args;
+	(void) arg;
 	char buffer[1024];
 	
 	while (1) {
@@ -134,10 +146,18 @@ void *cmdline(void *args) {
 				}
 
 				char close[2];
-				close[0] = '\x88';
-				close[1] = '\x00';
-
-				send(n->socket_id, close, 2, 0);
+				if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
+						|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
+						|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
+					close[0] = '\x88';
+					close[1] = '\x00';
+					send(n->socket_id, close, 2, 0);
+				} else {
+					close[0] = '\xFF';
+					close[1] = '\x00';
+					send(n->socket_id, close, 2, 0);
+					pthread_cancel(n->thread_id);
+				}
 			}
 		} else if ( strncasecmp(buffer, "sendall", 7) == 0 ||
 			   strncasecmp(buffer, "writeall", 8) == 0) {
@@ -253,20 +273,24 @@ void *cmdline(void *args) {
 
 void *handshake(void *args) {
 	pthread_detach(pthread_self());
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+	pthread_cleanup_push(&cleanup_client, args);
 
 	int buffer_length = 0, string_length = 1;
 
 	struct node *n = args;
 	n->thread_id = pthread_self();
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	list_add(j, n);
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 	char buffer[BUFFERSIZE];
-	char *string = (char *) malloc(sizeof(char));
+	n->string = (char *) malloc(sizeof(char));
 
-	n->string = string;
-
-	if (string == NULL) {
+	if (n->string == NULL) {
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		list_delete(j, n);
 		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
@@ -283,9 +307,10 @@ void *handshake(void *args) {
 	 * Getting headers and doing reallocation if headers is bigger than our
 	 * allocated memory.
 	 */
-	do{
+	do {
 		memset(buffer, '\0', BUFFERSIZE);
 		if ((buffer_length = recv(n->socket_id, buffer, BUFFERSIZE, 0)) <= 0){
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 			list_delete(j, n);
 			client_error("Didn't receive any headers from the client.", 
 					ERROR_BAD, n);
@@ -294,28 +319,29 @@ void *handshake(void *args) {
 
 		string_length += buffer_length;
 
-		char *tmp = realloc(string, string_length);
+		char *tmp = realloc(n->string, string_length);
 		if (tmp == NULL) {
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 			list_delete(j, n);
 			client_error("Couldn't reallocate memory.", ERROR_INTERNAL, n);
 			pthread_exit((void *) EXIT_FAILURE);
 		}
-		string = tmp;
-		n->string = string;
+		n->string = tmp;
 		tmp = NULL;
 
-		memset(string + (string_length-buffer_length-1), '\0', 
+		memset(n->string + (string_length-buffer_length-1), '\0', 
 				buffer_length+1);
-		memcpy(string + (string_length-buffer_length-1), buffer, 
+		memcpy(n->string + (string_length-buffer_length-1), buffer, 
 				buffer_length);
-	} while( strncmp("\r\n\r\n", string + (string_length-5), 4) != 0 
-			&& strncmp("\n\n", string + (string_length-3), 2) != 0
-			&& strncmp("\r\n\r\n", string + (string_length-8-5), 4) != 0
-			&& strncmp("\n\n", string + (string_length-8-3), 2) != 0 );
+	} while( strncmp("\r\n\r\n", n->string + (string_length-5), 4) != 0 
+			&& strncmp("\n\n", n->string + (string_length-3), 2) != 0
+			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0
+			&& strncmp("\n\n", n->string + (string_length-8-3), 2) != 0 );
 	
 	struct header *h = header_new();
 
 	if (h == NULL) {
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		list_delete(j, n);
 		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
@@ -323,20 +349,24 @@ void *handshake(void *args) {
 
 	n->headers = h;
 
-	if ( parseHeaders(string, n, port) < 0 ) {
+	if ( parseHeaders(n->string, n, port) < 0 ) {
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		list_delete(j, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
 
 	if ( sendHandshake(n) < 0 && n->headers->type != NULL ) {
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		list_delete(j, n);
 		pthread_exit((void *) EXIT_FAILURE);	
 	}	
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	list_delete(j, n); 
 	list_add(l, n);
 
 	list_print(l);
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 	printf("Client has been validated and is now connected\n\n");
 	printf("> ");
@@ -351,7 +381,9 @@ void *handshake(void *args) {
 			break;
 		}
 
+		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		list_multicast(l, n);
+		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 		if (n->message != NULL) {
 			memset(next, '\0', BUFFERSIZE);
@@ -367,7 +399,11 @@ void *handshake(void *args) {
 	printf("> ");
 	fflush(stdout);
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	list_remove(l, n);
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
+	pthread_cleanup_pop(0);
 	pthread_exit((void *) EXIT_SUCCESS);
 }
 

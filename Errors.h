@@ -29,5 +29,4 @@ void server_error(const char *message, int server_socket, struct list *l,
 		struct list *j);
 void client_error(const char *errormessage, const char *status, 
 		struct node *n);
-void fatal_error(const char *message, struct list *l);
 #endif

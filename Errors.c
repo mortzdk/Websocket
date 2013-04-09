@@ -59,14 +59,3 @@ void client_error(const char *errormessage, const char *status,
 		n = NULL;
 	}
 }
-
-void fatal_error(const char *message, struct list *l){
-	printf("\nServer experienced a fatal error: %s\n"
-		   "Shutting down ...\n\n", message);
-	fflush(stdout);	
-	if (l != NULL) {
-		list_free(l);
-		l = NULL;
-	}
-	exit(EXIT_FAILURE);
-}

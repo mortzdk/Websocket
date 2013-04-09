@@ -43,10 +43,7 @@ SOFTWARE.
 
 #define KEYSIZE 16
 #define HOSTS 5
-#define BUFFERSIZE 8192
-
-
-#define DEBUG_MESSAGES 0
-#define DEBUG_HANDSHAKE 1
+#define BUFFERSIZE 8192 		/* Buffer size = 8KB */
+#define MAXMESSAGE 1048576 		/* Max size message = 1MB */
 
 #endif

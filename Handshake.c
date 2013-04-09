@@ -32,7 +32,9 @@ SOFTWARE.
 uint32_t isIntergralMultiple(long x, int y) {
 	double d = x/y;
 
-	if (d == (int) d) {
+	if (y == 1) {
+		return (uint32_t) x;
+	} else if (d == (int) d) {
 		return (uint32_t) x/y;
 	}
 
@@ -56,9 +58,15 @@ uint32_t getNumbersInStringDividedByNumberOfSpaces(char *key, int length) {
 		}
 	}
 
+	printf("Key:\t%s\n", result);
+	fflush(stdout);
+
 	if (spaces < 1) {
 		return 0;
 	}
+
+	printf("Spaces: \t%d\n", spaces);
+	fflush(stdout);
 
 	return isIntergralMultiple(strtol(result, (char **) NULL, 10), spaces);
 }
@@ -66,8 +74,8 @@ uint32_t getNumbersInStringDividedByNumberOfSpaces(char *key, int length) {
 void concate(uint32_t key1, uint32_t key2, char *key3, char *result){
 	memset(result, '\0', KEYSIZE);
 	memcpy(result, (unsigned char *) &key1, sizeof(uint32_t));
-	memcpy(result+4, (unsigned char *) &key2, sizeof(uint32_t));
-	memcpy(result+8, key3, 8);
+	memcpy(result+sizeof(uint32_t), (unsigned char *) &key2, sizeof(uint32_t));
+	memcpy(result+(2*sizeof(uint32_t)), key3, strlen(key3));
 }
 
 char *getMemory(char *token, int length) {
@@ -232,6 +240,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		for (i = 0; i < HOSTS; i++) {
 			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
 				ok = true;
+				break;
 			}
 		}
 
@@ -318,6 +327,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		for (i = 0; i < HOSTS; i++) {
 			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
 				ok = true;
+				break;
 			}
 		}
 
@@ -332,6 +342,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		for (i = 0; i < HOSTS; i++) {
 			if (strncasecmp(origin[i], h->origin, strlen(origin[i])) == 0) {
 				ok = true;
+				break;
 			}
 		}
 
@@ -412,6 +423,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		for (i = 0; i < HOSTS; i++) {
 			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
 				ok = true;
+				break;
 			}
 		}
 
@@ -426,6 +438,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		for (i = 0; i < HOSTS; i++) {
 			if (strncasecmp(origin[i], h->origin, strlen(origin[i])) == 0) {
 				ok = true;
+				break;
 			}
 		}
 
@@ -458,14 +471,12 @@ int sendHandshake(struct node *n) {
 		if (n->headers->protocol != NULL) {
 			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len+2;
 		}
-		response = malloc(length);
+		response = getMemory("", length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
-
-		memset(response, '\0', length);
 	
 		memcpy(response + memlen, ACCEPT_HEADER_V3, ACCEPT_HEADER_V3_LEN);
 		memlen += ACCEPT_HEADER_V3_LEN;
@@ -515,21 +526,19 @@ int sendHandshake(struct node *n) {
 			+ ACCEPT_LOCATION_V2_LEN + 5 
 			+ n->headers->host_len
 			+ n->headers->accept_len 
-			+ (2*4) + 1;
+			+ (2*4) + 2;
 		
 		if (n->headers->protocol != NULL) {
 			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len 
 				+ 2;
 		}
 
-		response = malloc(length);
+		response = getMemory("", length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
-
-		memset(response, '\0', length);
 	
 		memcpy(response + memlen, ACCEPT_HEADER_V2, ACCEPT_HEADER_V2_LEN);
 		memlen += ACCEPT_HEADER_V2_LEN;
@@ -563,6 +572,9 @@ int sendHandshake(struct node *n) {
 
 		memcpy(response + memlen, n->headers->host, n->headers->host_len);
 		memlen += n->headers->host_len;
+
+		memcpy(response + memlen, "/", 1);
+		memlen += 1;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
@@ -607,20 +619,18 @@ int sendHandshake(struct node *n) {
 			+ ACCEPT_ORIGIN_V1_LEN + n->headers->origin_len
 			+ ACCEPT_LOCATION_V1_LEN + 5 
 			+ n->headers->host_len
-			+ (2*4) + 1;
+			+ (2*4) + 2;
 		
 		if (n->headers->protocol != NULL) {
 			length += ACCEPT_PROTOCOL_V1_LEN + n->headers->protocol_len + 2;
 		}
 
-		response = malloc(length);
+		response = getMemory("", length);
 		
 		if (response == NULL) {
 			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
-
-		memset(response, '\0', length);
 	
 		memcpy(response + memlen, ACCEPT_HEADER_V1, ACCEPT_HEADER_V1_LEN);
 		memlen += ACCEPT_HEADER_V1_LEN;
@@ -654,6 +664,9 @@ int sendHandshake(struct node *n) {
 
 		memcpy(response + memlen, n->headers->host, n->headers->host_len);
 		memlen += n->headers->host_len;
+
+		memcpy(response + memlen, "/", 1);
+		memlen += 1;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
