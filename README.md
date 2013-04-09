@@ -69,20 +69,16 @@ to whatever fits your needs. This can be done in `Handshake.c`.
 Keep in mind that you'll also have to change the
 HOSTS and ORIGINS definitions to the amount of addresses allowed for each of 
 them, which is located in `Includes.h`.
+
 `	
-	/**
-	 * Make the choose of port and server dynamical
-	 */	
 	char* host[HOSTS];
 	host[0] = "localhost:4567";
 	host[1] = "127.0.0.1:4567";
 	host[2] = "192.168.87.103:4567";
 	host[3] = "192.168.1.100:4567";
 	host[4] = "192.168.0.21:4567";
-
-	/**
-	 * Make the choose of server dynamical
-	 */
+`
+`
 	char* origin[ORIGINS];
 	origin[0] = "http://localhost";
 	origin[1] = "http://127.0.0.1";
@@ -93,10 +89,10 @@ them, which is located in `Includes.h`.
 
 # Future implementations
 
-In the future server should be able to communicate with browsers, eventhough 
-the browser is just trying to contact the server using a normal HTTP Request.
-The idea is to implement some kind of COMET server, such that the server is
-usefull for old browsers as well.
+In the future, the server should be able to communicate with browsers, 
+eventhough the browser is just trying to contact the server using a normal 
+HTTP Request. The idea is to implement some kind of COMET server, such that 
+the server is useful for old browsers as well.
 
 Furthermore I will upload a small javascript library that should work 
 crossbrowser, and that should try to determine which technologies the browser
