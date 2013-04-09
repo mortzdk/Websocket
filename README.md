@@ -70,22 +70,21 @@ Keep in mind that you'll also have to change the
 HOSTS and ORIGINS definitions to the amount of addresses allowed for each of 
 them, which is located in `Includes.h`.
 
-`	
-	char* host[HOSTS];
-	host[0] = "localhost:4567";
-	host[1] = "127.0.0.1:4567";
-	host[2] = "192.168.87.103:4567";
-	host[3] = "192.168.1.100:4567";
-	host[4] = "192.168.0.21:4567";
-`
-`
-	char* origin[ORIGINS];
-	origin[0] = "http://localhost";
-	origin[1] = "http://127.0.0.1";
-	origin[2] = "http://192.168.87.103";
-	origin[3] = "http://192.168.1.100";
-	origin[4] = "http://192.168.0.21"; 
-`
+<pre>
+char* host[HOSTS];
+host[0] = "localhost:4567";
+host[1] = "127.0.0.1:4567";
+host[2] = "192.168.87.103:4567";
+host[3] = "192.168.1.100:4567";
+host[4] = "192.168.0.21:4567";
+
+char* origin[ORIGINS];
+origin[0] = "http://localhost";
+origin[1] = "http://127.0.0.1";
+origin[2] = "http://192.168.87.103";
+origin[3] = "http://192.168.1.100";
+origin[4] = "http://192.168.0.21"; 
+</pre>
 
 # Future implementations
 
