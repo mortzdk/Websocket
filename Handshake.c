@@ -96,9 +96,6 @@ int parseHeaders(char *string, struct node *n, int port){
 
 	(void) port;
 
-	/**
-	 * Make the choose of port and server dynamical
-	 */	
 	char* host[HOSTS];
 	host[0] = "localhost:4567";
 	host[1] = "127.0.0.1:4567";
@@ -106,10 +103,7 @@ int parseHeaders(char *string, struct node *n, int port){
 	host[3] = "192.168.1.100:4567";
 	host[4] = "192.168.0.21:4567";
 
-	/**
-	 * Make the choose of server dynamical
-	 */
-	char* origin[HOSTS];
+	char* origin[ORIGINS];
 	origin[0] = "http://localhost";
 	origin[1] = "http://127.0.0.1";
 	origin[2] = "http://192.168.87.103";

@@ -43,6 +43,7 @@ SOFTWARE.
 
 #define KEYSIZE 16
 #define HOSTS 5
+#define ORIGINS 5
 #define BUFFERSIZE 8192 		/* Buffer size = 8KB */
 #define MAXMESSAGE 1048576 		/* Max size message = 1MB */
 
