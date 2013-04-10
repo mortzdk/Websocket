@@ -90,25 +90,122 @@ char *getMemory(char *token, int length) {
 	return temp;
 }
 
+
+int get_file_size (const char *file_name) {
+	struct stat sb;
+	if ( stat(file_name, &sb) != 0 ) {
+		return -1;
+	}
+	return sb.st_size;
+}
+
+char * read_file (const char *file_name) {
+	FILE *f;
+	char *contents;
+	int s, bytes_read, bytes_write;
+	int status;
+
+	f = fopen(file_name, "a+");
+	if (f == NULL) {
+		return NULL;
+	}
+
+	s = get_file_size(file_name);
+	
+	if (s <= 0) {
+		fclose(f);
+		return NULL;
+	}
+
+	contents = malloc(s + 1);
+	if (contents == NULL) {
+		fclose(f);
+		return NULL;
+	}
+	
+	bytes_read = fread(contents, sizeof(char), s, f);
+	if (bytes_read != s) {
+		fclose(f);
+		free(contents);
+		return NULL;
+	}
+
+	if (bytes_read == 0) {
+		bytes_write = fwrite("0\r\n", sizeof(char), 3, f);
+		if (bytes_write != 3) {
+			free(contents);
+			fclose(f);
+			return NULL;
+		}
+	}
+
+	status = fclose(f);
+	if (status != 0) {
+		free(contents);
+		return NULL;
+	}
+
+	return contents;
+}
+
+int isNeedleInHaystack(char *needle, char *file_name, int port){
+	int i = 0, amount = 0, ok = 0;
+	char *err = NULL, *file = NULL, *tok = NULL;
+
+	file = read_file(file_name);
+
+	if (file != NULL) {
+	   	tok	= strtok(file, "\r\n");
+		amount = strtol(tok, &err, 10);
+		
+		if (err[0] == '\0' && amount > 0) {
+			char *haystack[amount];
+			for(i = amount-1; i > -1; i--) {
+				tok = strtok(NULL, "\r\n");	
+				if (tok == NULL) {
+					return ok;
+				} else {
+					haystack[i] = (char *) malloc(strlen(tok) + sizeof(int) + 
+							sizeof(char) + 1);
+					if (haystack[i] == NULL) {
+						return ok;	
+					}
+					memset(haystack[i], '\0', strlen(tok) + sizeof(int) + 
+							sizeof(char) + 1);
+					memcpy(haystack[i], tok, strlen(tok));
+					if (port > 1024 && port < 65535) {
+						memcpy(haystack[i] + strlen(tok), ":", sizeof(char));
+						sprintf(haystack[i] + strlen(tok) + sizeof(char), "%d", port);
+					}
+				}
+			}
+
+			for(i = amount-1; i > -1; i--) {
+				if (strncasecmp(haystack[i], needle, strlen(haystack[i])) == 0) {
+					ok = 0;
+					break;
+				} else {
+					ok = -1;
+				}
+			}
+
+			for(i = amount-1; i > -1; i--) {
+				free(haystack[i]);
+			}
+
+		} else {
+			return ok;
+		}
+	}	
+
+	free(file);
+	return ok;
+}
+
 int parseHeaders(char *string, struct node *n, int port){
 	struct header *h = n->headers;
 	char* token = strtok(string, "\r\n");
 
-	(void) port;
-
-	char* host[HOSTS];
-	host[0] = "localhost:4567";
-	host[1] = "127.0.0.1:4567";
-	host[2] = "192.168.87.103:4567";
-	host[3] = "192.168.1.100:4567";
-	host[4] = "192.168.0.21:4567";
-
-	char* origin[ORIGINS];
-	origin[0] = "http://localhost";
-	origin[1] = "http://127.0.0.1";
-	origin[2] = "http://192.168.87.103";
-	origin[3] = "http://192.168.1.100";
-	origin[4] = "http://192.168.0.21";
 
 	/**
 	 * Split the header string into pieces that we place in the header struct
@@ -228,17 +325,9 @@ int parseHeaders(char *string, struct node *n, int port){
 			return -1;
 		}
 
-		int i;
-		bool ok = false;
+		int i = isNeedleInHaystack(h->host, "Hosts.dat", port);
 
-		for (i = 0; i < HOSTS; i++) {
-			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
-				ok = true;
-				break;
-			}
-		}
-
-		if (!ok) {
+		if (i < 0) {
 			client_error("The requested host is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
@@ -288,9 +377,7 @@ int parseHeaders(char *string, struct node *n, int port){
 			return -1;
 		}
 	} else if ( strncasecmp(h->type, "hixie-75", 8) == 0 ) {
-		int i = 0;
-		bool ok = false;
-		
+		int i;	
 		/**
 		 * Checking that all headers required has been catched
 		 */
@@ -318,29 +405,17 @@ int parseHeaders(char *string, struct node *n, int port){
 			return -1;
 		}
 
-		for (i = 0; i < HOSTS; i++) {
-			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
-				ok = true;
-				break;
-			}
-		}
+		i = isNeedleInHaystack(h->host, "Hosts.dat", port);
 
-		if (!ok) {
+		if (i < 0) {
 			client_error("The requested host is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
 		}
 
-		ok = false;
-	
-		for (i = 0; i < HOSTS; i++) {
-			if (strncasecmp(origin[i], h->origin, strlen(origin[i])) == 0) {
-				ok = true;
-				break;
-			}
-		}
+		i = isNeedleInHaystack(h->origin, "ORIGINS.dat", 0);
 
-		if (!ok) {
+		if (i < 0) {
 			client_error("The origin requested from is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
@@ -358,7 +433,6 @@ int parseHeaders(char *string, struct node *n, int port){
 		uint32_t number;
 		char key[length], sha1Key[20];
 		char *acceptKey = NULL;
-		bool ok = false;
 		
 		memset(key, '\0', length);
 		memset(sha1Key, '\0', 20);
@@ -414,29 +488,17 @@ int parseHeaders(char *string, struct node *n, int port){
 			return -1;
 		}
 
-		for (i = 0; i < HOSTS; i++) {
-			if (strncasecmp(host[i], h->host, strlen(host[i])) == 0) {
-				ok = true;
-				break;
-			}
-		}
+		i = isNeedleInHaystack(h->host, "Hosts.dat", port);
 
-		if (!ok) {
+		if (i < 0) {
 			client_error("The requested host is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
 		}
 
-		ok = false;
-	
-		for (i = 0; i < HOSTS; i++) {
-			if (strncasecmp(origin[i], h->origin, strlen(origin[i])) == 0) {
-				ok = true;
-				break;
-			}
-		}
+		i = isNeedleInHaystack(h->origin, "Origins.dat", 0);
 
-		if (!ok) {
+		if (i < 0) {
 			client_error("The origin requested from is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;

@@ -40,10 +40,9 @@ SOFTWARE.
 #include <sys/socket.h> 		/* socket, setsockopt, inet_ntoa, accept */
 #include <netinet/in.h> 		/* sockaddr_in, inet_ntoa */
 #include <arpa/inet.h> 			/* htonl, htons, inet_ntoa */
+#include <sys/stat.h> 			/* stat */
 
 #define KEYSIZE 16
-#define HOSTS 5
-#define ORIGINS 5
 #define BUFFERSIZE 8192 		/* Buffer size = 8KB */
 #define MAXMESSAGE 1048576 		/* Max size message = 1MB */
 
