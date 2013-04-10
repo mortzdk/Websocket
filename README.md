@@ -60,30 +60,24 @@ another port you can simply type:
 When the server is up and running, it has a few commands that could be useful.
 These commands can be displayes by typing `help`.
 
-Last but not at least, the server has not been implemented with a smart way of
-determining which `hosts` and `origins` is allowed. The host is the address 
-which the client used to contact the server. The origin is the address which
-the client was on when contacting the server. You should change these addresses
-to whatever fits your needs. This can be done in `Handshake.c`.
+Last but not at least, it is up to the one running the server to decide which 
+hosts and origins that is allowed. To choose these addresses, you can edit the 
+2 files `Hosts.dat` and `Origins.dat`. The first line in the file indicates the
+amount of addresses allowed, and the following lines is the actual addresses 
+allowed.
 
-Keep in mind that you'll also have to change the
-HOSTS and ORIGINS definitions to the amount of addresses allowed for each of 
-them, which is located in `Includes.h`.
-
+`Hosts.dat` has the information:
 <pre>
-char* host[HOSTS];
-host[0] = "localhost:4567";
-host[1] = "127.0.0.1:4567";
-host[2] = "192.168.87.103:4567";
-host[3] = "192.168.1.100:4567";
-host[4] = "192.168.0.21:4567";
+2
+localhost
+127.0.0.1
+</pre>
 
-char* origin[ORIGINS];
-origin[0] = "http://localhost";
-origin[1] = "http://127.0.0.1";
-origin[2] = "http://192.168.87.103";
-origin[3] = "http://192.168.1.100";
-origin[4] = "http://192.168.0.21"; 
+`Origins.dat` has the information:
+<pre> 
+2
+http://localhost
+http://127.0.0.1
 </pre>
 
 # Future implementations
