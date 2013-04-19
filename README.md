@@ -74,7 +74,7 @@ localhost
 </pre>
 
 `Origins.dat` has the information:
-<pre> 
+<pre>
 2
 http://localhost
 http://127.0.0.1
@@ -87,7 +87,5 @@ eventhough the browser is just trying to contact the server using a normal
 HTTP Request. The idea is to implement some kind of COMET server, such that 
 the server is useful for old browsers as well.
 
-Furthermore I will upload a small javascript library that should work 
-crossbrowser, and that should try to determine which technologies the browser
-is able to use and next use them!
-
+Another thing that would be preferable is that the server is able to handle
+SSL connections. Which includes being able to handle wss:// connections.
