@@ -83,7 +83,7 @@ void list_add (struct list *l, struct node *n) {
 }
 
 /**
- * Removes a node from the list l
+ * Removes a node from the list, and sends closing frame to the client.
  */
 void list_remove (struct list *l, struct node *r) {
 	struct node *n = l->first, *p;
@@ -128,6 +128,9 @@ void list_remove (struct list *l, struct node *r) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Removes all nodes in the list, and sends closing frame to each client.
+ */
 void list_remove_all (struct list *l) {
 	struct node *n = l->first;
 	char close[2];
@@ -158,6 +161,9 @@ void list_remove_all (struct list *l) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Removes only the node from the list.
+ */
 void list_delete(struct list *l, struct node *r) {
 	struct node *n = l->first, *p;
 	pthread_mutex_lock(&l->lock);
@@ -221,6 +227,9 @@ void list_print(struct list *l) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Multicasts a message to all nodes but the one given as parameter in the list
+ */
 void list_multicast(struct list *l, struct node *n) {
 	struct node *p = l->first;
 	pthread_mutex_lock(&l->lock);
@@ -239,6 +248,9 @@ void list_multicast(struct list *l, struct node *n) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Multicasts a message to 1 specific node.
+ */
 void list_multicast_one(struct list *l, struct node *n, struct message *m) {
 	struct node *p = l->first;
 	pthread_mutex_lock(&l->lock);
@@ -258,6 +270,9 @@ void list_multicast_one(struct list *l, struct node *n, struct message *m) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Multicasts message to alle node in the list.
+ */
 void list_multicast_all(struct list *l, struct message *m) {
 	struct node *p = l->first;
 	pthread_mutex_lock(&l->lock);
@@ -274,6 +289,10 @@ void list_multicast_all(struct list *l, struct message *m) {
 	pthread_mutex_unlock(&l->lock);
 }
 
+/**
+ * Returns the node that has the equivalent information as given in the 
+ * parameters, if it is in the list.
+ */
 struct node *list_get(struct list *l, char *addr, int socket) {
 	struct node *p = l->first;
 	pthread_mutex_lock(&l->lock);
@@ -294,6 +313,9 @@ struct node *list_get(struct list *l, char *addr, int socket) {
 	return p;
 }
 
+/**
+ * Function which do the actual sending of messages
+ */
 void list_send(struct node *n, struct message *m) {
 	if (n->headers->type == NULL) {
 		
@@ -331,6 +353,9 @@ struct node *node_new (int sock, char *addr) {
 	return n;
 }
 
+/**
+ * Creates a new header structure.
+ */
 struct header *header_new () {
 	struct header *h;
 
@@ -365,6 +390,9 @@ struct header *header_new () {
 	return h;
 }
 
+/**
+ * Creates a new message structure.
+ */
 struct message *message_new() {
 	struct message *m;
 
@@ -387,6 +415,9 @@ struct message *message_new() {
 	return m;	
 }
 
+/**
+ * Frees all allocations in the header structure.
+ */
 void header_free(struct header *h) {
 	if (h->accept != NULL) {
 		free(h->accept);
@@ -394,6 +425,9 @@ void header_free(struct header *h) {
 	}
 }
 
+/**
+ * Frees all allocations in the message structure.
+ */
 void message_free(struct message *m) {
 	if (m->msg != NULL) {
 		free(m->msg);
@@ -416,6 +450,10 @@ void message_free(struct message *m) {
 	}
 }
 
+/**
+ * Frees all allocations in the node, including the header and message 
+ * structure.
+ */
 void node_free(struct node *n) {
 	if (n->client_ip != NULL) {
 		free(n->client_ip);

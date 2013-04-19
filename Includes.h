@@ -42,7 +42,7 @@ SOFTWARE.
 #include <arpa/inet.h> 			/* htonl, htons, inet_ntoa */
 #include <sys/stat.h> 			/* stat */
 
-#define KEYSIZE 16
+#define KEYSIZE 16 				/* The size of the key in Hybi-00 */
 #define BUFFERSIZE 8192 		/* Buffer size = 8KB */
 #define MAXMESSAGE 1048576 		/* Max size message = 1MB */
 

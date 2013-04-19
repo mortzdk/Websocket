@@ -30,6 +30,10 @@ struct list *l;
 struct list *j;
 int port;
 
+/**
+ * Handler to call when CTRL+C is typed. This function shuts down the server
+ * in a safe way.
+ */
 void sigint_handler(int sig) {
 	if (sig == SIGINT) {
 		if (j != NULL) {
@@ -46,6 +50,9 @@ void sigint_handler(int sig) {
 	} 
 }
 
+/**
+ * Shuts down a client in a safe way. This is only used for Hybi-00.
+ */
 void cleanup_client(void *args) {
 	struct node *n = args;
 	printf("Shutting client down..\n\n> ");
@@ -54,10 +61,10 @@ void cleanup_client(void *args) {
 	list_remove(l, n);
 }
 
-void cleanup_cmd(void *arg) {
-	(void) arg;
-}
-
+/**
+ * This function listens for input from STDIN and tries to match it to a 
+ * pattern that will trigger different actions.
+ */
 void *cmdline(void *arg) {
 	pthread_detach(pthread_self());
 	(void) arg;
@@ -333,6 +340,8 @@ void *handshake(void *args) {
 				buffer_length+1);
 		memcpy(n->string + (string_length-buffer_length-1), buffer, 
 				buffer_length);
+		printf("%s\n\n", n->string);
+		fflush(stdout);
 	} while( strncmp("\r\n\r\n", n->string + (string_length-5), 4) != 0 
 			&& strncmp("\n\n", n->string + (string_length-3), 2) != 0
 			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0
@@ -415,6 +424,10 @@ int main(int argc, char *argv[]) {
 	pthread_t pthread_id;
 	pthread_attr_t pthread_attr;
 
+	/**
+	 * Creating new lists, l is supposed to contain the connected users,
+	 * while j should contain users as long as they are not yet connected.
+	 */
 	l = list_new();
 	j = list_new();
 
@@ -426,6 +439,9 @@ int main(int argc, char *argv[]) {
 	printf("Server: \t\tStarted\n");
 	fflush(stdout);
 
+	/**
+	 * Assigning port value.
+	 */
 	if (argc == 2) {
 		port = strtol(argv[1], (char **) NULL, 10);
 		
@@ -440,6 +456,9 @@ int main(int argc, char *argv[]) {
 	printf("Port: \t\t\t%d\n", port);
 	fflush(stdout);
 
+	/**
+	 * Opening server socket.
+	 */
 	if ( (server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		server_error(strerror(errno), server_socket, l, j);
 	}
@@ -447,6 +466,9 @@ int main(int argc, char *argv[]) {
 	printf("Socket: \t\tInitialized\n");
 	fflush(stdout);
 
+	/**
+	 * Allow reuse of address, when the server shuts down.
+	 */
 	if ( (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, 
 					sizeof(on))) < 0 ){
 		server_error(strerror(errno), server_socket, l, j);
@@ -456,7 +478,6 @@ int main(int argc, char *argv[]) {
 	fflush(stdout);
 
 	memset((char *) &server_addr, '\0', sizeof(server_addr));
-
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_port = htons(port);
@@ -464,6 +485,9 @@ int main(int argc, char *argv[]) {
 	printf("Ip Address: \t\t%s\n", inet_ntoa(server_addr.sin_addr));
 	fflush(stdout);
 
+	/**
+	 * Bind address.
+	 */
 	if ( (bind(server_socket, (struct sockaddr *) &server_addr, 
 			sizeof(server_addr))) < 0 ) {
 		server_error(strerror(errno), server_socket, l, j);
@@ -472,6 +496,9 @@ int main(int argc, char *argv[]) {
 	printf("Binding: \t\tSuccess\n");
 	fflush(stdout);
 
+	/**
+	 * Listen on the server socket for connections
+	 */
 	if ( (listen(server_socket, 10)) < 0) {
 		server_error(strerror(errno), server_socket, l, j);
 	}
@@ -479,6 +506,9 @@ int main(int argc, char *argv[]) {
 	printf("Listen: \t\tSuccess\n\n");
 	fflush(stdout);
 
+	/**
+	 * Attributes for the threads we will create when a new client connects.
+	 */
 	pthread_attr_init(&pthread_attr);
 	pthread_attr_setdetachstate(&pthread_attr, PTHREAD_CREATE_DETACHED);
 	pthread_attr_setstacksize(&pthread_attr, 524288);
@@ -486,24 +516,35 @@ int main(int argc, char *argv[]) {
 	printf("Server is now waiting for clients to connect ...\n\n");
 	fflush(stdout);
 
+	/**
+	 * Create commandline, such that we can do simple commands on the server.
+	 */
 	if ( (pthread_create(&pthread_id, &pthread_attr, cmdline, NULL)) < 0 ){
 		server_error(strerror(errno), server_socket, l, j);
 	}
 
+	/**
+	 * Do not wait for the thread to terminate.
+	 */
 	pthread_detach(pthread_id);
 
 	while (1) {
 		client_length = sizeof(client_addr);
-
+		
+		/**
+		 * If a client connects, we observe it here.
+		 */
 		if ( (client_socket = accept(server_socket, 
 				(struct sockaddr *) &client_addr,
 				&client_length)) < 0) {
 			server_error(strerror(errno), server_socket, l, j);
 		}
 
-		/* TODO: Allocate memory to hold inet_ntoa address */
+		/**
+		 * Save some information about the client, which we will
+		 * later use to identify him with.
+		 */
 		char *temp = (char *) inet_ntoa(client_addr.sin_addr);
-		
 		char *addr = (char *) malloc( sizeof(char)*(strlen(temp)+1) );
 		if (addr == NULL) {
 			server_error(strerror(errno), server_socket, l, j);
@@ -514,6 +555,10 @@ int main(int argc, char *argv[]) {
 
 		struct node *n = node_new(client_socket, addr);
 
+		/**
+		 * Create client thread, which will take care of handshake and all
+		 * communication with the client.
+		 */
 		if ( (pthread_create(&pthread_id, &pthread_attr, handshake, 
 						(void *) n)) < 0 ){
 			server_error(strerror(errno), server_socket, l, j);

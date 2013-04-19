@@ -22,6 +22,10 @@ SOFTWARE.
 
 #include "Errors.h"
 
+/**
+ * This function is called when the server experience an error. This will
+ * free the necessary allocations and then shutdown the server.
+ */
 void server_error(const char *message, int server_socket, struct list *l, 
 		struct list *j) {
 	printf("\nServer experienced an error: %s\n"
@@ -42,6 +46,12 @@ void server_error(const char *message, int server_socket, struct list *l,
 	exit(EXIT_FAILURE);
 }
 
+/**
+ * This function is called when the client experience an error. This will
+ * free all the allocations done by the specific client, send a closning frame
+ * to the client, and then shut the TCP connection between client and server
+ * down.
+ */
 void client_error(const char *errormessage, const char *status, 
 		struct node *n) {
 	
