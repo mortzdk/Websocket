@@ -19,7 +19,7 @@ run: all
 	./$(EXEC) $(PORT)
 
 valgrind: all
-	valgrind --leak-check=full --track-origins=yes --show-reachable=yes ./$(EXEC) $(PORT)
+	valgrind --leak-check=full --log-file="LOG" --track-origins=yes --show-reachable=yes ./$(EXEC) $(PORT)
 
 base64.o: base64.c base64.h
 	$(CC) $(CFLAGS) -c base64.c

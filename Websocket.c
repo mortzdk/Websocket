@@ -57,7 +57,6 @@ void cleanup_client(void *args) {
 	struct node *n = args;
 	printf("Shutting client down..\n\n> ");
 	fflush(stdout);
-	list_delete(j, n);
 	list_remove(l, n);
 }
 
@@ -290,7 +289,6 @@ void *handshake(void *args) {
 	n->thread_id = pthread_self();
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-	list_add(j, n);
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 	char buffer[BUFFERSIZE];
@@ -298,7 +296,6 @@ void *handshake(void *args) {
 
 	if (n->string == NULL) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		list_delete(j, n);
 		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
@@ -309,7 +306,6 @@ void *handshake(void *args) {
 	printf("Checking whether client is valid ...\n\n");
 	fflush(stdout);
 
-
 	/**
 	 * Getting headers and doing reallocation if headers is bigger than our
 	 * allocated memory.
@@ -318,7 +314,6 @@ void *handshake(void *args) {
 		memset(buffer, '\0', BUFFERSIZE);
 		if ((buffer_length = recv(n->socket_id, buffer, BUFFERSIZE, 0)) <= 0){
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-			list_delete(j, n);
 			client_error("Didn't receive any headers from the client.", 
 					ERROR_BAD, n);
 			pthread_exit((void *) EXIT_FAILURE);
@@ -329,7 +324,6 @@ void *handshake(void *args) {
 		char *tmp = realloc(n->string, string_length);
 		if (tmp == NULL) {
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-			list_delete(j, n);
 			client_error("Couldn't reallocate memory.", ERROR_INTERNAL, n);
 			pthread_exit((void *) EXIT_FAILURE);
 		}
@@ -340,8 +334,6 @@ void *handshake(void *args) {
 				buffer_length+1);
 		memcpy(n->string + (string_length-buffer_length-1), buffer, 
 				buffer_length);
-		printf("%s\n\n", n->string);
-		fflush(stdout);
 	} while( strncmp("\r\n\r\n", n->string + (string_length-5), 4) != 0 
 			&& strncmp("\n\n", n->string + (string_length-3), 2) != 0
 			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0
@@ -351,7 +343,6 @@ void *handshake(void *args) {
 
 	if (h == NULL) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		list_delete(j, n);
 		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
@@ -360,21 +351,16 @@ void *handshake(void *args) {
 
 	if ( parseHeaders(n->string, n, port) < 0 ) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		list_delete(j, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
 
 	if ( sendHandshake(n) < 0 && n->headers->type != NULL ) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		list_delete(j, n);
 		pthread_exit((void *) EXIT_FAILURE);	
 	}	
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-	list_delete(j, n); 
 	list_add(l, n);
-
-	list_print(l);
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 	printf("Client has been validated and is now connected\n\n");
@@ -429,7 +415,6 @@ int main(int argc, char *argv[]) {
 	 * while j should contain users as long as they are not yet connected.
 	 */
 	l = list_new();
-	j = list_new();
 
 	/**
 	 * Listens for CTRL-C

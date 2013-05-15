@@ -162,48 +162,6 @@ void list_remove_all (struct list *l) {
 }
 
 /**
- * Removes only the node from the list.
- */
-void list_delete(struct list *l, struct node *r) {
-	struct node *n = l->first, *p;
-	pthread_mutex_lock(&l->lock);
-
-	if (n == NULL) {
-		pthread_mutex_unlock(&l->lock);
-		return;
-	}
-
-	do {
-		if (n == r) {
-
-			if (n == l->first) {
-				l->first = n->next;
-			} else {
-				p->next = n->next;
-			}
-
-			if (n == l->last) {
-				l->last = p;
-			}
-
-			l->len--;
-			break;
-		}
-
-		p = n;
-		n = n->next;
-	} while (n != NULL); 
-
-	if (l->len == 0) {
-		l->first = l->last = NULL;
-	} else if (l->len == 1) {
-		l->last = l->first;
-	}
-
-	pthread_mutex_unlock(&l->lock);
-}
-
-/**
  * Prints out information about each node contained in the list.
  */
 void list_print(struct list *l) {

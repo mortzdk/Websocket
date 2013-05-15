@@ -389,6 +389,12 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 	char buffer[BUFFERSIZE];
 	n->message = message_new();
 
+	if (n->headers == NULL || n->headers->type == NULL) {
+		printf("We've fucked up somewhere, client didn't have type");
+		fflush(stdout);
+		return -1;
+	}
+
 	/**
 	 * If we are dealing with a Hypi-00 connection, we have to handle the
 	 * message receiving differently than the RFC6455 standard.

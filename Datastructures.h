@@ -90,7 +90,6 @@ void list_free(struct list *l);
 void list_add(struct list *l, struct node *n);
 void list_remove(struct list *l, struct node *r);
 void list_remove_all(struct list *l);
-void list_delete(struct list *l, struct node *r);
 void list_print(struct list *l);
 void list_multicast(struct list *l, struct node *n);
 void list_multicast_one(struct list *l, struct node *n, struct message *m);
