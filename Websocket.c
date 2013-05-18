@@ -26,8 +26,7 @@ SOFTWARE.
 
 #define PORT 4567
 
-struct list *l;
-struct list *j;
+ws_list *l;
 int port;
 
 /**
@@ -35,29 +34,28 @@ int port;
  * in a safe way.
  */
 void sigint_handler(int sig) {
-	if (sig == SIGINT) {
-		if (j != NULL) {
-			list_free(j);
-			j = NULL;
-		}
-
+	if (sig == SIGINT || sig == SIGSEGV) {
 		if (l != NULL) {
 			list_free(l);
 			l = NULL;
 		}
-		(void) signal(SIGINT, SIG_DFL);
+		(void) signal(sig, SIG_DFL);
 		exit(0);
-	} 
+	} else if (sig == SIGPIPE) {
+		(void) signal(sig, SIG_IGN);
+	}
 }
 
 /**
  * Shuts down a client in a safe way. This is only used for Hybi-00.
  */
 void cleanup_client(void *args) {
-	struct node *n = args;
-	printf("Shutting client down..\n\n> ");
-	fflush(stdout);
-	list_remove(l, n);
+	ws_client *n = args;
+	if (n != NULL) {
+		printf("Shutting client down..\n\n> ");
+		fflush(stdout);
+		list_remove(l, n);
+	}
 }
 
 /**
@@ -66,8 +64,7 @@ void cleanup_client(void *args) {
  */
 void *cmdline(void *arg) {
 	pthread_detach(pthread_self());
-	(void) arg;
-	char buffer[1024];
+	(void) arg; char buffer[1024];
 	
 	while (1) {
 		memset(buffer, '\0', 1024);
@@ -141,7 +138,7 @@ void *cmdline(void *arg) {
 					sock = token;	
 				}
 
-				struct node *n = list_get(l, addr, 
+				ws_client *n = list_get(l, addr, 
 						strtol(sock, (char **) NULL, 10));
 
 				if (n == NULL) {
@@ -151,23 +148,12 @@ void *cmdline(void *arg) {
 					continue;
 				}
 
-				char close[2];
-				if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
-						|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
-						|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
-					close[0] = '\x88';
-					close[1] = '\x00';
-					send(n->socket_id, close, 2, 0);
-				} else {
-					close[0] = '\xFF';
-					close[1] = '\x00';
-					send(n->socket_id, close, 2, 0);
-					pthread_cancel(n->thread_id);
-				}
+				ws_closeframe(n, CLOSE_SHUTDOWN);
 			}
 		} else if ( strncasecmp(buffer, "sendall", 7) == 0 ||
 			   strncasecmp(buffer, "writeall", 8) == 0) {
 			char *token = strtok(buffer, " ");
+			ws_connection_close status;
 
 			if (token != NULL) {
 				token = strtok(NULL, "");
@@ -179,7 +165,7 @@ void *cmdline(void *arg) {
 					fflush(stdout);
 					continue;
 				} else {
-					struct message *m = message_new();
+					ws_message *m = message_new();
 					m->len = strlen(token);
 					
 					char *temp = malloc( sizeof(char)*(m->len+1) );
@@ -192,7 +178,13 @@ void *cmdline(void *arg) {
 					m->msg = temp;
 					temp = NULL;
 
-					encodeMessage(m);
+					if ( (status = encodeMessage(m)) != CONTINUE) {
+						message_free(m);
+						free(m);
+						raise(SIGINT);
+						break;;
+					}
+
 					list_multicast_all(l, m);
 					message_free(m);
 					free(m);
@@ -201,6 +193,7 @@ void *cmdline(void *arg) {
 		} else if ( strncasecmp(buffer, "send", 4) == 0 ||
 				strncasecmp(buffer, "write", 5) == 0) {
 			char *token = strtok(buffer, " "), *addr, *sock, *msg;
+			ws_connection_close status;
 
 			if (token != NULL) {
 				token = strtok(NULL, " ");
@@ -239,7 +232,7 @@ void *cmdline(void *arg) {
 					msg = token;	
 				}
 
-				struct node *n = list_get(l, addr, 
+				ws_client *n = list_get(l, addr, 
 						strtol(sock, (char **) NULL, 10));
 
 				if (n == NULL) {
@@ -249,7 +242,7 @@ void *cmdline(void *arg) {
 					continue;
 				}
 
-				struct message *m = message_new();
+				ws_message *m = message_new();
 				m->len = strlen(msg);
 				
 				char *temp = malloc( sizeof(char)*(m->len+1) );
@@ -262,7 +255,13 @@ void *cmdline(void *arg) {
 				m->msg = temp;
 				temp = NULL;
 
-				encodeMessage(m);
+				if ( (status = encodeMessage(m)) != CONTINUE) {
+					message_free(m);
+					free(m);
+					raise(SIGINT);
+					break;;
+				}
+
 				list_multicast_one(l, n, m);
 				message_free(m);
 				free(m);
@@ -277,7 +276,7 @@ void *cmdline(void *arg) {
 	pthread_exit((void *) EXIT_SUCCESS);
 }
 
-void *handshake(void *args) {
+void *handleClient(void *args) {
 	pthread_detach(pthread_self());
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
@@ -285,7 +284,7 @@ void *handshake(void *args) {
 
 	int buffer_length = 0, string_length = 1;
 
-	struct node *n = args;
+	ws_client *n = args;
 	n->thread_id = pthread_self();
 
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -296,7 +295,7 @@ void *handshake(void *args) {
 
 	if (n->string == NULL) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+		handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
 
@@ -314,7 +313,7 @@ void *handshake(void *args) {
 		memset(buffer, '\0', BUFFERSIZE);
 		if ((buffer_length = recv(n->socket_id, buffer, BUFFERSIZE, 0)) <= 0){
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-			client_error("Didn't receive any headers from the client.", 
+			handshake_error("Didn't receive any headers from the client.", 
 					ERROR_BAD, n);
 			pthread_exit((void *) EXIT_FAILURE);
 		}
@@ -324,7 +323,7 @@ void *handshake(void *args) {
 		char *tmp = realloc(n->string, string_length);
 		if (tmp == NULL) {
 			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-			client_error("Couldn't reallocate memory.", ERROR_INTERNAL, n);
+			handshake_error("Couldn't reallocate memory.", ERROR_INTERNAL, n);
 			pthread_exit((void *) EXIT_FAILURE);
 		}
 		n->string = tmp;
@@ -339,27 +338,25 @@ void *handshake(void *args) {
 			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0
 			&& strncmp("\n\n", n->string + (string_length-8-3), 2) != 0 );
 	
-	struct header *h = header_new();
+	ws_header *h = header_new();
 
 	if (h == NULL) {
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+		handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
 
 	n->headers = h;
 
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	if ( parseHeaders(n->string, n, port) < 0 ) {
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 		pthread_exit((void *) EXIT_FAILURE);
 	}
 
-	if ( sendHandshake(n) < 0 && n->headers->type != NULL ) {
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+	if ( sendHandshake(n) < 0 && n->headers->type != UNKNOWN ) {
 		pthread_exit((void *) EXIT_FAILURE);	
 	}	
 
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 	list_add(l, n);
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
@@ -372,12 +369,17 @@ void *handshake(void *args) {
 	memset(next, '\0', BUFFERSIZE);
 
 	while (1) {
-		if ( communicate(n, next, next_len) < 0 ) {
+		if ( communicate(n, next, next_len) != CONTINUE) {
 			break;
 		}
 
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		list_multicast(l, n);
+		if (n->headers->protocol != NULL && 
+				strncasecmp(n->headers->protocol, "chat", 4) == 0) {
+			list_multicast(l, n);
+		} else {
+			list_multicast_one(l, n, n->message);
+		}
 		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
 		if (n->message != NULL) {
@@ -411,15 +413,17 @@ int main(int argc, char *argv[]) {
 	pthread_attr_t pthread_attr;
 
 	/**
-	 * Creating new lists, l is supposed to contain the connected users,
-	 * while j should contain users as long as they are not yet connected.
+	 * Creating new lists, l is supposed to contain the connected users.
 	 */
 	l = list_new();
 
 	/**
-	 * Listens for CTRL-C
+	 * Listens for CTRL-C and Segmentation faults.
 	 */ 
 	(void) signal(SIGINT, &sigint_handler);
+	(void) signal(SIGSEGV, &sigint_handler);
+	(void) signal(SIGPIPE, &sigint_handler);
+
 
 	printf("Server: \t\tStarted\n");
 	fflush(stdout);
@@ -445,7 +449,7 @@ int main(int argc, char *argv[]) {
 	 * Opening server socket.
 	 */
 	if ( (server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
-		server_error(strerror(errno), server_socket, l, j);
+		server_error(strerror(errno), server_socket, l);
 	}
 
 	printf("Socket: \t\tInitialized\n");
@@ -456,7 +460,7 @@ int main(int argc, char *argv[]) {
 	 */
 	if ( (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, 
 					sizeof(on))) < 0 ){
-		server_error(strerror(errno), server_socket, l, j);
+		server_error(strerror(errno), server_socket, l);
 	}
 
 	printf("Reuse Port %d: \tEnabled\n", port);
@@ -475,7 +479,7 @@ int main(int argc, char *argv[]) {
 	 */
 	if ( (bind(server_socket, (struct sockaddr *) &server_addr, 
 			sizeof(server_addr))) < 0 ) {
-		server_error(strerror(errno), server_socket, l, j);
+		server_error(strerror(errno), server_socket, l);
 	}
 
 	printf("Binding: \t\tSuccess\n");
@@ -485,7 +489,7 @@ int main(int argc, char *argv[]) {
 	 * Listen on the server socket for connections
 	 */
 	if ( (listen(server_socket, 10)) < 0) {
-		server_error(strerror(errno), server_socket, l, j);
+		server_error(strerror(errno), server_socket, l);
 	}
 
 	printf("Listen: \t\tSuccess\n\n");
@@ -505,7 +509,7 @@ int main(int argc, char *argv[]) {
 	 * Create commandline, such that we can do simple commands on the server.
 	 */
 	if ( (pthread_create(&pthread_id, &pthread_attr, cmdline, NULL)) < 0 ){
-		server_error(strerror(errno), server_socket, l, j);
+		server_error(strerror(errno), server_socket, l);
 	}
 
 	/**
@@ -522,7 +526,7 @@ int main(int argc, char *argv[]) {
 		if ( (client_socket = accept(server_socket, 
 				(struct sockaddr *) &client_addr,
 				&client_length)) < 0) {
-			server_error(strerror(errno), server_socket, l, j);
+			server_error(strerror(errno), server_socket, l);
 		}
 
 		/**
@@ -532,30 +536,28 @@ int main(int argc, char *argv[]) {
 		char *temp = (char *) inet_ntoa(client_addr.sin_addr);
 		char *addr = (char *) malloc( sizeof(char)*(strlen(temp)+1) );
 		if (addr == NULL) {
-			server_error(strerror(errno), server_socket, l, j);
+			server_error(strerror(errno), server_socket, l);
 			break;
 		}
 		memset(addr, '\0', strlen(temp)+1);
 	    memcpy(addr, temp, strlen(temp));	
 
-		struct node *n = node_new(client_socket, addr);
+		ws_client *n = client_new(client_socket, addr);
 
 		/**
 		 * Create client thread, which will take care of handshake and all
 		 * communication with the client.
 		 */
-		if ( (pthread_create(&pthread_id, &pthread_attr, handshake, 
+		if ( (pthread_create(&pthread_id, &pthread_attr, handleClient, 
 						(void *) n)) < 0 ){
-			server_error(strerror(errno), server_socket, l, j);
+			server_error(strerror(errno), server_socket, l);
 		}
 
 		pthread_detach(pthread_id);
 	}
 
 	list_free(l);
-	list_free(j);
 	l = NULL;
-	j = NULL;
 	close(server_socket);
 	pthread_attr_destroy(&pthread_attr);
 	return EXIT_SUCCESS;

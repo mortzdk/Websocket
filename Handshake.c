@@ -84,7 +84,6 @@ char *getMemory(char *token, int length) {
 	return temp;
 }
 
-
 int get_file_size (const char *file_name) {
 	struct stat sb;
 	if ( stat(file_name, &sb) != 0 ) {
@@ -176,8 +175,7 @@ int isNeedleInHaystack(char *needle, char *file_name, int port){
 
 			for(i = amount-1; i > -1; i--) {
 				if ( needle != NULL && haystack[i] != NULL ) {
-					if ( strncasecmp(haystack[i], needle, 
-								strlen(haystack[i])) == 0 ) {
+					if ( strncasecmp(haystack[i], needle, strlen(needle)) == 0 ) {
 						ok = 0;
 						break;
 					} else {
@@ -199,8 +197,8 @@ int isNeedleInHaystack(char *needle, char *file_name, int port){
 	return ok;
 }
 
-int parseHeaders(char *string, struct node *n, int port){
-	struct header *h = n->headers;
+int parseHeaders(char *string, ws_client *n, int port){
+	ws_header *h = n->headers;
 	char* token = strtok(string, "\r\n");
 	int i;
 
@@ -214,18 +212,13 @@ int parseHeaders(char *string, struct node *n, int port){
 
 		while ( token != NULL ) {
 			if ( strncasecmp("Sec-WebSocket-Version: ", token, 23) == 0 ) {
-				h->version = token + 23;
-				
-				if ( strncmp("7", h->version, 1) == 0 ) {
-					h->type = "hybi-07";
-				} else if( strncmp("8", h->version, 1) == 0 ) {
-					h->type = "hybi-10";
-				} else if( strncmp("13", h->version, 2) == 0 ) {
-					h->type = "RFC6455";
-				} else {
-					client_error("Unknown websocket version.", ERROR_VERSION, 
-							n);
-					return -1;
+				h->version = strtol(token + 23, (char **) NULL, 10);
+				if ( h->version == 7 ) {
+					h->type = HYBI07;
+				} else if( h->version == 8 ) {
+					h->type = HYBI10;
+				} else if( h->version == 13 ) {
+					h->type = RFC6455;
 				}
 			} else if ( strncasecmp("Upgrade: ", token, 9) == 0) {
 				h->upgrade = token + 9;
@@ -253,29 +246,28 @@ int parseHeaders(char *string, struct node *n, int port){
 				h->host = token + 6;
 				h->host_len = strlen(h->host);
 			} else if ( strncasecmp("WebSocket-Protocol: ", token, 20) == 0 ) {
-				h->type = "hixie-75";
+				h->type = HIXIE75;
 				h->protocol = token + 20;
 				h->protocol_len = strlen(h->protocol);
 			} else if ( strncasecmp("Sec-WebSocket-Key1: ", token, 20) == 0 ) {
-				h->type = "hybi-00";
+				h->type = HYBI00;
 				h->key1 = token + 20;
 			} else if ( strncasecmp("Sec-WebSocket-Key2: ", token, 20) == 0 ) {
-				h->type = "hybi-00";
+				h->type = HYBI00;
 				h->key2 = token + 20;
 			}
 			
 			char *temp = strtok(NULL, "\r\n");
 
-			if ( temp == NULL && h->type != NULL && strncasecmp(h->type, 
-						"hybi-00", 7) == 0 ) {
-				h->type = "hybi-00";
+			if ( temp == NULL && h->type == HYBI00) {
+				h->type = HYBI00;
 				h->key3 = token;
 			}
 
 			token = temp;
 		}
 	} else {
-		client_error("The parsing of the headers went wrong.", ERROR_BAD, n);
+		handshake_error("The parsing of the headers went wrong.", ERROR_BAD, n);
 		return -1;
 	}
 
@@ -287,7 +279,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		i = isNeedleInHaystack(h->host, "Hosts.dat", port);
 
 		if (i < 0) {
-			client_error("The requested host is not accepted by us.", 
+			handshake_error("The requested host is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
 		}
@@ -301,7 +293,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		i = isNeedleInHaystack(h->origin, "Origins.dat", 0);
 
 		if (i < 0) {
-			client_error("The origin requested from is not accepted by us.", 
+			handshake_error("The origin requested from is not accepted by us.", 
 					ERROR_FORBIDDEN, n);
 			return -1;
 		}
@@ -310,17 +302,26 @@ int parseHeaders(char *string, struct node *n, int port){
 		 * If you do not want to allow clients with no origin, then report
 		 * an error here!
 		 */
+		if (ORIGIN_REQUIRED) {
+			handshake_error("Client did not supply an origin in the header.", 
+					ERROR_FORBIDDEN, n);
+			return -1;		
+		}
 	}
 
 	/**
 	 * If all these conditions is true, then we assume that the websocket
 	 * protocol that is trying to be reached is hixie-75.
 	 */
-	if (h->type == NULL && h->version == NULL && h->key1 == NULL 
+	if (h->type == UNKNOWN && h->version == 0 && h->key1 == NULL 
 			&& h->key2 == NULL && h->key3 == NULL && h->key == NULL
 			&& h->upgrade != NULL && h->connection != NULL && h->host != NULL
 			&& h->get != NULL && h->origin != NULL) {
-		h->type = "hixie-75";
+		h->type = HIXIE75;
+	}
+
+	if (h->type == UNKNOWN && h->get != NULL) {
+		h->type = HTTP;
 	}
 
 	/**
@@ -329,43 +330,43 @@ int parseHeaders(char *string, struct node *n, int port){
 	 * is selected, then we assume that the request is an ordinary HTTP 
 	 * request.
 	 */
-	if (h->type == NULL) {
-		client_error("Received a HTTP Request. We are not yet ready to handle" 
-				"these.\n", ERROR_NOT_IMPL, n);
+	if (h->type == HTTP) {
+		handshake_error("Received a HTTP Request. We are not yet ready to "
+				"handle these.\n", ERROR_NOT_IMPL, n);
 		return -1;
 	}
 
 	if (h->get == NULL || h->upgrade == NULL || h->host == NULL 
 			|| h->connection == NULL) {
-		client_error("The client did not send the required websocket headers.", 
+		handshake_error("The client did not send the required websocket headers.", 
 				ERROR_BAD, n);
 		return -1;	
 	}
 
 	if (strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 
 			|| strncasecmp("GET /", h->get, 5) != 0) {
-		client_error("The headerline of the request was invalid.", ERROR_BAD, 
+		handshake_error("The headerline of the request was invalid.", ERROR_BAD, 
 				n);
 		return -1;
 	}
 
 	if (strncasecmp("websocket", h->upgrade, 9) != 0) {
-		client_error("Unknown upgrade value.", ERROR_BAD, n);
+		handshake_error("Unknown upgrade value.", ERROR_BAD, n);
 		return -1;
 	}
 
 	if (strstr(h->connection, "Upgrade") == NULL) {
-		client_error("Unknown connection value.", ERROR_BAD, n);
+		handshake_error("Unknown connection value.", ERROR_BAD, n);
 		return -1;
 	}
 
-	if ( strncasecmp(h->type, "hybi-00", 7) == 0 ) {
+	if ( h->type == HYBI00 ) {
 		/**
 		 * Checking that all headers required has been catched and set in our
 		 * header structure.
 		 */
 		if (h->key1 == NULL || h->key2 == NULL || h->key3 == NULL) {
-			client_error("hybi-00: didn't receive all the headers required "
+			handshake_error("hybi-00: didn't receive all the headers required "
 					" to evaluate if the handshake was valid", ERROR_BAD, n);
 			return -1;
 		}
@@ -395,24 +396,21 @@ int parseHeaders(char *string, struct node *n, int port){
 			h->accept_len = KEYSIZE; 
 
 			if (h->accept == NULL) {
-				client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+				handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 				return -1;
 			}
 		} else {
-			client_error("The keys sent in the header was invalid.", ERROR_BAD, 
+			handshake_error("The keys sent in the header was invalid.", ERROR_BAD, 
 					n);
 			return -1;
 		}
 
-	} else if ( strncasecmp(h->type, "hybi-07", 7) == 0 
-			|| strncasecmp(h->type, "RFC6455", 7) == 0 
-			|| strncasecmp(h->type, "hybi-10", 7) == 0 ) {
-
+	} else if ( h->type == HYBI07 || h->type == RFC6455 || h->type == HYBI10 ) {
 		/**
 		 * Checking that all headers required has been catched
 		 */
 		if (h->key == NULL) {
-			client_error("RFC6455: didn't receive all the headers required "
+			handshake_error("RFC6455: didn't receive all the headers required "
 					" to evaluate if the handshake was valid", ERROR_BAD, n);
 			return -1;
 		}
@@ -437,7 +435,7 @@ int parseHeaders(char *string, struct node *n, int port){
 		SHA1Input(&sha, (const unsigned char*) key, length);
 
 		if ( !SHA1Result(&sha) ) {
-			client_error("Was not able to do SHA1-hash of the key.", 
+			handshake_error("Was not able to do SHA1-hash of the key.", 
 					ERROR_INTERNAL, n);
 			return -1;
 		}
@@ -448,52 +446,51 @@ int parseHeaders(char *string, struct node *n, int port){
 		}
 
 		if (base64_encode_alloc((const char *) sha1Key, 20, &acceptKey) == 0) {
-			client_error("The input length was greater than the output length",
+			handshake_error("The input length was greater than the output length",
 					ERROR_BAD, n);
 			return -1;
 		}
 
 		if (acceptKey == NULL) {
-			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
 
 		h->accept = acceptKey;
 		h->accept_len = strlen(h->accept);
 
-	} else if (strncasecmp(h->type, "hixie-75", 8) != 0) {
-		client_error("Something very wierd happened!?", ERROR_INTERNAL, n);
+	} else if ( h->type != HIXIE75 ) {
+		handshake_error("Something very wierd happened!?", ERROR_INTERNAL, n);
 		return -1; 
 	}
 
 	return 0;
 }
 
-int sendHandshake(struct node *n) {
+int sendHandshake(ws_client *n) {
 	int memlen = 0, length = 0;
 	char* response = NULL;
 
-	if ( n->headers->type == NULL ) {
-		client_error("Type is not known, we fucked up somewhere.", 
+	if ( n->headers->type == UNKNOWN || n->headers->type == HTTP ) {
+		handshake_error("Type is not known, we fucked up somewhere.", 
 				ERROR_INTERNAL, n);
 		return -1;
 	}
 
-	if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
-			|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
-			|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
+	if ( n->headers->type == HYBI07 || n->headers->type == RFC6455 || 
+			n->headers->type == HYBI10 ) {
 		length = ACCEPT_HEADER_V3_LEN  
 			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
 			+ ACCEPT_CONNECTION_LEN
 			+ ACCEPT_KEY_LEN + n->headers->accept_len 
-			+ (2*3) + 1;
+			+ (2*3);
 		if (n->headers->protocol != NULL) {
 			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len+2;
 		}
 		response = getMemory("", length);
 		
 		if (response == NULL) {
-			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
 	
@@ -532,22 +529,19 @@ int sendHandshake(struct node *n) {
 		memcpy(response + memlen, "\r\n\r\n", 4);
 		memlen += 4;
 
-		response[memlen] = '\0';
-		memlen += 1;
-
 		if (memlen != length) {
 			free(response);
-			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
+			handshake_error("We've fucked the counting up!", ERROR_INTERNAL, n);
 			return -1;
 		}
-	} else if ( strncasecmp(n->headers->type, "hybi-00", 7) == 0 ) {
+	} else if ( n->headers->type == HYBI00 ) {
 		length = ACCEPT_HEADER_V2_LEN  
 			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
 			+ ACCEPT_CONNECTION_LEN 
 			+ ACCEPT_LOCATION_V2_LEN + 5 
 			+ n->headers->host_len
 			+ n->headers->accept_len 
-			+ (2*3) + 2;
+			+ (2*3) + 1;
 	
 		if (n->headers->origin != NULL) {
 			length += ACCEPT_ORIGIN_V2_LEN + n->headers->origin_len + 2;
@@ -561,7 +555,7 @@ int sendHandshake(struct node *n) {
 		response = getMemory("", length);
 		
 		if (response == NULL) {
-			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
 	
@@ -624,21 +618,18 @@ int sendHandshake(struct node *n) {
 		memcpy(response + memlen, n->headers->accept, n->headers->accept_len);
 		memlen += n->headers->accept_len;
 
-		response[memlen] = '\0';
-		memlen += 1;
-
 		if (memlen != length) {
 			free(response);
-			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
+			handshake_error("We've fucked the counting up!", ERROR_INTERNAL, n);
 			return -1;
 		}
-	} else if ( strncasecmp(n->headers->type, "hixie-75", 8) == 0 ) {
+	} else if ( n->headers->type == HIXIE75 ) {
 		length = ACCEPT_HEADER_V1_LEN 
 			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
 			+ ACCEPT_CONNECTION_LEN 	
 			+ ACCEPT_LOCATION_V1_LEN + 5 
 			+ n->headers->host_len
-			+ (2*3) + 2;
+			+ (2*3) + 1;
 	
 		if (n->headers->origin != NULL) {
 			length += ACCEPT_ORIGIN_V1_LEN + n->headers->origin_len + 2;
@@ -651,7 +642,7 @@ int sendHandshake(struct node *n) {
 		response = getMemory("", length);
 		
 		if (response == NULL) {
-			client_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
 	
@@ -713,17 +704,11 @@ int sendHandshake(struct node *n) {
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		response[memlen] = '\0';
-		memlen += 1;
-
 		if (memlen != length) {
 			free(response);
-			client_error("We've fuck the counting up!", ERROR_INTERNAL, n);
+			handshake_error("We've fucked the counting up!", ERROR_INTERNAL, n);
 			return -1;
 		}
-	} else {
-		client_error("The type of protocol used was unknown.", ERROR_BAD, n);
-		return -1;
 	}
 
 	send(n->socket_id, response, length, 0);

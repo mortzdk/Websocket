@@ -25,8 +25,7 @@ SOFTWARE.
 
 #include "Datastructures.h" 
 
-void server_error(const char *message, int server_socket, struct list *l, 
-		struct list *j);
-void client_error(const char *errormessage, const char *status, 
-		struct node *n);
+void server_error(const char *message, int server_socket, ws_list *l);
+void handshake_error(const char *message, const char *status, ws_client *n);
+void client_error(const char *message, ws_connection_close c, ws_client *n);
 #endif

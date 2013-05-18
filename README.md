@@ -22,10 +22,11 @@ BEWARE! It does not work in Windows!
 
 As websockets is a pretty new feature, there has been a lot of different 
 conventions on how to handle the communication between browser and server. This
-websocket server support the following conventions:
+websocket server should support the following conventions:
 
 * [hixie-75](http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-75) 
-which was supported by Chrome 4 and Safari 5.0.0 and forth.
+which was supported by Chrome 4 and Safari 5.0.0 and forth. (NOT TESTED and/or 
+IMPLEMENTED)
 * [hixie-76](http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76)
 which was supported by Firefox 4, Chrome 6, Safari 5.0.1 and Opera 11 and forth.
 * [hybi-07](http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-07)
@@ -50,15 +51,17 @@ To compile the code, simply type:
 To run the websocket server type:
 `make run`
 
-To run the websocket server with valgrind type:
+To run the websocket server with valgrind (requires that valgrind is installed) 
+type:
 `make valgrind`
 
 The default port of the server is currently port 4567. If you wish to have 
 another port you can simply type:
 `make run PORT=1111`
+which will make the server listen at port 1111.
 
 When the server is up and running, it has a few commands that could be useful.
-These commands can be displayes by typing `help`.
+These commands can be displayed by typing `help`.
 
 Last but not at least, it is up to the one running the server to decide which 
 hosts and origins that is allowed. To choose these addresses, you can edit the 
@@ -80,6 +83,15 @@ http://localhost
 http://127.0.0.1
 </pre>
 
+As some of the conventions does not require the client to set an origin, I have
+choosen to implement it as follows. If the client supplies an origin, then we
+check if the origin is listed in `Origins.dat`. If the origin was not supplied,
+2 things can happen. In `Includes.h` a constant "ORIGIN\_REQUIRED" has been 
+made, which defines which one of the two options to choose. If this constant
+is 0, we accept the fact that we can't check the origin from the client and
+just moves on. If it is not 0, then we close the connection to the client, as
+he was not able to identify where he originated from.
+
 # Future implementations
 
 In the future, the server should be able to communicate with browsers, 
@@ -88,4 +100,11 @@ HTTP Request. The idea is to implement some kind of COMET server, such that
 the server is useful for old browsers as well.
 
 Another thing that would be preferable is that the server is able to handle
-SSL connections. Which includes being able to handle wss:// connections.
+SSL connections. Which includes being able to handle wss:// connections. This
+implementation would probably require that "OPENSSL" is installed on the 
+computer, as it would be too much work to implement my own version of SSL.
+
+Finally me and my pal is currently developing a benchmark tool for a websocket 
+server, such that we can find bugs in the server and benchmark how much it can
+do. The project can be seen [here](https://github.com/hovmand/go-websocket-bench)
+.

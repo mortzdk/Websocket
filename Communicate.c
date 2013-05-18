@@ -50,11 +50,11 @@ uint64_t ntohl64(uint64_t value) {
  * the message from the client is too big to be contained in the buffer.
  * And we are dealing with the RFC6455 convention.
  */
-uint64_t getRemainingMessage(struct node *n, uint64_t msg_length) {
+uint64_t getRemainingMessage(ws_client *n, uint64_t msg_length) {
 	int buffer_length = 0; 
 	uint64_t remaining_length = 0, final_length = 0;
 	char buffer[BUFFERSIZE];
-	struct message *m = n->message;
+	ws_message *m = n->message;
 
 	do {
 		memset(buffer, '\0', BUFFERSIZE);
@@ -79,8 +79,8 @@ uint64_t getRemainingMessage(struct node *n, uint64_t msg_length) {
 
 		/**
 		 * If the overall message is longer than the expected length of the
-		 * message, we now that this chunk most contain the last part of the
-		 * first message, and the first chunk of the new message.
+		 * message, we know that this chunk most contain the last part of the
+		 * original message, and the first chunk of a new message.
 		 */
 		if ( final_length > m->len ) {
 			uint64_t next_len = final_length-m->len;
@@ -105,8 +105,9 @@ uint64_t getRemainingMessage(struct node *n, uint64_t msg_length) {
 	return remaining_length;
 }
 
-int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
-	struct message *m = n->message;
+ws_connection_close parseMessage(char *buffer, uint64_t buffer_length, 
+		ws_client *n) {
+	ws_message *m = n->message;
 	int length, has_mask, skip, j;
 	uint64_t message_length = m->len, i, remaining_length = 0, buf_len;
 
@@ -120,7 +121,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		printf("Message didn't have masked data, received: 0x%x\n\n", 
 				buffer[1]);
 		fflush(stdout);
-		return -1;
+		return CLOSE_PROTOCOL;
 	}
 
 	/**
@@ -160,7 +161,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 	} else {
 		printf("Obscure length received from client: %d\n\n", length);
 		fflush(stdout);
-		return -1;	
+		return CLOSE_BIG;	
 	}
 
 	/**
@@ -170,7 +171,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 	if (m->len > MAXMESSAGE) {
 		printf("Message received was bigger than MAXMESSAGE.");
 		fflush(stdout);
-		return -1;
+		return CLOSE_BIG;
 	}
 	
 	/**
@@ -181,7 +182,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 	if (m->msg == NULL) {
 		printf("2: Couldn't allocate memory.\n\n");
 		fflush(stdout);
-		return -1;
+		return CLOSE_UNEXPECTED;
 	}
 	memset(m->msg, '\0', (m->len + 1));
 
@@ -198,7 +199,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		if (m->next == NULL) {
 			printf("3: Couldn't allocate memory.\n\n");
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 		memset(m->next, '\0', next_len);
 		memcpy(m->next, buffer + (m->len+skip), next_len);
@@ -216,7 +217,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 	 */
 	if (message_length < m->len) {
 		if ((remaining_length = getRemainingMessage(n, message_length)) == 0) {
-			return -1;
+			return CLOSE_POLICY;
 		}
 	}
 
@@ -230,7 +231,7 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		printf("Message does not fit. Expected: %d but got %d\n\n", 
 				(int) m->len, (int) message_length);
 		fflush(stdout);
-		return -1;
+		return CLOSE_POLICY;
 	}
 
 	/**
@@ -240,14 +241,15 @@ int parseMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		m->msg[j] = m->msg[i] ^ m->mask[j % 4];
 	}
 
-	return 0;
+	return CONTINUE;
 }
 
 /**
  * This function is used to get the whole message when using the Hybi-00
  * standard.
  */
-int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
+ws_connection_close getWholeMessage(char *buffer, uint64_t buffer_length, 
+		ws_client *n) {
 	uint64_t msg_length = buffer_length, i, j;
 	int buf_length;
 	char buf[BUFFERSIZE];
@@ -260,12 +262,12 @@ int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 	if (n->message->msg == NULL) {
 		printf("4: Couldn't allocate memory.\n\n");
 		fflush(stdout);
-		return -1;
+		return CLOSE_UNEXPECTED;
 	}
 	memset(n->message->msg, '\0', buffer_length);
 
 	/**
-	 * If a byte is equal to zero, we now that we have reached the end of
+	 * If a byte is equal to zero, we know that we have reached the end of
 	 * the message.
 	 */
 	for (i = 0; i < buffer_length; i++) {	
@@ -273,7 +275,7 @@ int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 			n->message->msg[i] = buffer[i];
 		} else {
 			n->message->len = strlen(n->message->msg);
-			return 0;
+			return CONTINUE;
 		}
 	}
 
@@ -287,7 +289,7 @@ int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		if ((buf_length = recv(n->socket_id, buf, BUFFERSIZE, 0)) <= 0) {
 			printf("Didn't receive any message from client.\n\n");
 			fflush(stdout);
-			return -1;	
+			return CLOSE_PROTOCOL;	
 		}
 		msg_length += buf_length;
 	
@@ -295,7 +297,7 @@ int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 		if (temp == NULL) {
 			printf("5: Couldn't allocate memory.\n\n");
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 		n->message->msg = temp;
 		memset(n->message->msg+(msg_length-buf_length), '\0', buf_length);
@@ -306,19 +308,19 @@ int getWholeMessage(char *buffer, uint64_t buffer_length, struct node *n) {
 				n->message->msg[i] = buf[j];
 			} else {
 				n->message->len = strlen(n->message->msg);
-				return 0;
+				return CONTINUE;
 			}
 		}
 	} while( msg_length < MAXMESSAGE );
 
-	return -1;
+	return CLOSE_UNEXPECTED;
 }
 
 /**
  * This function is split into 2. We would like to support different websocket
  * standards and therefore we encode the message as both RFC6455 and Hybi-00.
  */
-int encodeMessage(struct message *m) {
+ws_connection_close encodeMessage(ws_message *m) {
 	uint64_t length = m->len;
 
 	/**
@@ -330,7 +332,7 @@ int encodeMessage(struct message *m) {
 		if (m->enc == NULL) {
 			printf("6: Couldn't allocate memory.\n\n");
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 		m->enc[0] = '\x81';
 		m->enc[1] = m->len;
@@ -342,7 +344,7 @@ int encodeMessage(struct message *m) {
 		if (m->enc == NULL) {
 			printf("7: Couldn't allocate memory.\n\n");
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 		m->enc[0] = '\x81';
 		m->enc[1] = 126;
@@ -356,7 +358,7 @@ int encodeMessage(struct message *m) {
 		if (m->enc == NULL) {
 			printf("8: Couldn't allocate memory.\n\n");
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 		m->enc[0] = '\x81';
 		m->enc[1] = 127;
@@ -373,33 +375,40 @@ int encodeMessage(struct message *m) {
 	if (m->hybi00 == NULL) {
 		printf("9: Couldn't allocate memory.\n\n");
 		fflush(stdout);
-		return -1;
+		return CLOSE_UNEXPECTED;
 	}
 	memset(m->hybi00, '\0', m->len+2);
 	m->hybi00[0] = 0;
 	m->hybi00[m->len+1] = '\xFF';
 	memcpy(m->hybi00+1, m->msg, m->len);
 
-	return 0;
+	return CONTINUE;
 }
 
-int communicate(struct node *n, char *next, uint64_t next_len) {
+ws_connection_close communicate(ws_client *n, char *next, uint64_t next_len) {
 	int buffer_length = 0;
 	uint64_t buf_len;
 	char buffer[BUFFERSIZE];
+	ws_connection_close status;
 	n->message = message_new();
 
-	if (n->headers == NULL || n->headers->type == NULL) {
-		printf("We've fucked up somewhere, client didn't have type");
+	if (n == NULL) {
+		printf("The client was not available anymore.");
 		fflush(stdout);
-		return -1;
+		return CLOSE_PROTOCOL;	
+	}
+
+	if (n->headers == NULL) {
+		printf("The header was not available anymore.");
+		fflush(stdout);
+		return CLOSE_PROTOCOL;	
 	}
 
 	/**
 	 * If we are dealing with a Hypi-00 connection, we have to handle the
 	 * message receiving differently than the RFC6455 standard.
 	 **/	
-	if ( strncasecmp(n->headers->type, "hybi-00", 7) == 0 ) {
+	if ( n->headers->type == HYBI00 ) {
 
 		memset(buffer, '\0', BUFFERSIZE);
 
@@ -409,7 +418,7 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 		if ((buffer_length = recv(n->socket_id, buffer, BUFFERSIZE, 0)) <= 0) {
 			printf("Didn't receive any message from client.\n\n");
 			fflush(stdout);
-			return -1;	
+			return CLOSE_PROTOCOL;
 		}
 
 		buf_len = buffer_length;
@@ -425,26 +434,26 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 				  "reports that he is shutting down.\n\n", n->socket_id, 
 				  (char *) n->client_ip);
 			fflush(stdout);
-			return -1;	
+
+			return CLOSE_NORMAL;	
 		} else if (buffer[0] == '\x00') {
 			/**
 			 * Receive rest of the message.
 			 */
-			if ( getWholeMessage(buffer+1, buf_len-1, n) < 0 ) {
-				return -1;
+			if ( (status = getWholeMessage(buffer+1, buf_len-1, n)) != 
+					CONTINUE ) {
+				return status; 
 			}
 			
 			/**	
 			 * Encode the message to make it ready to be send to all others.
 			 */
-			if (encodeMessage(n->message) < 0) {
-				return -1;
+			if ( (status = encodeMessage(n->message)) != CONTINUE) {
+				return status;
 			}
 		}
-	} else if ( strncasecmp(n->headers->type, "hybi-07", 7) == 0 
-			|| strncasecmp(n->headers->type, "RFC6455", 7) == 0 
-			|| strncasecmp(n->headers->type, "hybi-10", 7) == 0 ) {
-	
+	} else if ( n->headers->type == HYBI07 || n->headers->type == RFC6455 
+			|| n->headers->type == HYBI10 ) {
 		/*
 		 * Receiving and decoding the message.
 		 */
@@ -464,7 +473,7 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 								(BUFFERSIZE-next_len), 0)) <= 0) {
 					printf("Didn't receive any message from client.\n\n");
 					fflush(stdout);
-					return -1;	
+					return CLOSE_PROTOCOL;	
 				}
 			}
 
@@ -481,8 +490,8 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 			/**
 			 * Get the full message and remove the masking from it.
 			 */
-			if (parseMessage(buffer, buf_len, n) < 0) {
-				return -1;
+			if ( (status = parseMessage(buffer, buf_len, n)) != CONTINUE) {
+				return status;
 			}
 
 			next_len = 0;
@@ -502,21 +511,21 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 				  (char *) n->client_ip);
 			fflush(stdout);
 			
-			send(n->socket_id, (char *) '\x88', 1, 0);
-			return -1;
+			return CLOSE_NORMAL;
 		} else if (n->message->opcode[0] == '\x8A' || n->message->opcode[0] == '\x0A') {
 			/**
 			 * PONG: Client is still alive
 			 **/
 			printf("Pong arrived\n\n");
 			fflush(stdout);	
+			return CLOSE_TYPE;
 		} else if (n->message->opcode[0] == '\x89' || n->message->opcode[0] == '\x09') {
 			/** 
 			 * PING: I am still alive
 			 **/
-			send(n->socket_id, (char *) '\x8A', 1, 0);
 			printf("Ping arrived\n\n");
 			fflush(stdout);
+			return CLOSE_TYPE;
 		} else if (n->message->opcode[0] == '\x02' || n->message->opcode[0] == '\x82') {
 			/** 
 			 * BINARY: data. 
@@ -524,19 +533,20 @@ int communicate(struct node *n, char *next, uint64_t next_len) {
 			 **/
 			printf("Binary data arrived\n\n");
 			fflush(stdout);
+			return CLOSE_TYPE;
 		} else if (n->message->opcode[0] == '\x01' || n->message->opcode[0] == '\x81') {
 			/** 
 			 * TEXT: encode the message to make it ready to be send to all 
 			 * 		 others.
 			 **/
-			if (encodeMessage(n->message) > 0) {
-				return -1;
+			if ( (status = encodeMessage(n->message)) != CONTINUE) {
+				return status;
 			}
 		} else {
 			printf("Something very strange happened, received opcode: 0x%x\n\n", 
 					n->message->opcode[0]);
 			fflush(stdout);
-			return -1;
+			return CLOSE_UNEXPECTED;
 		}
 	}
 

@@ -45,5 +45,7 @@ SOFTWARE.
 #define KEYSIZE 16 				/* The size of the key in Hybi-00 */
 #define BUFFERSIZE 8192 		/* Buffer size = 8KB */
 #define MAXMESSAGE 1048576 		/* Max size message = 1MB */
+#define ORIGIN_REQUIRED 0 		/* If this value is other than 0, client must 
+								   supply origin in header */
 
 #endif

@@ -26,16 +26,12 @@ SOFTWARE.
  * This function is called when the server experience an error. This will
  * free the necessary allocations and then shutdown the server.
  */
-void server_error(const char *message, int server_socket, struct list *l, 
-		struct list *j) {
-	printf("\nServer experienced an error: %s\n"
-   		   "Shutting down ...\n\n", message);
+void server_error(const char *message, int server_socket, ws_list *l) {
+	shutdown(server_socket, SHUT_RD);
+
+	printf("\nServer experienced an error: \n\t%s\nShutting down ...\n\n", 
+			message);
 	fflush(stdout);
-	
-	if (j != NULL) {
-		list_free(j);
-		j = NULL;
-	}
 
 	if (l != NULL) {
 		list_free(l);
@@ -47,23 +43,51 @@ void server_error(const char *message, int server_socket, struct list *l,
 }
 
 /**
- * This function is called when the client experience an error. This will
- * free all the allocations done by the specific client, send a closning frame
- * to the client, and then shut the TCP connection between client and server
- * down.
+ * This function is called when some error happens during the handshake. 
+ * This will free all the allocations done by the specific client, send a 
+ * http error status to the client, and then shut the TCP connection between 
+ * client and server down.
+ *
+ * @param type(const char *) message [The error message for the server]
+ * @param type(const char *) status [The http error status code]
+ * @param type(ws_client *) n [Client]
  */
-void client_error(const char *errormessage, const char *status, 
-		struct node *n) {
-	
-	printf("\nClient experienced an error: %s\n"
-		   "Shutting him down ...\n\n", errormessage);
+void handshake_error(const char *message, const char *status, ws_client *n) {
+	printf("\nClient experienced an error: \n\t%s\nShutting him down ...\n\n", 
+			message);
 	fflush(stdout);	
 
 	send(n->socket_id, status, strlen(status), 0);
+	shutdown(n->socket_id, SHUT_RDWR);
 	
 	if (n != NULL) {
-		node_free(n);
+		client_free(n);
+		close(n->socket_id);
+		free(n);
+		n = NULL;
+	}
+}
 
+/**
+ * This function is called when the client experience an error. This will
+ * free all the allocations done by the specific client, send a closing frame
+ * to the client, and then shut the TCP connection between client and server
+ * down.
+ *
+ * @param type(const char *) message [The error message for the server]
+ * @param type(ws_connection_close) c [The status of the closing]
+ * @param type(ws_client *) n [Client] 
+ */
+void client_error(const char *message, ws_connection_close c, ws_client *n) {
+	printf("\nClient experienced an error: \n\t%s\nShutting him down ...\n\n", 
+			message);
+	fflush(stdout);	
+	
+	ws_closeframe(n, c);
+	shutdown(n->socket_id, SHUT_RDWR);
+
+	if (n != NULL) {
+		client_free(n);
 		close(n->socket_id);
 		free(n);
 		n = NULL;

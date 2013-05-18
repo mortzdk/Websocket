@@ -25,28 +25,42 @@ SOFTWARE.
 
 #include "Includes.h"
 
-enum state {
-	WS_ERROR,
-	WS_LOADING,
-	WS_READING,
-	WS_COMPLETE
-};
+typedef enum {
+	CONTINUE,
+	CLOSE_NORMAL=1000, 		/* The connection */
+	CLOSE_SHUTDOWN=1001, 	/* Server is shutting down */
+	CLOSE_PROTOCOL=1002, 	/* Some error in the protocol has happened */
+	CLOSE_TYPE=1003, 		/* The type (text, binary) was not supported */
+	CLOSE_UTF8=1007, 		/* The message wasn't in UTF8 */
+	CLOSE_POLICY=1008, 		/* The policy of the server has been broken */
+	CLOSE_BIG=1009,			/* The messages received is too big */
+	CLOSE_UNEXPECTED=1011 	/* Unexpected happened */
+} ws_connection_close;
 
-struct header {
+typedef enum {
+	UNKNOWN,
+	RFC6455,
+	HYBI10,
+	HYBI07,
+	HYBI00,
+	HIXIE75,
+	HTTP
+} ws_protocol;
+
+typedef struct {
 	char *host;
 	char *connection;	
 	char *key;
 	char *key1;
 	char *key2;
 	char *key3;
-	char *version;
-	char *type;
 	char *protocol;
 	char *origin;
 	char *upgrade;
 	char *get;
 	char *accept;
 	char *extension;
+	int version;
 	int host_len;
 	int protocol_len;
 	int origin_len;
@@ -54,26 +68,10 @@ struct header {
 	int accept_len;
 	int extension_len;
 	int get_len;
-};
+	ws_protocol type;
+} ws_header;
 
-struct node {
-	int socket_id;
-	pthread_t thread_id;
-	char *client_ip;
-	char *string;
-	struct header *headers;
-	struct node *next;
-	struct message *message;
-};
-
-struct list {
-	int len;
-	struct node *first;
-	struct node *last;	
-	pthread_mutex_t lock;
-};
-
-struct message {
+typedef struct {
 	char opcode[1];
 	char mask[4];
 	uint64_t len;
@@ -83,25 +81,56 @@ struct message {
 	char *next;
 	char *enc;
 	char *hybi00;
-};
-	
-struct list *list_new(void);
-void list_free(struct list *l);
-void list_add(struct list *l, struct node *n);
-void list_remove(struct list *l, struct node *r);
-void list_remove_all(struct list *l);
-void list_print(struct list *l);
-void list_multicast(struct list *l, struct node *n);
-void list_multicast_one(struct list *l, struct node *n, struct message *m);
-void list_multicast_all(struct list *l, struct message *m);
-struct node *list_get(struct list *l, char *addr, int socket);
-void list_send(struct node *n, struct message *m);
+} ws_message;
 
-struct node *node_new(int sock, char *addr);
-struct header *header_new();
-struct message *message_new();
+typedef struct ws_client_n {
+	int socket_id;
+	char *client_ip;
+	char *string;
+	pthread_t thread_id;
+	ws_header *headers;
+	ws_message *message;
+	struct ws_client_n *next;
+} ws_client;
 
-void header_free(struct header *h);
-void message_free(struct message *m);
-void node_free(struct node *n);
+typedef struct {
+	int len;
+	ws_client *first;
+	ws_client *last;	
+	pthread_mutex_t lock;
+} ws_list;
+
+/**
+ * List functions.
+ */
+ws_list *list_new(void);
+ws_client *list_get(ws_list *l, char *addr, int socket);
+void list_free(ws_list *l);
+void list_add(ws_list *l, ws_client *n);
+void list_remove(ws_list *l, ws_client *r);
+void list_remove_all(ws_list *l);
+void list_print(ws_list *l);
+void list_multicast(ws_list *l, ws_client *n);
+void list_multicast_one(ws_list *l, ws_client *n, ws_message *m);
+void list_multicast_all(ws_list *l, ws_message *m);
+
+/**
+ * Websocket functions.
+ */
+void ws_closeframe(ws_client *n, ws_connection_close c);
+void ws_send(ws_client *n, ws_message *m);
+
+/**
+ * New structures.
+ */
+ws_client *client_new(int sock, char *addr);
+ws_header *header_new();
+ws_message *message_new();
+
+/**
+ * Free structures
+ */
+void header_free(ws_header *h);
+void message_free(ws_message *m);
+void client_free(ws_client *n);
 #endif

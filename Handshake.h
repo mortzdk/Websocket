@@ -56,6 +56,6 @@ SOFTWARE.
 #define ACCEPT_LOCATION_V2 "Sec-WebSocket-Location: "
 #define ACCEPT_LOCATION_V2_LEN 24
 
-int parseHeaders(char *string, struct node *n, int port);
-int sendHandshake(struct node *n);
+int parseHeaders(char *string, ws_client *n, int port);
+int sendHandshake(ws_client *n);
 #endif

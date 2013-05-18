@@ -25,6 +25,6 @@ SOFTWARE.
 
 #include "Datastructures.h"
 
-int encodeMessage(struct message *m);
-int communicate(struct node *n, char *next, uint64_t next_len);
+ws_connection_close encodeMessage(ws_message *m);
+ws_connection_close communicate(ws_client *n, char *next, uint64_t next_len);
 #endif
