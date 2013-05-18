@@ -338,6 +338,9 @@ void *handleClient(void *args) {
 			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0
 			&& strncmp("\n\n", n->string + (string_length-8-3), 2) != 0 );
 	
+	printf("User connected with the following headers:\n%s\n\n", n->string);
+	fflush(stdout);
+
 	ws_header *h = header_new();
 
 	if (h == NULL) {
@@ -374,9 +377,10 @@ void *handleClient(void *args) {
 		}
 
 		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		if (n->headers->protocol != NULL && 
-				strncasecmp(n->headers->protocol, "chat", 4) == 0) {
+		if (n->headers->protocol == CHAT) {
 			list_multicast(l, n);
+		} else if (n->headers->protocol == ECHO) {
+			list_multicast_one(l, n, n->message);
 		} else {
 			list_multicast_one(l, n, n->message);
 		}

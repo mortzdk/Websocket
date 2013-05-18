@@ -199,7 +199,8 @@ int isNeedleInHaystack(char *needle, char *file_name, int port){
 
 int parseHeaders(char *string, ws_client *n, int port){
 	ws_header *h = n->headers;
-	char* token = strtok(string, "\r\n");
+	char *token = strtok(string, "\r\n");
+	char *resource;
 	int i;
 
 	/**
@@ -209,6 +210,15 @@ int parseHeaders(char *string, ws_client *n, int port){
 	if (token != NULL) {
 		h->get = token;
 		h->get_len = strlen(h->get);
+
+		resource = (char *) getMemory("", h->get_len-13);
+		if (resource == NULL) {
+			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
+			return -1;
+		}
+		memcpy(resource, h->get+4, h->get_len-13);
+		h->resourcename = resource;
+		h->resourcename_len = strlen(h->resourcename);
 
 		while ( token != NULL ) {
 			if ( strncasecmp("Sec-WebSocket-Version: ", token, 23) == 0 ) {
@@ -230,8 +240,25 @@ int parseHeaders(char *string, ws_client *n, int port){
 				h->connection = token + 12;
 			} else if ( strncasecmp("Sec-WebSocket-Protocol: ", token, 
 						24) == 0 ) {
-				h->protocol = token + 24;
-				h->protocol_len = strlen(h->protocol);
+				if ( strstr(token+24, "chat") != NULL ) {
+					h->protocol = CHAT;	
+					h->protocol_string = (char *) getMemory("chat", 5);
+					if (h->protocol_string == NULL) {
+						handshake_error("Couldn't allocate memory.", 
+								ERROR_INTERNAL, n);
+						return -1;					
+					}
+					h->protocol_len = strlen(h->protocol_string);
+				} else if ( strstr(token+24, "echo") != NULL ) {
+					h->protocol = ECHO;
+					h->protocol_string = (char *) getMemory("echo", 5);
+					if (h->protocol_string == NULL) {
+						handshake_error("Couldn't allocate memory.", 
+								ERROR_INTERNAL, n);
+						return -1;					
+					}
+					h->protocol_len = strlen(h->protocol_string);
+				}
 			} else if ( strncasecmp("Sec-WebSocket-Origin: ", token, 
 						22) == 0) {
 				h->origin = token + 22;
@@ -247,8 +274,25 @@ int parseHeaders(char *string, ws_client *n, int port){
 				h->host_len = strlen(h->host);
 			} else if ( strncasecmp("WebSocket-Protocol: ", token, 20) == 0 ) {
 				h->type = HIXIE75;
-				h->protocol = token + 20;
-				h->protocol_len = strlen(h->protocol);
+				if ( strstr(token+20, "chat") != NULL ) {
+					h->protocol = CHAT;	
+					h->protocol_string = (char *) getMemory("chat", 5);
+					if (h->protocol_string == NULL) {
+						handshake_error("Couldn't allocate memory.", 
+								ERROR_INTERNAL, n);
+						return -1;					
+					}
+					h->protocol_len = strlen(h->protocol_string);
+				} else if ( strstr(token+20, "echo") != NULL ) {
+					h->protocol = ECHO;
+					h->protocol_string = (char *) getMemory("echo", 5);
+					if (h->protocol_string == NULL) {
+						handshake_error("Couldn't allocate memory.", 
+								ERROR_INTERNAL, n);
+						return -1;					
+					}
+					h->protocol_len = strlen(h->protocol_string);
+				}
 			} else if ( strncasecmp("Sec-WebSocket-Key1: ", token, 20) == 0 ) {
 				h->type = HYBI00;
 				h->key1 = token + 20;
@@ -289,7 +333,7 @@ int parseHeaders(char *string, ws_client *n, int port){
 	 * If the client header contained an origin, we check whether we want to
 	 * accept the origin.
 	 */
-	if (h->origin != NULL) {
+	if (h->origin != NULL && ORIGIN_REQUIRED) {
 		i = isNeedleInHaystack(h->origin, "Origins.dat", 0);
 
 		if (i < 0) {
@@ -484,7 +528,7 @@ int sendHandshake(ws_client *n) {
 			+ ACCEPT_CONNECTION_LEN
 			+ ACCEPT_KEY_LEN + n->headers->accept_len 
 			+ (2*3);
-		if (n->headers->protocol != NULL) {
+		if (n->headers->protocol != NONE) {
 			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len+2;
 		}
 		response = getMemory("", length);
@@ -509,11 +553,12 @@ int sendHandshake(ws_client *n) {
 		memcpy(response + memlen, ACCEPT_CONNECTION, ACCEPT_CONNECTION_LEN);
 		memlen += ACCEPT_CONNECTION_LEN;
 		
-		if (n->headers->protocol != NULL) {
+		if (n->headers->protocol != NONE) {
 			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, ACCEPT_PROTOCOL_V2_LEN);
 			memlen += ACCEPT_PROTOCOL_V2_LEN;
 
-			memcpy(response + memlen, n->headers->protocol, n->headers->protocol_len);
+			memcpy(response + memlen, n->headers->protocol_string, 
+					n->headers->protocol_len);
 			memlen += n->headers->protocol_len;
 
 			memcpy(response + memlen, "\r\n", 2);
@@ -529,6 +574,9 @@ int sendHandshake(ws_client *n) {
 		memcpy(response + memlen, "\r\n\r\n", 4);
 		memlen += 4;
 
+		printf("Server responds with the following headers:\n%s\n", response);
+		fflush(stdout);
+
 		if (memlen != length) {
 			free(response);
 			handshake_error("We've fucked the counting up!", ERROR_INTERNAL, n);
@@ -541,15 +589,13 @@ int sendHandshake(ws_client *n) {
 			+ ACCEPT_LOCATION_V2_LEN + 5 
 			+ n->headers->host_len
 			+ n->headers->accept_len 
-			+ (2*3) + 1;
-	
+			+ n->headers->resourcename_len
+			+ (2*3);
 		if (n->headers->origin != NULL) {
 			length += ACCEPT_ORIGIN_V2_LEN + n->headers->origin_len + 2;
 		}
-
-		if (n->headers->protocol != NULL) {
-			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len 
-				+ 2;
+		if (n->headers->protocol != NONE) {
+			length += ACCEPT_PROTOCOL_V2_LEN + n->headers->protocol_len + 2;
 		}
 
 		response = getMemory("", length);
@@ -595,17 +641,19 @@ int sendHandshake(ws_client *n) {
 		memcpy(response + memlen, n->headers->host, n->headers->host_len);
 		memlen += n->headers->host_len;
 
-		memcpy(response + memlen, "/", 1);
-		memlen += 1;
+		memcpy(response + memlen, n->headers->resourcename, 
+				n->headers->resourcename_len);
+		memlen += n->headers->resourcename_len;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		if (n->headers->protocol != NULL) {
+		if (n->headers->protocol != NONE) {
 			memcpy(response + memlen, ACCEPT_PROTOCOL_V2, ACCEPT_PROTOCOL_V2_LEN);
 			memlen += ACCEPT_PROTOCOL_V2_LEN;
 
-			memcpy(response + memlen, n->headers->protocol, n->headers->protocol_len);
+			memcpy(response + memlen, n->headers->protocol_string, 
+					n->headers->protocol_len);
 			memlen += n->headers->protocol_len;
 
 			memcpy(response + memlen, "\r\n", 2);
@@ -618,6 +666,9 @@ int sendHandshake(ws_client *n) {
 		memcpy(response + memlen, n->headers->accept, n->headers->accept_len);
 		memlen += n->headers->accept_len;
 
+		printf("Server responds with the following headers:\n%s\n", response);
+		fflush(stdout);
+
 		if (memlen != length) {
 			free(response);
 			handshake_error("We've fucked the counting up!", ERROR_INTERNAL, n);
@@ -626,16 +677,15 @@ int sendHandshake(ws_client *n) {
 	} else if ( n->headers->type == HIXIE75 ) {
 		length = ACCEPT_HEADER_V1_LEN 
 			+ ACCEPT_UPGRADE_LEN + n->headers->upgrade_len
-			+ ACCEPT_CONNECTION_LEN 	
+			+ ACCEPT_CONNECTION_LEN
 			+ ACCEPT_LOCATION_V1_LEN + 5 
 			+ n->headers->host_len
-			+ (2*3) + 1;
-	
+			+ n->headers->resourcename_len
+			+ (2*3);
 		if (n->headers->origin != NULL) {
 			length += ACCEPT_ORIGIN_V1_LEN + n->headers->origin_len + 2;
 		}
-
-		if (n->headers->protocol != NULL) {
+		if (n->headers->protocol != NONE) {
 			length += ACCEPT_PROTOCOL_V1_LEN + n->headers->protocol_len + 2;
 		}
 
@@ -682,18 +732,19 @@ int sendHandshake(ws_client *n) {
 		memcpy(response + memlen, n->headers->host, n->headers->host_len);
 		memlen += n->headers->host_len;
 
-		memcpy(response + memlen, "/", 1);
-		memlen += 1;
+		memcpy(response + memlen, n->headers->resourcename, 
+				n->headers->resourcename_len);
+		memlen += n->headers->resourcename_len;
 
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
 
-		if (n->headers->protocol != NULL) {
+		if (n->headers->protocol != NONE) {
 			memcpy(response + memlen, ACCEPT_PROTOCOL_V1, 
 					ACCEPT_PROTOCOL_V1_LEN);
 			memlen += ACCEPT_PROTOCOL_V1_LEN;
 
-			memcpy(response + memlen, n->headers->protocol, 
+			memcpy(response + memlen, n->headers->protocol_string, 
 					n->headers->protocol_len);
 			memlen += n->headers->protocol_len;
 
@@ -703,6 +754,9 @@ int sendHandshake(ws_client *n) {
 		
 		memcpy(response + memlen, "\r\n", 2);
 		memlen += 2;
+
+		printf("Server responds with the following headers:\n%s\n", response);
+		fflush(stdout);
 
 		if (memlen != length) {
 			free(response);

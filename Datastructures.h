@@ -45,6 +45,12 @@ typedef enum {
 	HYBI00,
 	HIXIE75,
 	HTTP
+} ws_type;
+
+typedef enum {
+	NONE,
+	CHAT,
+	ECHO
 } ws_protocol;
 
 typedef struct {
@@ -54,12 +60,13 @@ typedef struct {
 	char *key1;
 	char *key2;
 	char *key3;
-	char *protocol;
 	char *origin;
 	char *upgrade;
 	char *get;
 	char *accept;
 	char *extension;
+	char *resourcename;
+	char *protocol_string;
 	int version;
 	int host_len;
 	int protocol_len;
@@ -68,7 +75,9 @@ typedef struct {
 	int accept_len;
 	int extension_len;
 	int get_len;
-	ws_protocol type;
+	int resourcename_len;
+	ws_type type;
+	ws_protocol protocol;
 } ws_header;
 
 typedef struct {

@@ -391,12 +391,14 @@ ws_header *header_new () {
 		h->key2 = NULL;
 		h->key3 = NULL;
 		h->type = UNKNOWN;
-		h->protocol = NULL;
+		h->protocol = NONE;
 		h->origin = NULL;
 		h->upgrade = NULL;
 		h->get = NULL;
 		h->accept = NULL;
 		h->extension = NULL;
+		h->resourcename = NULL;
+		h->protocol_string = NULL;
 		h->version = 0;
 		h->host_len = 0;
 		h->protocol_len = 0;
@@ -405,6 +407,7 @@ ws_header *header_new () {
 		h->accept_len = 0;
 		h->extension_len = 0;
 		h->get_len = 0;
+		h->resourcename_len = 0;
 	}
 
 	return h;
@@ -442,6 +445,16 @@ void header_free(ws_header *h) {
 	if (h->accept != NULL) {
 		free(h->accept);
 		h->accept = NULL;
+	}
+
+	if (h->resourcename != NULL) {
+		free(h->resourcename);
+		h->resourcename = NULL;
+	}
+
+	if (h->protocol_string != NULL) {
+		free(h->protocol_string);
+		h->protocol_string = NULL;
 	}
 }
 
