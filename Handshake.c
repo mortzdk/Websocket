@@ -217,13 +217,13 @@ int parseHeaders(char *string, ws_client *n, int port){
 					n);
 			return -1;
 		}
-
-		resource = (char *) getMemory("", h->get_len-13);
+		
+		resource = (char *) getMemory(h->get+4, h->get_len-12);
 		if (resource == NULL) {
 			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
 		}
-		memcpy(resource, h->get+4, h->get_len-13);
+		resource[h->get_len-13] = '\0';
 		h->resourcename = resource;
 		h->resourcename_len = strlen(h->resourcename);
 
