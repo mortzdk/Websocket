@@ -282,7 +282,7 @@ void *handleClient(void *args) {
 	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
 	pthread_cleanup_push(&cleanup_client, args);
 
-	int buffer_length = 0, string_length = 1;
+	int buffer_length = 0, string_length = 1, reads = 1;
 
 	ws_client *n = args;
 	n->thread_id = pthread_self();
@@ -318,6 +318,12 @@ void *handleClient(void *args) {
 			pthread_exit((void *) EXIT_FAILURE);
 		}
 
+		if (reads == 1 && strlen(buffer) < 14) {
+			handshake_error("SSL request is not supported yet.", 
+					ERROR_NOT_IMPL, n);
+			pthread_exit((void *) EXIT_FAILURE);
+		}
+
 		string_length += buffer_length;
 
 		char *tmp = realloc(n->string, string_length);
@@ -333,6 +339,7 @@ void *handleClient(void *args) {
 				buffer_length+1);
 		memcpy(n->string + (string_length-buffer_length-1), buffer, 
 				buffer_length);
+		reads++;
 	} while( strncmp("\r\n\r\n", n->string + (string_length-5), 4) != 0 
 			&& strncmp("\n\n", n->string + (string_length-3), 2) != 0
 			&& strncmp("\r\n\r\n", n->string + (string_length-8-5), 4) != 0

@@ -211,6 +211,13 @@ int parseHeaders(char *string, ws_client *n, int port){
 		h->get = token;
 		h->get_len = strlen(h->get);
 
+		if ( strncasecmp("GET /", h->get, 5) != 0 || 
+				strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 ) {
+			handshake_error("The headerline of the request was invalid.", ERROR_BAD, 
+					n);
+			return -1;
+		}
+
 		resource = (char *) getMemory("", h->get_len-13);
 		if (resource == NULL) {
 			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
@@ -360,11 +367,11 @@ int parseHeaders(char *string, ws_client *n, int port){
 	if (h->type == UNKNOWN && h->version == 0 && h->key1 == NULL 
 			&& h->key2 == NULL && h->key3 == NULL && h->key == NULL
 			&& h->upgrade != NULL && h->connection != NULL && h->host != NULL
-			&& h->get != NULL && h->origin != NULL) {
+			&& h->origin != NULL) {
 		h->type = HIXIE75;
 	}
 
-	if (h->type == UNKNOWN && h->get != NULL) {
+	if (h->type == UNKNOWN) {
 		h->type = HTTP;
 	}
 
@@ -380,18 +387,10 @@ int parseHeaders(char *string, ws_client *n, int port){
 		return -1;
 	}
 
-	if (h->get == NULL || h->upgrade == NULL || h->host == NULL 
-			|| h->connection == NULL) {
+	if (h->upgrade == NULL || h->host == NULL || h->connection == NULL) {
 		handshake_error("The client did not send the required websocket headers.", 
 				ERROR_BAD, n);
 		return -1;	
-	}
-
-	if (strncasecmp(" HTTP/1.1", h->get+(h->get_len-9), 9) != 0 
-			|| strncasecmp("GET /", h->get, 5) != 0) {
-		handshake_error("The headerline of the request was invalid.", ERROR_BAD, 
-				n);
-		return -1;
 	}
 
 	if (strncasecmp("websocket", h->upgrade, 9) != 0) {
