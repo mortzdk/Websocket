@@ -363,13 +363,13 @@ ws_client *client_new (int sock, char *addr) {
 	ws_client *n = (ws_client *) malloc(sizeof(ws_client));
 
 	if (n != NULL) {
-		n->socket_id = sock;
-		n->thread_id = 0;
-		n->client_ip = addr;
+		n->socket_id = sock;		
+		n->client_ip = addr;		
 		n->string = NULL;
-		n->headers = NULL;
-		n->next = NULL;
+		n->thread_id = 0;
+		n->headers = NULL;		
 		n->message = NULL;
+		n->next = NULL;
 	}
 
 	return n;
@@ -389,11 +389,9 @@ ws_header *header_new () {
 		h->key = NULL;
 		h->key1 = NULL;
 		h->key2 = NULL;
-		h->key3 = NULL;
-		h->type = UNKNOWN;
-		h->protocol = NONE;
-		h->origin = NULL;
-		h->upgrade = NULL;
+		h->key3 = NULL;		
+		h->origin = NULL;		
+		h->upgrade = NULL;		
 		h->get = NULL;
 		h->accept = NULL;
 		h->extension = NULL;
@@ -407,7 +405,9 @@ ws_header *header_new () {
 		h->accept_len = 0;
 		h->extension_len = 0;
 		h->get_len = 0;
-		h->resourcename_len = 0;
+		h->resourcename_len = 0;		
+		h->type = UNKNOWN;
+		h->protocol = NONE;
 	}
 
 	return h;
@@ -468,15 +468,15 @@ void message_free(ws_message *m) {
 		free(m->msg);
 		m->msg = NULL;
 	}
-	
-	if (m->enc != NULL) {
-		free(m->enc);
-		m->enc = NULL;
-	}
 
 	if (m->next != NULL) {
 		free(m->next);
 		m->next = NULL;
+	}
+	
+	if (m->enc != NULL) {
+		free(m->enc);
+		m->enc = NULL;
 	}
 
 	if (m->hybi00 != NULL) {
