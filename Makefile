@@ -1,43 +1,219 @@
-CC 		= gcc
-CFLAGS 	= -Wall -Wextra -Werror -pedantic -ggdb -DRUPIFY -g
+#Shell
+SHELL = /bin/bash
 
-INCL 	= Handshake.c
-OBJECTS = Errors.o Datastructures.o Communicate.o sha1.o md5.o base64.o utf8.o
-EXEC 	= Websocket
+#Executeable name
+NAME = WSServer
 
-.PHONY: Websocket
+#Compiler
+CC = gcc
 
-all: clean Websocket
+#Version
+VER = $(shell git describe --abbrev=0 --tags && echo $? || echo "2.0.0")
 
-Websocket: $(OBJECTS) 
-	$(CC) $(CFLAGS) $(INCL) $(OBJECTS) -lpthread $(EXEC).c -o $(EXEC) -std=c99
+#Debug or Release
+PROFILE = -Og -g -DNDEBUG
+DEBUG = -Og -g
+RELEASE = -O3 -funroll-loops -DNDEBUG
+SPACE = -Os -DNDEBUG
+EXEC = $(DEBUG)
 
+#Compiler options
+CFLAGS = $(EXEC) \
+		 -fno-exceptions \
+		 -fPIC \
+		 -fstack-protector \
+		 -fvisibility=hidden \
+		 -march=native \
+		 -MMD \
+		 -pedantic \
+		 -pedantic-errors \
+		 -pipe \
+		 -W \
+		 -Wall \
+		 -Werror \
+		 -Wformat \
+		 -Wformat-security \
+		 -Wformat-nonliteral \
+		 -Winit-self \
+		 -Winline \
+		 -Wl,-z,relro \
+		 -Wl,-z,now \
+		 -Wmultichar \
+		 -Wno-unused-parameter \
+		 -Wno-unused-function \
+		 -Wno-unused-label \
+		 -Wno-deprecated \
+		 -Wno-strict-aliasing \
+		 -Wpointer-arith \
+		 -Wreturn-type \
+	     -Wsign-compare \
+		 -Wuninitialized \
+		 -DWSS_SERVER_VERSION=\"$(VER)\"
+
+CVER = -std=c99
+
+# Flags
+FLAGS_EXTRA = -pthread -lm -ldl
+FLAGS_CRITERION = -lcriterion
+
+# Folders
+ROOT = $(shell pwd)
+LOG_FOLDER = $(ROOT)/log
+BUILD_FOLDER = $(ROOT)/build
+BIN_FOLDER = $(ROOT)/bin
+SRC_FOLDER = $(ROOT)/src
+INCLUDE_FOLDER = $(ROOT)/include
+DOCS_FOLDER = $(ROOT)/docs
+TEST_FOLDER = $(ROOT)/test
+CONF_FOLDER = $(ROOT)/conf
+REPORTS_FOLDER = $(ROOT)/reports
+
+INCLUDES = -I$(INCLUDE_FOLDER) -I$(SRC_FOLDER)
+
+# Files
+SRC = $(shell find $(SRC_FOLDER) -name '*.c' -type f;)
+TESTS = $(shell find $(TEST_FOLDER) -name 'test_*.c' -type f;)
+SRC_OBJ  = $(subst $(SRC_FOLDER), $(BUILD_FOLDER), $(patsubst %.c, %.o, $(SRC)))
+TEST_OBJ = ${subst ${TEST_FOLDER}, ${BUILD_FOLDER}, ${patsubst %.c, %.o, $(TESTS)}}
+ALL_OBJ  = ${SRC_OBJ} ${TEST_OBJ}
+TEST_NAMES = ${patsubst ${TEST_FOLDER}/%.c, %, ${TESTS}}
+DEPS = $(ALL_OBJ:%.o=%.d)
+
+$(shell pkg-config --exists openssl)
+ifeq ($(.SHELLSTATUS), 0)
+	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
+	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
+endif
+
+.PHONY: valgrind clean autobahn count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+
+#what we are trying to build
+all: bin build docs log $(NAME)
+
+build:
+	if [[ ! -e $(BUILD_FOLDER) ]]; then mkdir -p $(BUILD_FOLDER); fi
+
+bin:
+	if [[ ! -e $(BIN_FOLDER) ]]; then mkdir -p $(BIN_FOLDER); fi
+
+log:
+	if [[ ! -e $(LOG_FOLDER) ]]; then mkdir -p $(LOG_FOLDER); fi
+
+docs: $(SRC)
+	doxygen $(CONF_FOLDER)/doxyfile.conf
+
+release_mode:
+	$(eval EXEC = $(RELEASE))
+
+debug_mode:
+	$(eval EXEC = $(DEBUG))
+
+profiling_mode:
+	$(eval EXEC = $(profile))
+
+space_mode:
+	$(eval EXEC = $(space))
+
+# Recompile when headers change
+-include $(DEPS)
+
+#linkage
+$(NAME): $(SRC_OBJ)
+	@echo 
+	@echo ================ [Linking] ================ 
+	@echo
+	$(CC) $(CFLAGS) $(CVER) -o $(BIN_FOLDER)/$@ $(filter-out $(filter-out $(BUILD_FOLDER)/$@.o, $(addsuffix .o, $(addprefix $(BUILD_FOLDER)/, $(NAME)))), $^) $(FLAGS_EXTRA) $(INCLUDES)
+	@echo
+	@echo ================ [$(NAME) compiled succesfully] ================ 
+	@echo
+
+# compile every source file
+$(BUILD_FOLDER)/%.o: $(SRC_FOLDER)/%.c
+	@echo
+	@echo ================ [Building Object] ================
+	@echo
+	$(CC) --param max-inline-insns-single=1000 $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	@echo
+	@echo OK [$<] - [$@]
+	@echo
+
+# compile every test file
+$(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
+	@echo
+	@echo ================ [Building Object] ================
+	@echo
+	$(CC) --param max-inline-insns-single=1000 -fprofile-arcs –ftest-coverage $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	@echo
+	@echo OK [$<] - [$@]
+	@echo
+
+# Link test objects
+${TEST_NAMES}: debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
+	@echo
+	@echo ================ [Linking Tests] ================
+	@echo
+	$(CC) ${CFLAGS} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
+		$(filter-out $(addsuffix .o, $(addprefix ${BUILD_FOLDER}/, main)), $(filter-out ${BUILD_FOLDER}/test_%.o, $(ALL_OBJ)))\
+		${FLAGS_EXTRA} ${FLAGS_CRITERION} $(INCLUDES)
+	@echo
+	@echo ================ [$@ compiled succesfully] ================
+
+#make valgrind
+valgrind: clean debug_mode all
+	@echo
+	@echo ================ [Executing $(NAME) using Valgrind] ================
+	@echo
+	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
+	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63
+
+#make clean
 clean:
-	rm -f $(EXEC) *.o
+	@echo
+	@echo ================ [Cleaning $(NAME)] ================
+	@echo
+	rm -rf $(BIN_FOLDER)
+	rm -rf $(BUILD_FOLDER)
+	rm -rf $(LOG_FOLDER)
 
-run: all
-	./$(EXEC) $(PORT)
+#make count
+count:
+	@echo
+	@echo ================ [Counting lines in $(NAME)] ================
+	@echo
+	sloccount --wide --follow -- $(SRC_FOLDER) $(INCLUDE_FOLDER) $(TEST_FOLDER)
 
-valgrind: all
-	valgrind --leak-check=full --log-file="LOG" --track-origins=yes --show-reachable=yes ./$(EXEC) $(PORT)
+#make autobahn
+autobahn: debug
+	sudo rm -rf $(REPORTS_FOLDER)
+	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
+	docker build -t wsserver/autobahn -f Dockerfile .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${REPORTS_FOLDER}:/reports \
+    -p 9001:9001 \
+    --name fuzzingclient \
+    wsserver/autobahn
+	pkill $(NAME) || true
 
-base64.o: base64.c base64.h
-	$(CC) $(CFLAGS) -c base64.c
+#make test
+test: $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}}
 
-md5.o: md5.c md5.h
-	$(CC) $(CFLAGS) -c md5.c
+#make run_test_* 
+${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
+	@echo ================ [Running test ${patsubst run_%,%,$@}] ================
+	@echo
+	${BIN_FOLDER}/${patsubst run_%,%,$@} --verbose
 
-utf8.o: utf8.c utf8.h
-	$(CC) $(CFLAGS) -c utf8.c
+#make release
+release: clean release_mode all
 
-sha1.o: sha1.c sha1.h
-	$(CC) $(CFLAGS) -c sha1.c
+#make debug
+debug: clean debug_mode all
 
-Communicate.o: Communicate.c Communicate.h Datastructures.h
-	$(CC) $(CFLAGS) -c Communicate.c
+#make profiling
+profiling: clean profiling_mode all
 
-Datastructures.o: Datastructures.c Datastructures.h
-	$(CC) $(CFLAGS) -c Datastructures.c
-
-Errors.o: Errors.c Errors.h Datastructures.h
-	$(CC) $(CFLAGS) -c Errors.c
+#make space
+space: clean space_mode all
