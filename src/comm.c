@@ -760,6 +760,9 @@ void WSS_connect(void *arg, int id) {
             WSS_log(CLIENT_TRACE, "Allow writes to be partial", __FILE__, __LINE__);
             SSL_set_mode(session->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
 
+            //WSS_log(CLIENT_TRACE, "Allow write buffer to be moving as it is allocated on the heap", __FILE__, __LINE__);
+            //SSL_set_mode(session->ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
             WSS_log(CLIENT_TRACE, "Allow read and write buffers to be released when they are no longer needed", __FILE__, __LINE__);
             SSL_set_mode(session->ssl, SSL_MODE_RELEASE_BUFFERS);
 
