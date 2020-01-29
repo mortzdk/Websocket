@@ -1256,6 +1256,7 @@ void WSS_read(void *args, int id) {
                 memcpy(payload+payload_length, buffer, n);
                 payload_length += n;
                 memset(buffer, '\0', server->config->size_buffer);
+
         }
     } while ( likely(n != 0) );
 
@@ -1428,7 +1429,7 @@ void WSS_read(void *args, int id) {
 
         // If we are processing a fragmented set of frames, expect the opcode
         // to be a contination frame.
-        if ( unlikely(fragmented && ! (frames[i]->opcode == 0x0)) ) {
+        if ( unlikely(fragmented && frames[i]->opcode != 0x0) ) {
             WSS_log(CLIENT_TRACE, "Protocol Error: during fragmented message received other opcode than continuation", __FILE__, __LINE__);
             for (j = starting_frame; likely(j < frames_length); j++) {
                 WSS_free_frame(frames[j]);
@@ -1441,9 +1442,9 @@ void WSS_read(void *args, int id) {
 
         // If message consists of single frame or we have the starting frame of
         // a multiframe message, store the starting index
-        if (frames[i]->fin && !(frames[i]->opcode == 0x0)) {
+        if (frames[i]->fin && frames[i]->opcode != 0x0) {
             starting_frame = i;
-        } else if ( ! frames[i]->fin && frames[i]->opcode == 0x1 ) {
+        } else if ( ! frames[i]->fin && frames[i]->opcode != 0x0 ) {
             starting_frame = i;
             fragmented = true;
         }
