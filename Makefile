@@ -183,7 +183,7 @@ count:
 	sloccount --wide --follow -- $(SRC_FOLDER) $(INCLUDE_FOLDER) $(TEST_FOLDER)
 
 #make autobahn
-autobahn: debug
+autobahn: release
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
 	docker build -t wsserver/autobahn -f Dockerfile .
