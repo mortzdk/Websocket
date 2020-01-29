@@ -760,9 +760,6 @@ void WSS_connect(void *arg, int id) {
             WSS_log(CLIENT_TRACE, "Allow writes to be partial", __FILE__, __LINE__);
             SSL_set_mode(session->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
 
-            WSS_log(CLIENT_TRACE, "Allow write buffer to be moving as it is allocated on the heap", __FILE__, __LINE__);
-            SSL_set_mode(session->ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
-
             WSS_log(CLIENT_TRACE, "Allow read and write buffers to be released when they are no longer needed", __FILE__, __LINE__);
             SSL_set_mode(session->ssl, SSL_MODE_RELEASE_BUFFERS);
 
@@ -1617,14 +1614,12 @@ void WSS_write(void *args, int id) {
     args_t *arguments = (args_t *) args;
     int fd = arguments->fd;
     server_t *server = arguments->server;
-    char buffer[server->config->size_buffer];
     struct epoll_event event;
     session_t *session;
     message_t *message;
     unsigned int i;
     unsigned int message_length;
     unsigned int bytes_sent;
-    unsigned int sending;
     size_t len, off;
     bool closing = false;
 
@@ -1681,15 +1676,11 @@ void WSS_write(void *args, int id) {
                     closing = true;
                 }
 
-                memset(buffer, '\0', server->config->size_buffer);
-                sending = MIN(server->config->size_buffer, message_length-bytes_sent);
-                memcpy(buffer, message->msg+bytes_sent, sending);
-
 #ifdef USE_OPENSSL
                 if (NULL != server->ssl_ctx) {
                     unsigned long err;
 
-                    n = SSL_write(session->ssl, buffer, sending);
+                    n = SSL_write(session->ssl, message->msg+bytes_sent, message_length-bytes_sent);
                     err = SSL_get_error(session->ssl, n);
 
                     // If something more needs to be read in order for the handshake to finish
@@ -1736,7 +1727,7 @@ void WSS_write(void *args, int id) {
                     }
                 } else {
 #endif
-                    n = write(session->fd, buffer, sending);
+                    n = write(session->fd, message->msg+bytes_sent, message_length-bytes_sent);
                     if (unlikely(n == -1)) {
                         if ( unlikely(errno != EAGAIN && errno != EWOULDBLOCK) ) {
                             WSS_log(CLIENT_ERROR, strerror(errno), __FILE__, __LINE__);
