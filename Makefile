@@ -184,7 +184,6 @@ count:
 
 #make autobahn
 autobahn: debug
-	sudo rm -rf $(REPORTS_FOLDER)
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
 	docker build -t wsserver/autobahn -f Dockerfile .

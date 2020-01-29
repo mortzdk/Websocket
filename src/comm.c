@@ -494,7 +494,6 @@ inline static void WSS_diconnect_internal(server_t *server, session_t *session) 
  * @return              [void]
  */
 static void WSS_ssl_handshake(server_t *server, session_t *session) {
-    char message[1024];
     int ret, n;
     unsigned long err;
     struct epoll_event event;
@@ -506,9 +505,6 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
     if (NULL != server->ssl_ctx) {
         ret = SSL_do_handshake(session->ssl);
         err = SSL_get_error(session->ssl, ret);
-
-        ERR_error_string_n(err, message, 1024);
-        WSS_log(CLIENT_ERROR, message, __FILE__, __LINE__);
 
         // If something more needs to be read in order for the handshake to finish
         if (err == SSL_ERROR_WANT_READ) {
@@ -557,8 +553,15 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
         }
 
         if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
+            char message[1024];
             ERR_error_string_n(err, message, 1024);
             WSS_log(CLIENT_ERROR, message, __FILE__, __LINE__);
+
+            while ( (err = ERR_get_error()) != 0 ) {
+                ERR_error_string_n(err, message, 1024);
+                WSS_log(CLIENT_ERROR, message, __FILE__, __LINE__);
+            }
+
             WSS_diconnect_internal(server, session);
             return;
         }
@@ -754,6 +757,15 @@ void WSS_connect(void *arg, int id) {
                 return;
             }
 
+            WSS_log(CLIENT_TRACE, "Allow writes to be partial", __FILE__, __LINE__);
+            SSL_set_mode(session->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
+
+            WSS_log(CLIENT_TRACE, "Allow write buffer to be moving as it is allocated on the heap", __FILE__, __LINE__);
+            SSL_set_mode(session->ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
+            WSS_log(CLIENT_TRACE, "Allow read and write buffers to be released when they are no longer needed", __FILE__, __LINE__);
+            SSL_set_mode(session->ssl, SSL_MODE_RELEASE_BUFFERS);
+
             WSS_log(CLIENT_TRACE, "Setting accept state", __FILE__, __LINE__);
             SSL_set_accept_state(session->ssl);
 
@@ -891,6 +903,12 @@ static int WSS_read_internal(server_t *server, session_t *session, char *buffer)
             char msg[1024];
             ERR_error_string_n(err, msg, 1024);
             WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+
+            while ( (err = ERR_get_error()) != 0 ) {
+                ERR_error_string_n(err, msg, 1024);
+                WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+            }
+
             n = -1;
         } else 
             
@@ -1652,6 +1670,7 @@ void WSS_write(void *args, int id) {
             }
 
             bytes_sent = session->written;
+            session->written = 0;
             message = session->messages[off+i];
             message_length = message->length;
 
@@ -1681,7 +1700,6 @@ void WSS_write(void *args, int id) {
                         ringbuf_release(session->ringbuf, i);
 
                         WSS_read_notify(server, session->fd);
-
                         return;
                     }
 
@@ -1690,6 +1708,7 @@ void WSS_write(void *args, int id) {
                         WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_WRITE", __FILE__, __LINE__);
 
                         session->written = bytes_sent;
+
                         ringbuf_release(session->ringbuf, i);
 
                         WSS_write_notify(server, session->fd, false);
@@ -1700,6 +1719,11 @@ void WSS_write(void *args, int id) {
                         char msg[1024];
                         ERR_error_string_n(err, msg, 1024);
                         WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+
+                        while ( (err = ERR_get_error()) != 0 ) {
+                            ERR_error_string_n(err, msg, 1024);
+                            WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+                        }
 
                         WSS_diconnect_internal(server, session);
 
@@ -1734,7 +1758,6 @@ void WSS_write(void *args, int id) {
 #endif
             }
 
-            session->written = 0;
             if ( likely(session->messages != NULL) ) {
                 if ( likely(session->messages[off+i] != NULL) ) {
                     if ( likely(session->messages[off+i]->msg != NULL) ) {
