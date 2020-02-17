@@ -32,10 +32,15 @@ typedef struct {
     unsigned int timeout;
     char *ssl_key;
     char *ssl_cert;
-    char *ssl_ca;
+    char *ssl_ca_file;
+    char *ssl_ca_path;
     char *favicon;
-    char *subprotocols_folder;
-    char *extensions_folder;
+    char **subprotocols;
+    unsigned int subprotocols_length;
+    char **subprotocols_config;
+    char **extensions;
+    unsigned int extensions_length;
+    char **extensions_config;
 } config_t;
 
 /**

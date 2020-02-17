@@ -2,12 +2,11 @@
 SHELL = /bin/bash
 
 #Executeable name
-NAME = echo
+NAME = permessage-deflate
 
 #Compiler
 CC = gcc
 
-#Debug or Release
 PROFILE = -Og -g -DNDEBUG
 DEBUG = -Og -g
 RELEASE = -O3 -funroll-loops -DNDEBUG
@@ -49,11 +48,14 @@ CFLAGS = $(EXEC) \
 
 CVER = -std=c99
 
+# Flags
+FLAGS_EXTRA = -lz
+
 # Folders
 FOLDER = $(shell pwd)
 
 # Files
-SRC = $(shell find $(FOLRDER) -name '*.c' -type f;)
+SRC = $(shell find $(FOLDER) -name '*.c' -type f;)
 SRC_OBJ  = $(patsubst %.c, %.o, $(SRC))
 DEPS = $(SRC_OBJ:%.o=%.d)
 
@@ -82,7 +84,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Creating Shared Object] ================ 
 	@echo
-	$(CC)  -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ)
+	$(CC) -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ) $(FLAGS_EXTRA)
 	@echo
 	@echo ================ [$(NAME).so compiled succesfully] ================ 
 	@echo
@@ -92,7 +94,7 @@ $(NAME): $(SRC_OBJ)
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) $(CVER) -c $< -o $@
+	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(FLAGS_EXTRA)
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -102,9 +104,9 @@ clean:
 	@echo
 	@echo ================ [Cleaning $(NAME)] ================
 	@echo
-	rm *.d
-	rm *.o
-	rm *.so
+	rm -f *.d
+	rm -f *.o
+	rm -f *.so
 
 #make release
 release: clean release_mode all

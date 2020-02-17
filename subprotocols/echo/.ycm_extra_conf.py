@@ -37,7 +37,6 @@ flags = [
     '-x',
     'c',
     '-DRUPIFY',
-    '-Iinclude',
     '-W',
     '-Wall',
     '-Werror',

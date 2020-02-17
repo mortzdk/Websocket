@@ -58,6 +58,7 @@
 static message_t * WSS_handshake_response(header_t *header, enum HttpStatus_Code code) {
     message_t *msg;
     int length;
+    size_t j;
     size_t offset = 0;
     char *message;
     char *version = "HTTP/1.1";
@@ -124,9 +125,17 @@ static message_t * WSS_handshake_response(header_t *header, enum HttpStatus_Code
     acceptKeyLength = base64_encode_alloc((const char *) sha1Key, SHA_DIGEST_LENGTH, &acceptKey);
 #endif
 
-    //TODO: support optional extensions
-    // if ( NULL != header->ws_extension ) {
-    // }
+    if ( NULL != header->ws_extensions ) {
+        headers += strlen(HTTP_HANDSHAKE_EXTENSIONS)*sizeof(char);
+        for (j = 0; likely(j < header->ws_extensions_count); j++) {
+            headers += (strlen(header->ws_extensions[j]->name))*sizeof(char);
+            if ( likely(NULL != header->ws_extensions[j]->accepted) ) {
+                headers += strlen(header->ws_extensions[j]->accepted)*sizeof(char);
+            }
+            headers += 2*sizeof(char);
+        }
+        headers += (header->ws_extensions_count)*sizeof(char);
+    }
     
     if ( NULL != header->ws_protocol ) {
         headers += strlen(HTTP_HANDSHAKE_SUBPROTOCOL)*sizeof(char);
@@ -147,6 +156,29 @@ static message_t * WSS_handshake_response(header_t *header, enum HttpStatus_Code
 
     sprintf(message+offset, HTTP_STATUS_LINE, version, code, reason);
     offset += line;
+    if ( NULL != header->ws_extensions ) {
+        sprintf(message+offset, HTTP_HANDSHAKE_EXTENSIONS);
+        offset += strlen(HTTP_HANDSHAKE_EXTENSIONS);
+        for (j = 0; likely(j < header->ws_extensions_count); j++) {
+            memcpy(message+offset, header->ws_extensions[j]->name, strlen(header->ws_extensions[j]->name));
+            offset += strlen(header->ws_extensions[j]->name);
+
+            if ( likely(NULL != header->ws_extensions[j]->accepted) ) {
+                message[offset] = ';';
+                offset += 1;
+
+                memcpy(message+offset, header->ws_extensions[j]->accepted, strlen(header->ws_extensions[j]->accepted));
+                offset += strlen(header->ws_extensions[j]->accepted);
+            }
+
+            if ( likely(j+1 != header->ws_extensions_count) ) {
+                message[offset] = ',';
+                offset += 1;
+            }
+        }
+        sprintf(message+offset, "\r\n");
+        offset += 2;
+    }
     if (NULL != header->ws_protocol) {
         sprintf(message+offset, HTTP_HANDSHAKE_SUBPROTOCOL);
         offset += strlen(HTTP_HANDSHAKE_SUBPROTOCOL);
@@ -967,24 +999,25 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
             return;
         }
 
-        header->content       = NULL;
-        header->method        = NULL;
-        header->version       = NULL;
-        header->path          = NULL;
-        header->host          = NULL;
-        header->payload       = NULL;
-        header->length        = 0;
-        header->ws_version    = 0;
-        header->ws_type       = UNKNOWN;
-        header->ws_protocol   = NULL;
-        header->ws_upgrade    = NULL;
-        header->ws_connection = NULL;
-        header->ws_extension  = NULL;
-        header->ws_origin     = NULL;
-        header->ws_key        = NULL;
-        header->ws_key1       = NULL;
-        header->ws_key2       = NULL;
-        header->ws_key3       = NULL;
+        header->content             = NULL;
+        header->method              = NULL;
+        header->version             = NULL;
+        header->path                = NULL;
+        header->host                = NULL;
+        header->payload             = NULL;
+        header->length              = 0;
+        header->ws_version          = 0;
+        header->ws_type             = UNKNOWN;
+        header->ws_protocol         = NULL;
+        header->ws_upgrade          = NULL;
+        header->ws_connection       = NULL;
+        header->ws_extensions       = NULL;
+        header->ws_extensions_count = 0;
+        header->ws_origin           = NULL;
+        header->ws_key              = NULL;
+        header->ws_key1             = NULL;
+        header->ws_key2             = NULL;
+        header->ws_key3             = NULL;
     }
 
     // Continue reading until we get no bytes back
@@ -1044,7 +1077,7 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
 
     // Parsing HTTP header
     // If header could not be parsed correctly, notify client with response.
-    if ( (code = WSS_parse_header(header, server->config)) != HttpStatus_OK ) {
+    if ( (code = WSS_parse_header(session->fd, header, server->config)) != HttpStatus_OK ) {
         WSS_log(CLIENT_TRACE, "Unable to parse clients http header", __FILE__, __LINE__);
 
         if ( likely(NULL != (message = WSS_http_response(header, code, "Unable to parse header"))) ) {
@@ -1148,6 +1181,7 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
  */
 void WSS_read(void *args, int id) {
     int n;
+    size_t len;
     uint16_t code;
     struct epoll_event event;
     frame_t *frame;
@@ -1233,6 +1267,9 @@ void WSS_read(void *args, int id) {
     session->frames = NULL;
     session->frames_length = 0;
 
+    //TODO: Have upper limit on payload, frame size and amount of frames to
+    // avoid clients from exhausting the server
+
     // If handshake has been made, we can read the websocket frames from
     // the connection
     do {
@@ -1304,7 +1341,7 @@ void WSS_read(void *args, int id) {
         }
 
         // If no extension is negotiated, the rsv bits must not be used
-        if ( unlikely(NULL == session->header->ws_extension && (frame->rsv1 || frame->rsv2 || frame->rsv3)) ) {
+        if ( unlikely(NULL == session->header->ws_extensions && (frame->rsv1 || frame->rsv2 || frame->rsv3)) ) {
             WSS_log(CLIENT_TRACE, "Protocol Error: rsv bits must not be set without using extensions", __FILE__, __LINE__);
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
@@ -1386,13 +1423,12 @@ void WSS_read(void *args, int id) {
             frame = WSS_pong_frame(session->header, frame);
         }
 
-        frames_length += 1;
-        if ( unlikely(NULL == (frames = WSS_realloc((void **) &frames, (frames_length-1)*sizeof(frame_t *),
-                        frames_length*sizeof(frame_t *)))) ) {
+        if ( unlikely(NULL == (frames = WSS_realloc((void **) &frames, frames_length*sizeof(frame_t *),
+                        (frames_length+1)*sizeof(frame_t *)))) ) {
             return;
         }
-
-        frames[frames_length-1] = frame;
+        frames[frames_length] = frame;
+        frames_length += 1;
 
         // Close
         if ( unlikely(frame->opcode == 0x8) ) {
@@ -1468,6 +1504,24 @@ void WSS_read(void *args, int id) {
         }
 
         if (frames[i]->fin) {
+            // Apply extensions to collection of frames (message)
+            for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
+                len = i-starting_frame+1;
+
+                // Apply extension perframe
+                for (k = 0; likely(k < len); k++) {
+                    session->header->ws_extensions[j]->ext->inframe(
+                            session->fd,
+                            (void *)frames[k]);
+                }
+
+                // Apply extension for set of frames
+                session->header->ws_extensions[j]->ext->inframes(
+                        session->fd,
+                        (void **)frames+starting_frame,
+                        len);
+            }
+
             // If message consist of text frames, validate the text as UTF8
             if (frames[starting_frame]->opcode == 0x1) {
                 for (j = starting_frame; likely(j <= i); j++) {
@@ -1528,9 +1582,9 @@ void WSS_read(void *args, int id) {
 
         // If message consists of single frame or we have the starting frame of
         // a multiframe message, store the starting index
-        if (frames[i]->fin && !(frames[i]->opcode == 0x0)) {
+        if ( frames[i]->fin && !(frames[i]->opcode == 0x0) ) {
             starting_frame = i;
-        } else if (! frames[i]->fin && frames[i]->opcode == 0x1) {
+        } else if ( ! frames[i]->fin && frames[i]->opcode != 0x0 ) {
             starting_frame = i;
             fragmented = true;
         }
@@ -1541,6 +1595,22 @@ void WSS_read(void *args, int id) {
 
             // Use subprotocol
             session->header->ws_protocol->message(session->fd, msg, msg_length, &receivers, &receivers_count);
+
+            // Use extensions
+            for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
+                len = i-starting_frame+1;
+                
+                session->header->ws_extensions[j]->ext->outframes(
+                        session->fd,
+                        (void **)frames+starting_frame,
+                        len);
+
+                for (k = 0; likely(k < len); k++) {
+                    session->header->ws_extensions[j]->ext->outframe(
+                            session->fd,
+                            (void *)frames[starting_frame]);
+                }
+            }
 
             message_length = WSS_stringify_frames(&frames[starting_frame],
                     i-starting_frame+1, &message);

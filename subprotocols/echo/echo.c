@@ -3,6 +3,16 @@
 #include "echo.h"
 
 /**
+ * Event called when subprotocol is initialized.
+ *
+ * @param 	config	[char *]     "The configuration of the subprotocol"
+ * @return 	        [void]
+ */
+void onInit(char *config) {
+    return;
+}
+
+/**
  * Event called when a new session has handshaked and hence connects to the WSS server.
  *
  * @param 	fd	[int]     "A filedescriptor of a connecting session"
@@ -51,4 +61,12 @@ void onWrite(int fd, char *message, size_t message_length) {
  */
 void onClose(int fd) {
     return;
+}
+
+/**
+ * Event called when the subprotocol should be destroyed.
+ *
+ * @return 	    [void]
+ */
+void onDestroy() {
 }

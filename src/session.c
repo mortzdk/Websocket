@@ -114,6 +114,7 @@ session_t *WSS_session_add(int fd, char* ip, int port) {
  */
 wss_error_t WSS_session_delete(session_t *session) {
     int i, err = 0;
+    size_t j;
 
     WSS_log(CLIENT_TRACE, "Locking hash table", __FILE__, __LINE__);
 
@@ -132,8 +133,10 @@ wss_error_t WSS_session_delete(session_t *session) {
 
         WSS_log(CLIENT_TRACE, "Free session header structure", __FILE__, __LINE__);
         if ( likely(NULL != session->header) ) {
-            WSS_free((void **) &session->header->content);
-            WSS_free((void **) &session->header);
+            for (j = 0; j < session->header->ws_extensions_count; j++) {
+                session->header->ws_extensions[j]->ext->close(session->fd);
+            }
+            WSS_free_header(session->header);
         }
 
         WSS_log(CLIENT_TRACE, "Free ringbuf", __FILE__, __LINE__);
@@ -183,6 +186,7 @@ wss_error_t WSS_session_delete(session_t *session) {
  */
 wss_error_t WSS_session_delete_all() {
     int i, err = 0;
+    size_t j;
     session_t *session, *tmp;
 
     if ( unlikely((err = pthread_mutex_lock(&lock)) != 0) ) {
@@ -199,8 +203,10 @@ wss_error_t WSS_session_delete_all() {
             WSS_free((void **) &session->ip);
 
             if ( likely(NULL != session->header) ) {
-                WSS_free((void **) &session->header->content);
-                WSS_free((void **) &session->header);
+                for (j = 0; j < session->header->ws_extensions_count; j++) {
+                    session->header->ws_extensions[j]->ext->close(session->fd);
+                }
+                WSS_free_header(session->header);
             }
 
             for (i = 0; likely(i < session->messages_count); i++) {

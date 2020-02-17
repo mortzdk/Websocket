@@ -113,7 +113,7 @@ wss_error_t config_load(config_t *config, char *path) {
                 name = config->data->u.object.values[i].name;
 
                 if ( strncmp(name, "hosts", 5) == 0 ) {
-                    if ( value->type == json_array ) {
+                    if ( likely(value->type == json_array) ) {
                         length = value->u.array.length;
 
                         if (length == 0) {
@@ -122,20 +122,22 @@ wss_error_t config_load(config_t *config, char *path) {
                             continue;
                         }
 
-                        if (NULL == (config->hosts = WSS_calloc(length, sizeof(char *)))) {
+                        if ( unlikely(NULL == (config->hosts = WSS_calloc(length, sizeof(char *)))) ) {
                             return MEMORY_ERROR;
                         }
 
-                        config->hosts_length = length;
-                        for (j = 0; j < length; j++) {
-                            if ( value->u.array.values[j]->type == json_string) {
+                        for (j = 0; likely(j < length); j++) {
+                            if ( likely(value->u.array.values[j]->type == json_string) ) {
                                 config->hosts[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
+                            } else {
+                                config->hosts[j] = NULL;
                             }
                         }
+                        config->hosts_length = length;
                     }
                 } else if ( strncmp(name, "origins", 7) == 0 ) {
-                    if ( value->type == json_array ) {
+                    if ( likely(value->type == json_array) ) {
                         length = value->u.array.length;
 
                         if (length == 0) {
@@ -144,20 +146,22 @@ wss_error_t config_load(config_t *config, char *path) {
                             continue;
                         }
 
-                        if (NULL == (config->origins = WSS_calloc(length, sizeof(char *)))) {
+                        if ( unlikely(NULL == (config->origins = WSS_calloc(length, sizeof(char *)))) ) {
                             return MEMORY_ERROR;
                         }
 
-                        config->origins_length = length;
-                        for (j = 0; j < value->u.array.length; j++) {
-                            if ( value->u.array.values[j]->type == json_string) {
+                        for (j = 0; likely(j < length); j++) {
+                            if ( likely(value->u.array.values[j]->type == json_string) ) {
                                 config->origins[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
+                            } else {
+                                config->origins[j] = NULL;
                             }
                         }
+                        config->origins_length = length;
                     }
                 } else if ( strncmp(name, "paths", 7) == 0 ) {
-                    if ( value->type == json_array ) {
+                    if ( likely(value->type == json_array) ) {
                         length = value->u.array.length;
 
                         if (length == 0) {
@@ -166,20 +170,22 @@ wss_error_t config_load(config_t *config, char *path) {
                             continue;
                         }
 
-                        if (NULL == (config->paths = WSS_calloc(length, sizeof(char *)))) {
+                        if ( unlikely(NULL == (config->paths = WSS_calloc(length, sizeof(char *)))) ) {
                             return MEMORY_ERROR;
                         }
 
-                        config->paths_length = length;
-                        for (j = 0; j < value->u.array.length; j++) {
-                            if ( value->u.array.values[j]->type == json_string) {
+                        for (j = 0; likely(j < length); j++) {
+                            if ( likely(value->u.array.values[j]->type == json_string) ) {
                                 config->paths[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
+                            } else {
+                                config->paths[j] = NULL;
                             }
                         }
+                        config->paths_length = length;
                     }
                 } else if ( strncmp(name, "queries", 7) == 0 ) {
-                    if ( value->type == json_array ) {
+                    if ( likely(value->type == json_array) ) {
                         length = value->u.array.length;
 
                         if (length == 0) {
@@ -188,77 +194,159 @@ wss_error_t config_load(config_t *config, char *path) {
                             continue;
                         }
 
-                        if (NULL == (config->queries = WSS_calloc(length, sizeof(char *)))) {
+                        if ( unlikely(NULL == (config->queries = WSS_calloc(length, sizeof(char *)))) ) {
                             return MEMORY_ERROR;
                         }
 
-                        config->queries_length = length;
-                        for (j = 0; j < value->u.array.length; j++) {
-                            if ( value->u.array.values[j]->type == json_string) {
+                        for (j = 0; likely(j < length); j++) {
+                            if ( likely(value->u.array.values[j]->type == json_string) ) {
                                 config->queries[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
+                            } else {
+                                config->queries[j] = NULL;
                             }
                         }
+                        config->queries_length = length;
                     }
-                } else if ( strncmp(name, "setup", 5) == 0 ) {
-                    if ( (val = json_value_find(value, "subprotocols_folder")) != NULL ) {
-                        if ( val->type == json_string ) {
-                            config->subprotocols_folder = (char *)val->u.string.ptr;
+                } else if ( strncmp(name, "setup", 5) == 0 && likely(value->type == json_object) ) {
+                    if ( (val = json_value_find(value, "subprotocols")) != NULL ) {
+                        if ( val->type == json_array) {
+                            length = val->u.array.length;
+
+                            if (length == 0) {
+                                config->subprotocols_length = length;
+                                config->subprotocols = NULL;
+                                continue;
+                            }
+
+                            if ( unlikely(NULL == (config->subprotocols = WSS_calloc(length, sizeof(char *)))) ) {
+                                return MEMORY_ERROR;
+                            }
+
+                            if ( unlikely(NULL == (config->subprotocols_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                return MEMORY_ERROR;
+                            }
+
+                            for (j = 0; likely(j < length); j++) {
+                                if ( likely(val->u.array.values[j]->type == json_object) ) {
+                                    if ( (temp = json_value_find(val, "file")) != NULL ) {
+                                        if ( temp->type == json_string ) {
+                                            config->subprotocols[j] =
+                                                (char *) temp->u.string.ptr;
+                                        } else {
+                                            config->subprotocols[j] = NULL;
+                                        }
+                                    }
+
+                                    if ( (temp = json_value_find(val, "config")) != NULL ) {
+                                        if ( temp->type == json_string ) {
+                                            config->subprotocols_config[j] =
+                                                (char *) temp->u.string.ptr;
+                                        } else {
+                                            config->subprotocols_config[j] = NULL;
+                                        }
+                                    }
+                                }
+                            }
+                            config->subprotocols_length = length;
                         }
                     }
 
-                    if ( (val = json_value_find(value, "extensions_folder")) != NULL ) {
-                        if ( val->type == json_string ) {
-                            config->extensions_folder = (char *)val->u.string.ptr;
+                    if ( (val = json_value_find(value, "extensions")) != NULL ) {
+                        if ( likely(val->type == json_array) ) {
+                            length = val->u.array.length;
+
+                            if (length == 0) {
+                                config->extensions_length = length;
+                                config->extensions = NULL;
+                                continue;
+                            }
+
+                            if ( unlikely(NULL == (config->extensions = WSS_calloc(length, sizeof(char *)))) ) {
+                                return MEMORY_ERROR;
+                            }
+
+                            if ( unlikely(NULL == (config->extensions_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                return MEMORY_ERROR;
+                            }
+
+                            for (j = 0; likely(j < length); j++) {
+                                if ( likely(val->u.array.values[j]->type == json_object) ) {
+                                    if ( (temp = json_value_find(val, "file")) != NULL ) {
+                                        if ( likely(temp->type == json_string) ) {
+                                            config->extensions[j] =
+                                                (char *) temp->u.string.ptr;
+                                        } else {
+                                            config->extensions[j] = NULL;
+                                        }
+                                    }
+
+                                    if ( (temp = json_value_find(val, "config")) != NULL ) {
+                                        if ( likely(temp->type == json_string) ) {
+                                            config->extensions_config[j] =
+                                                (char *) temp->u.string.ptr;
+                                        } else {
+                                            config->extensions_config[j] = NULL;
+                                        }
+                                    }
+                                }
+                            }
+                            config->extensions_length = length;
                         }
                     }
 
                     if ( (val = json_value_find(value, "favicon")) != NULL ) {
-                        if ( val->type == json_string ) {
+                        if ( likely(val->type == json_string) ) {
                             config->favicon = (char *)val->u.string.ptr;
                         }
                     }
 
                     if ( (val = json_value_find(value, "timeout")) != NULL ) {
-                        if ( val->type == json_integer ) {
+                        if ( likely(val->type == json_integer) ) {
                             config->timeout = (unsigned int)val->u.integer;
                         }
                     }
 
                     if ( (val = json_value_find(value, "ssl")) != NULL ) {
-                        if ( val->type == json_object ) {
+                        if ( likely(val->type == json_object) ) {
                             // Getting SSL key path
                             temp = json_value_find(val, "key");
-                            if ( temp->type == json_string ) {
+                            if ( likely(temp->type == json_string) ) {
                                 config->ssl_key = (char *)temp->u.string.ptr;
                             }
 
                             // Getting SSL cert path
                             temp = json_value_find(val, "cert");
-                            if ( temp->type == json_string ) {
+                            if ( likely(temp->type == json_string) ) {
                                 config->ssl_cert = (char *)temp->u.string.ptr;
                             }
 
                             // Getting SSL CA cert path
-                            temp = json_value_find(val, "ca");
-                            if ( temp->type == json_string ) {
-                                config->ssl_ca = (char *)temp->u.string.ptr;
+                            temp = json_value_find(val, "ca_file");
+                            if ( likely(temp->type == json_string) ) {
+                                config->ssl_ca_file = (char *)temp->u.string.ptr;
+                            }
+
+                            // Getting SSL CA cert path
+                            temp = json_value_find(val, "ca_path");
+                            if ( likely(temp->type == json_string) ) {
+                                config->ssl_ca_path = (char *)temp->u.string.ptr;
                             }
                         }
                     }
 
                     if ( (val = json_value_find(value, "port")) != NULL ) {
-                        if ( val->type == json_object ) {
+                        if ( likely(val->type == json_object) ) {
                             // Getting HTTP port
                             temp = json_value_find(val, "http");
-                            if ( temp->type == json_integer ) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->port_http =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting HTTPS port
                             temp = json_value_find(val, "https");
-                            if ( temp->type == json_integer ) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->port_https =
                                     (unsigned int)temp->u.integer;
                             }
@@ -266,52 +354,52 @@ wss_error_t config_load(config_t *config, char *path) {
                     }
 
                     if ( (val = json_value_find(value, "size")) != NULL ) {
-                        if ( val->type == json_object ) {
+                        if ( likely(val->type == json_object) ) {
                             // Getting buffer size
                             temp = json_value_find(val, "buffer");
-                            if ( temp->type == json_integer ) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_buffer =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting thread size
                             temp = json_value_find(val, "thread");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_thread =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting uri size
                             temp = json_value_find(val, "uri");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_uri =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting header size
                             temp = json_value_find(val, "header");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_header =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting pipe size
                             temp = json_value_find(val, "pipe");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_pipe =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting payload size
                             temp = json_value_find(val, "payload");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_payload =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting message queue size
                             temp = json_value_find(val, "queue");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->size_queue =
                                     (unsigned int)temp->u.integer;
                             }
@@ -319,24 +407,24 @@ wss_error_t config_load(config_t *config, char *path) {
                     }
 
                     if ( (val = json_value_find(value, "pool")) != NULL ) {
-                        if ( val->type == json_object ) {
+                        if ( likely(val->type == json_object) ) {
                             // Getting pool size
                             temp = json_value_find(val, "size");
-                            if ( temp->type == json_integer ) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->pool_size =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting amount of queues
                             temp = json_value_find(val, "queues");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->pool_queues =
                                     (unsigned int)temp->u.integer;
                             }
 
                             // Getting amount of workers
                             temp = json_value_find(val, "workers");
-                            if ( temp->type == json_integer) {
+                            if ( likely(temp->type == json_integer) ) {
                                 config->pool_workers =
                                     (unsigned int)temp->u.integer;
                             }
@@ -395,6 +483,11 @@ wss_error_t config_free(config_t *config) {
         WSS_free((void **) &config->string);
         WSS_free((void **) &config->hosts);
         WSS_free((void **) &config->origins);
+        WSS_free((void **) &config->queries);
+        WSS_free((void **) &config->extensions);
+        WSS_free((void **) &config->subprotocols);
+        WSS_free((void **) &config->extensions_config);
+        WSS_free((void **) &config->subprotocols_config);
     }
 
     return SUCCESS;

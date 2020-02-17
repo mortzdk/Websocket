@@ -2,39 +2,40 @@
 #define wss_subprotocols_h
 
 #include "uthash.h"
-
-#define PATH_LENGTH 256
+#include "config.h"
 
 /**
  * The subprotocol API calls
  */
-typedef void (*onConnect)(int fd);
-typedef void (*onMessage)(int fd, char *message, size_t message_length, int **receivers, size_t *receiver_count);
-typedef void (*onWrite)(int fd, char *message, size_t message_length);
-typedef void (*onClose)(int fd);
+typedef void (*subInit)(char *config);
+typedef void (*subConnect)(int fd);
+typedef void (*subMessage)(int fd, char *message, size_t message_length, int **receivers, size_t *receiver_count);
+typedef void (*subWrite)(int fd, char *message, size_t message_length);
+typedef void (*subClose)(int fd);
 
 typedef struct {
     int *handle;
     char *name;
-    onConnect connect; 
-    onMessage message;
-    onWrite write; 
-    onClose close;
+    subInit init; 
+    subConnect connect; 
+    subMessage message;
+    subWrite write; 
+    subClose close;
     UT_hash_handle hh;
 } wss_subprotocol_t;
 
 /**
- * Function that loads subprotocol implementations into memory, by loading a
- * shared object by the name of the folder it lies in.
+ * Function that loads subprotocol implementations into memory, by loading the
+ * shared objects defined in the configuration.
  *
  * E.g.
  *
  * subprotocols/echo/echo.so 
  *
- * @param 	path	[const char *] 	"The path to the subprotocols folder"
+ * @param 	config	[config_t *config] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_subprotocols(const char *path);
+void load_subprotocols(config_t *config);
 
 /**
  * Function that looks for a subprotocol implementation of the name given.

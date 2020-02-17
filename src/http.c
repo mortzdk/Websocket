@@ -50,7 +50,7 @@ wss_error_t http_ssl(server_t *server) {
 
     SSL_CTX_set_ecdh_auto(server->ssl_ctx, 1);
 
-    if ( unlikely(!SSL_CTX_load_verify_locations(server->ssl_ctx, server->config->ssl_ca, NULL)) ) {
+    if ( unlikely(!SSL_CTX_load_verify_locations(server->ssl_ctx, server->config->ssl_ca_file, server->config->ssl_ca_path)) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log(SERVER_ERROR, error, __FILE__, __LINE__);
         return SSL_ERROR;

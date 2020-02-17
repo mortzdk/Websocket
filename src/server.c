@@ -255,7 +255,11 @@ int server_start(config_t *config) {
         return EXIT_FAILURE;
     }
 
-    load_subprotocols(config->subprotocols_folder);
+    // Load extensions available
+    load_extensions(config);
+
+    // Load subprotocols available
+    load_subprotocols(config);
 
     // Setting starting state
     WSS_log(SERVER_TRACE, "Starting server.", __FILE__, __LINE__);
@@ -306,7 +310,7 @@ int server_start(config_t *config) {
     }
 
 #ifdef USE_OPENSSL
-    bool ssl = NULL != config->ssl_cert && NULL != config->ssl_key && NULL != config->ssl_ca;
+    bool ssl = NULL != config->ssl_cert && NULL != config->ssl_key && (NULL != config->ssl_ca_file || NULL != config->ssl_ca_path);
     if (ssl) {
         WSS_log(
                 SERVER_TRACE,
@@ -422,6 +426,8 @@ int server_start(config_t *config) {
     }
 
     destroy_subprotocols();
+
+    destroy_extensions();
     
     pthread_mutex_destroy(&state.lock);
 

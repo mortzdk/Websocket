@@ -14,6 +14,14 @@ TODO
 
 TODO
 
+# Extensions
+
+TODO
+
+# Subprotocols
+
+TODO
+
 # Documentation
 
 TODO

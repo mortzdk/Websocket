@@ -6,6 +6,7 @@
 #include "config.h"
 #include "httpstatuscodes.h"
 #include "subprotocols.h"
+#include "extensions.h"
 
 #define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)?)?$"
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -40,7 +41,8 @@ typedef struct {
     wss_subprotocol_t *ws_protocol;
     char *ws_upgrade;
     char *ws_connection;
-    char *ws_extension;
+    wss_ext_t **ws_extensions;
+    unsigned int ws_extensions_count;
     char *ws_origin;
     char *ws_key;
     char *ws_key1;
@@ -52,11 +54,12 @@ typedef struct {
  * Parses a HTTP header into a header structure and returns the status code
  * appropriate.
  *
+ * @param   fd        [int]                    "The filedescriptor"
  * @param   header    [header_t *]             "The header structure to fill"
  * @param   config    [config_t *]             "The configuration of the server"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_parse_header(header_t *header, config_t *config);
+enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config);
 
 /**
  * Upgrades a HTTP header, that is returns switching protocols response if

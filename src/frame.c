@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 
 #include "frame.h"
+#include "str.h"
 #include "header.h"
 #include "alloc.h"
 #include "predict.h"
@@ -277,24 +278,6 @@ frame_t *WSS_parse_frame(header_t *header, char *payload, size_t length, size_t 
         *offset += sizeof(uint32_t);
     }
 
-    /*
-    if (NULL != header->ws_extension) {
-        // TODO: handle extensions
-        if (NULL == (frame->extensionData = WSS_malloc(frame->extensionDataLength))) {
-            return NULL;
-        }
-
-        memcpy(frame->extensionData, payload+*offset, frame->extensionDataLength);
-        *offset += frame->extensionDataLength;
-
-        if (frame->mask) {
-            for (i = 0, j = 0; i < frame->extensionDataLength; i++, j++){
-                frame->extensionData[j] = frame->extensionData[i] ^ frame->maskingKey[j % 4];
-            }
-        }
-    }
-    */
-
     frame->applicationDataLength = frame->payloadLength-frame->extensionDataLength;
     if ( likely(frame->applicationDataLength > 0) ) {
         if ( likely(*offset+frame->applicationDataLength <= length) ) {
@@ -536,12 +519,6 @@ frame_t *WSS_ping_frame(header_t *header) {
         return NULL;
     }
 
-    /*
-    if (NULL != header->ws_extension) {
-        // TODO: extensionData
-    }
-    */
-
     frame->payloadLength += frame->extensionDataLength;
     frame->payloadLength += frame->applicationDataLength;
 
@@ -564,12 +541,6 @@ frame_t *WSS_pong_frame(header_t *header, frame_t *ping) {
     ping->mask = 0;
 
     memset(ping->maskingKey, '\0', sizeof(uint32_t));
-
-    /*
-    if (NULL != header->ws_extension) {
-        // TODO: extensionData
-    }
-    */
 
     return ping;
 }

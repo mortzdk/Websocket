@@ -694,7 +694,6 @@ bool utf8_check(const char *src, size_t len) {
     return _mm_testz_si128(has_error, has_error);
 }
 #else
-/*
 // credit: @hoehrmann
 
 // Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
@@ -728,23 +727,6 @@ static const uint8_t utf8d[] = {
     0x8, 0x8, 0x8, 0x8, 0x8 // f0..ff
 };
 
-static const uint8_t utf8d_transition[] = {
-    0x0, 0x1, 0x2, 0x3, 0x5, 0x8, 0x7, 0x1, 0x1, 0x1, 0x4,
-    0x6, 0x1, 0x1, 0x1, 0x1, // s0..s0
-    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    1,   1,   1,   1,   1,   1,   0,   1,   1,   1,   1,
-    1,   0,   1,   0,   1,   1,   1,   1,   1,   1, // s1..s2
-    1,   2,   1,   1,   1,   1,   1,   2,   1,   2,   1,
-    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    1,   2,   1,   1,   1,   1,   1,   1,   1,   1, // s3..s4
-    1,   2,   1,   1,   1,   1,   1,   1,   1,   2,   1,
-    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-    1,   3,   1,   3,   1,   1,   1,   1,   1,   1, // s5..s6
-    1,   3,   1,   1,   1,   1,   1,   3,   1,   3,   1,
-    1,   1,   1,   1,   1,   1,   3,   1,   1,   1,   1,
-    1,   1,   1,   1,   1,   1,   1,   1,   1,   1, // s7..s8
-};
-
 static const uint8_t shifted_utf8d_transition[] = {
     0x0,  0x10, 0x20, 0x30, 0x50, 0x80, 0x70, 0x10, 0x10, 0x10, 0x40, 0x60,
     0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
@@ -760,171 +742,27 @@ static const uint8_t shifted_utf8d_transition[] = {
     0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10
 };
 
-inline static uint32_t updatestate(uint32_t *state, uint32_t byte) {
-    uint32_t type = utf8d[byte];
-    *state = utf8d_transition[16 * *state + type];
-    return *state;
-}
-
 inline static uint32_t shiftless_updatestate(uint32_t *state, uint32_t byte) {
   uint32_t type = utf8d[byte];
   *state = shifted_utf8d_transition[*state + type];
   return *state;
 }
-*/
 
-/* validate_dfa_utf8_double
+/* shiftless_validate_dfa_utf8_branchless */
 bool utf8_check(const char *src, size_t len) {
-    size_t half = len / 2;
-    const unsigned char *cu = (const unsigned char *)src;
-
-    while (cu[half] <= 0xBF && cu[half] > 0x80 && half > 0) {
-        half--;
-    }
-
-    uint32_t s1 = 0, s2 = 0;
-    for (size_t i = 0, j = half; i < half; i++, j++) {
-        updatestate(&s1, cu[i]);
-        updatestate(&s2, cu[j]);
-    }
-
-    for (size_t j = half * 2; j < len; j++) {
-        updatestate(&s2, cu[j]);
-    }
-
-    return (s1 != 1) && (s2 != 1);
-}
-*/
-
-/* validate_dfa_utf8_branchless
-bool utf8_check(const char *src, size_t len) {
+    uint32_t byteval;
     const unsigned char *cu = (const unsigned char *)src;
     uint32_t state = 0;
+
     for (size_t i = 0; i < len; i++) {
-        uint32_t byteval = (uint32_t)cu[i];
-        updatestate(&state, byteval);
-    }
-    return state != 1;
-}
-*/
-
-/* validate_dfa_utf8
-bool utf8_check(const char *src, size_t len) {
-    const unsigned char *cu = (const unsigned char *)src;
-    uint32_t state = 0;
-    for (size_t i = 0; i < len; i++) {
-        uint32_t byteval = (uint32_t)cu[i];
-        if (updatestate(&state, byteval) == 1)
-            return false;
-    }
-    return true;
-}
-*/
-
-/* shiftless_validate_dfa_utf8_double
-bool utf8_check(const char *src, size_t len) {
-    size_t half = len / 2;
-    const unsigned char *cu = (const unsigned char *)src;
-
-    while (cu[half] <= 0xBF && cu[half] > 0x80 && half > 0) {
-        half--;
-    }
-
-    uint32_t s1 = 0, s2 = 0;
-    for (size_t i = 0, j = half; i < half; i++, j++) {
-        shiftless_updatestate(&s1, cu[i]);
-        shiftless_updatestate(&s2, cu[j]);
-    }
-
-    for (size_t j = half * 2; j < len; j++) {
-        shiftless_updatestate(&s2, cu[j]);
-    }
-    return (s1 != 16) && (s2 != 16);
-}
-*/
-
-/* shiftless_validate_dfa_utf8
-bool utf8_check(const char *src, size_t len) {
-    const unsigned char *cu = (const unsigned char *)src;
-    uint32_t state = 0;
-    for (size_t i = 0; i < len; i++) {
-        uint32_t byteval = (uint32_t)cu[i];
-        if (shiftless_updatestate(&state, byteval) == 16)
-            return false;
-    }
-    return true;
-}
-*/
-
-/* shiftless_validate_dfa_utf8_branchless
-bool utf8_check(const char *src, size_t len) {
-    const unsigned char *cu = (const unsigned char *)src;
-    uint32_t state = 0;
-    for (size_t i = 0; i < len; i++) {
-        uint32_t byteval = (uint32_t)cu[i];
+        byteval = (uint32_t)cu[i];
         shiftless_updatestate(&state, byteval);
     }
+
+    byteval = (uint32_t)'\0';
+    shiftless_updatestate(&state, byteval);
+
     return state != 16;
 }
-*/
-
-/* validate_utf8 */
-bool utf8_check(const char *src, size_t length) {
-    const unsigned char *bytes = (const unsigned char *)src;
-    for (size_t index = 0;;) {
-        unsigned char byte1;
-
-        do { // fast ASCII Path
-            if (index >= length) {
-                return true;
-            }
-            byte1 = bytes[index++];
-        } while (byte1 < 0x80);
-        if (byte1 < 0xE0) {
-            // Two-byte form.
-            if (index == length) {
-                return false;
-            }
-            if (byte1 < 0xC2 || bytes[index++] > 0xBF) {
-                return false;
-            }
-        } else if (byte1 < 0xF0) {
-            // Three-byte form.
-            if (index + 1 >= length) {
-                return false;
-            }
-            unsigned char byte2 = bytes[index++];
-            if (byte2 > 0xBF
-                    // Overlong? 5 most significant bits must not all be zero.
-                    || (byte1 == 0xE0 && byte2 < 0xA0)
-                    // Check for illegal surrogate codepoints.
-                    || (byte1 == 0xED && 0xA0 <= byte2)
-                    // Third byte trailing-byte test.
-                    || bytes[index++] > 0xBF) {
-                return false;
-            }
-        } else {
-
-            // Four-byte form.
-            if (index + 2 >= length) {
-                return false;
-            }
-            int byte2 = bytes[index++];
-            if (byte2 > 0xBF
-                    // Check that 1 <= plane <= 16. Tricky optimized form of:
-                    // if (byte1 > (byte) 0xF4
-                    //     || byte1 == (byte) 0xF0 && byte2 < (byte) 0x90
-                    //     || byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
-                    || (((byte1 << 28) + (byte2 - 0x90)) >> 30) != 0
-                    // Third byte trailing-byte test
-                    || bytes[index++] > 0xBF
-                    // Fourth byte trailing-byte test
-                    || bytes[index++] > 0xBF) {
-                return false;
-            }
-        }
-    }
-}
-/**/
 
 #endif

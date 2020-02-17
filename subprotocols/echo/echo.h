@@ -4,6 +4,14 @@
 #include <stdlib.h>
 
 /**
+ * Event called when subprotocol is initialized.
+ *
+ * @param 	config	[char *]     "The configuration of the subprotocol"
+ * @return 	        [void]
+ */
+void __attribute__((visibility("default"))) onInit(char *config);
+
+/**
  * Event called when a new session has handshaked and hence connects to the WSS server.
  *
  * @param 	fd	[int]     "A filedescriptor of a connecting session"
@@ -40,5 +48,12 @@ void __attribute__((visibility("default"))) onWrite(int fd, char *message, size_
  * @return 	    [void]
  */
 void __attribute__((visibility("default"))) onClose(int fd);
+
+/**
+ * Event called when the subprotocol should be destroyed.
+ *
+ * @return 	    [void]
+ */
+void __attribute__((visibility("default"))) onDestroy();
 
 #endif

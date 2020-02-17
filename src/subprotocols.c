@@ -1,13 +1,11 @@
-#include <unistd.h>             /* close */
 #include <dlfcn.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <stdio.h>
+#include <libgen.h>
 
 #include "subprotocols.h"
 #include "uthash.h"
 #include "alloc.h"
+#include "log.h"
 #include "predict.h"
 
 /**
@@ -16,124 +14,138 @@
 wss_subprotocol_t *subprotocols = NULL;
 
 /**
- * Function that loads subprotocol implementations into memory, by loading a
- * shared object by the name of the folder it lies in.
+ * Function that loads subprotocol implementations into memory, by loading the
+ * shared objects defined in the configuration.
  *
  * E.g.
  *
  * subprotocols/echo/echo.so 
  *
- * @param 	path	[const char *] 	"The path to the subprotocols folder"
+ * @param 	config	[config_t *config] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_subprotocols(const char *path)
+void load_subprotocols(config_t *config)
 {
+    size_t i, j;
     char *name;
-    int name_length;
-    int length;
     int *handle;
-    size_t path_len;
-    struct stat fstat;
     wss_subprotocol_t* proto;
-    struct dirent *direntp = NULL;
-    DIR *dirp = NULL;
-    char full_name[PATH_LENGTH];
+    int name_length = 0;
 
-    /* Check input parameters. */
-    if ( unlikely(NULL == path) ) {
-        return;
-    }
+    WSS_log(
+            SERVER_TRACE,
+            "Loading subprotocols",
+            __FILE__,
+            __LINE__
+           );
+    for (i = 0; i < config->subprotocols_length; i++) {
+        WSS_log(
+                SERVER_TRACE,
+                config->subprotocols[i],
+                __FILE__,
+                __LINE__
+               );
 
-    path_len = strlen(path);
-
-    if ( unlikely(! path || ! path_len || (path_len > PATH_LENGTH)) ) {
-        return;
-    }
-
-    /* Open directory */
-    dirp = opendir(path);
-    if ( unlikely(dirp == NULL) ) {
-        return;
-    }
-
-    while ( likely((direntp = readdir(dirp)) != NULL) ) {
-        handle = NULL;
-        proto = NULL;
-        name = direntp->d_name;
-        name_length = strlen(name);
-        memset(full_name, '\0', PATH_LENGTH);
-
-        /* Calculate full name, check we are in file length limits */
-        if ( unlikely((path_len + 2*name_length + 5) > PATH_LENGTH) ) {
+        if ( unlikely(NULL == (handle = dlopen(config->subprotocols[i], RTLD_LAZY))) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
             continue;
         }
 
-        /* Ignore special directories. */
-        if ( unlikely(strncmp(name, ".", name_length) == 0 || strncmp(name, "..", name_length) == 0) ) {
+        if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_subprotocol_t)))) ) {
+            (void) dlclose(proto->handle);
+            return;
+        }
+        proto->handle = handle;
+
+        if ( unlikely((*(void**)(&proto->init) = dlsym(proto->handle, "onInit")) == NULL) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
             continue;
         }
 
-        memcpy(full_name, path, path_len);
-        length = path_len;
-        if (full_name[length - 1] != '/') {
-            memcpy(full_name+length, "/", 1);
-            length += 1;
-        }
-        memcpy(full_name+length, name, name_length);
-        length += name_length;
-
-        /* Print only if it is really directory. */
-        if ( unlikely(stat(full_name, &fstat) < 0) ) {
+        if ( unlikely((*(void**)(&proto->connect) = dlsym(proto->handle, "onConnect")) == NULL) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
             continue;
         }
 
-        if (full_name[length - 1] != '/') {
-            strncat(full_name+length, "/", 1);
-            length++;
+        if ( unlikely((*(void**)(&proto->message) = dlsym(proto->handle, "onMessage")) == NULL) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
         }
-        memcpy(full_name+length, name, name_length);
-        length += name_length;
-        memcpy(full_name+length, ".so", 3);
-        length += 3;
 
-        if (S_ISDIR(fstat.st_mode)) {
-            if ( unlikely(NULL == (handle = dlopen(full_name, RTLD_LAZY))) ) {
-                continue;
-            }
-
-            if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_subprotocol_t)))) ) {
-                return;
-            }
-
-            if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
-                return;
-            }
-
-            proto->handle = handle;
-            memcpy(proto->name, name, name_length);
-
-            if ( unlikely((*(void**)(&proto->connect) = dlsym(proto->handle, "onConnect")) == NULL) ) {
-                continue;
-            }
-
-            if ( unlikely((*(void**)(&proto->message) = dlsym(proto->handle, "onMessage")) == NULL) ) {
-                continue;
-            }
-
-            if ( unlikely((*(void**)(&proto->write) = dlsym(proto->handle, "onWrite")) == NULL) ) {
-                continue;
-            }
-
-            if ( unlikely((*(void**)(&proto->close) = dlsym(proto->handle, "onClose")) == NULL) ) {
-                continue;
-            }
-
-            HASH_ADD_KEYPTR(hh, subprotocols, proto->name, name_length, proto);
+        if ( unlikely((*(void**)(&proto->write) = dlsym(proto->handle, "onWrite")) == NULL) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
         }
+
+        if ( unlikely((*(void**)(&proto->close) = dlsym(proto->handle, "onClose")) == NULL) ) {
+            WSS_log(
+                    SERVER_ERROR,
+                    dlerror(),
+                    __FILE__,
+                    __LINE__
+                   );
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
+        }
+
+        name = basename(config->subprotocols[i]);
+        for (j = 0; name[j] != '.' && name[j] != '\0'; j++) {
+            name_length++;
+        }
+
+        if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
+            (void) dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            return;
+        }
+
+        memcpy(proto->name, name, name_length);
+
+        HASH_ADD_KEYPTR(hh, subprotocols, proto->name, name_length, proto);
+
+        proto->init(config->subprotocols_config[i]);
+
+        WSS_log(
+                SERVER_TRACE,
+                "Successfully loaded",
+                __FILE__,
+                __LINE__
+               );
     }
-
-    /* Finalize resources. */
-    (void) closedir(dirp);
 }
 
 /**

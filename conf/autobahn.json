@@ -10,7 +10,18 @@
 	"origins" : [
 	],
 	"setup" : {
-        "subprotocols_folder" : "subprotocols/",
+        "subprotocols" : [
+            {
+                "file" : "subprotocols/echo/echo.so",
+                "config" : ""
+            }
+        ],
+        "extensions" : [
+            {
+                "file" : "extensions/permessage-deflate/permessage-deflate.so",
+                "config" : "server_max_window_bits=10;client_max_window_bits=10;memory_level=8"
+            }
+        ],
         "favicon" : "resources/favicon.ico",
         "timeout" : 1000,
 		"port" : {
@@ -34,7 +45,8 @@
         "ssl" : {
             "key" : "",
             "cert" : "",
-            "ca" : ""
+            "ca_file" : "",
+            "ca_path" : ""
         }
 	}
 }

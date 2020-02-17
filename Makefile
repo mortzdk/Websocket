@@ -1,6 +1,5 @@
 #Shell
-SHELL = /bin/bash
-
+SHELL = /bin/bash 
 #Executeable name
 NAME = WSServer
 
@@ -15,7 +14,7 @@ PROFILE = -Og -g -DNDEBUG
 DEBUG = -Og -g
 RELEASE = -O3 -funroll-loops -DNDEBUG
 SPACE = -Os -DNDEBUG
-EXEC = $(DEBUG)
+EXEC = $(RELEASE)
 
 #Compiler options
 CFLAGS = $(EXEC) \
@@ -164,7 +163,7 @@ valgrind: clean debug_mode all
 	@echo ================ [Executing $(NAME) using Valgrind] ================
 	@echo
 	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
-	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63
+	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json -l 63
 
 #make clean
 clean:
@@ -195,6 +194,20 @@ autobahn: release
     --name fuzzingclient \
     wsserver/autobahn
 	pkill $(NAME) || true
+
+autobahn_debug: debug
+	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
+	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
+	docker build -t wsserver/autobahn -f Dockerfile .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${REPORTS_FOLDER}:/reports \
+    -p 9001:9001 \
+    --name fuzzingclient \
+    wsserver/autobahn
+	pkill -USR1 memcheck
 
 #make test
 test: $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}}

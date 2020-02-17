@@ -18,6 +18,7 @@
 #include "log.h"
 #include "str.h"
 #include "subprotocols.h"
+#include "extensions.h"
 #include "predict.h"
 
 /**
@@ -98,19 +99,50 @@ char *trim(char *str) {
     return str;
 }
 
+inline static void WSS_header_set_version(header_t *header, char *v) {
+    int version = strtol(strtok_r(NULL, "", &v), (char **) NULL, 10);
+
+    if ( likely(header->ws_version < version) ) {
+        if ( unlikely(version == 4) ) {
+            header->ws_type = HYBI04;
+            header->ws_version = version;
+        } else if( unlikely(version == 5) ) {
+            header->ws_type = HYBI05;
+            header->ws_version = version;
+        } else if( unlikely(version == 6) ) {
+            header->ws_type = HYBI06;
+            header->ws_version = version;
+        } else if( unlikely(version == 7) ) {
+            header->ws_type = HYBI07;
+            header->ws_version = version;
+        } else if( unlikely(version == 8) ) {
+            header->ws_type = HYBI10;
+            header->ws_version = version;
+        } else if( unlikely(version == 13) ) {
+            header->ws_type = RFC6455;
+            header->ws_version = version;
+        }
+    }
+}
+
+
 /**
  * Parses a HTTP header into a header structure and returns the status code
  * appropriate.
  *
+ * @param   fd        [int]                    "The filedescriptor"
  * @param   header    [header_t *]             "The header structure to fill"
  * @param   config    [config_t *]             "The configuration of the server"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_parse_header(header_t *header, config_t *config) {
-    char *tokenptr, *lineptr, *sepptr, *temp, *line, *sep;
+enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config) {
+    bool valid, in_use;
+    size_t i;
+    char *tokenptr, *lineptr, *sepptr, *paramptr, *temp, *line, *sep, *accepted;
     unsigned int header_size = 0;
     char *token = strtok_r(header->content, "\r\n", &tokenptr);
     wss_subprotocol_t *proto;
+    wss_extension_t *ext;
 
     if ( unlikely(NULL == token) ) {
         return HttpStatus_BadRequest;
@@ -199,23 +231,16 @@ enum HttpStatus_Code WSS_parse_header(header_t *header, config_t *config) {
 
         if ( likely(line != NULL) ) {
             if ( strncasecmp("Sec-WebSocket-Version", line, 21) == 0 ) {
-                header->ws_version = strtol(
-                        (strtok_r(NULL, "", &lineptr)+1),
-                        (char **) NULL,
-                        10
-                        );
-                if ( header->ws_version == 4 ) {
-                    header->ws_type = HYBI04;
-                } else if( header->ws_version == 5 ) {
-                    header->ws_type = HYBI05;
-                } else if( header->ws_version == 6 ) {
-                    header->ws_type = HYBI06;
-                } else if( header->ws_version == 7 ) {
-                    header->ws_type = HYBI07;
-                } else if( header->ws_version == 8 ) {
-                    header->ws_type = HYBI10;
-                } else if( header->ws_version == 13 ) {
-                    header->ws_type = RFC6455;
+                // The |Sec-WebSocket-Version| header field MUST NOT appear more than once in an HTTP request.
+                if ( unlikely(header->ws_version != 0) ) {
+                    return HttpStatus_BadRequest;
+                }
+
+                sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
+                while (NULL != sep) {
+                    WSS_header_set_version(header, sep);
+
+                    sep = trim(strtok_r(NULL, ",", &sepptr));
                 }
             } else if ( strncasecmp("Upgrade", line, 7) == 0) {
                 header->ws_upgrade = (strtok_r(NULL, "", &lineptr)+1);
@@ -240,10 +265,57 @@ enum HttpStatus_Code WSS_parse_header(header_t *header, config_t *config) {
             } else if (strncasecmp("Sec-WebSocket-Origin", line, 20) == 0) {
                 header->ws_origin = (strtok_r(NULL, "", &lineptr)+1);
             } else if (strncasecmp("Sec-WebSocket-Key", line, 17) == 0) {
+                //The |Sec-WebSocket-Key| header field MUST NOT appear more than once in an HTTP request.
+                if ( unlikely(header->ws_key != NULL) ) {
+                    return HttpStatus_BadRequest;
+                }
                 header->ws_key = (strtok_r(NULL, "", &lineptr)+1);
             } else if (strncasecmp("Sec-WebSocket-Extensions", line, 24) == 0 ) {
-                // TODO: handle multiple occurences
-                header->ws_extension = (strtok_r(NULL, "", &lineptr)+1);
+                sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
+                while(NULL != sep) {
+                    in_use = false;
+                    sep = trim(strtok_r(sep, ";", &paramptr));
+
+                    if (NULL != (ext = find_extension(sep))) {
+                        for (i = 0; i < header->ws_extensions_count; i++) {
+                            if ( unlikely(header->ws_extensions[i]->ext == ext) ) {
+                                in_use = true; 
+                                break;
+                            }
+                        }
+
+                        if ( likely(! in_use) ) {
+                            ext->open(fd, trim(paramptr), &accepted, &valid); 
+                            if ( likely(valid) ) {
+                                if ( unlikely(NULL == (header->ws_extensions = WSS_realloc((void **) &header->ws_extensions, header->ws_extensions_count*sizeof(wss_ext_t *), (header->ws_extensions_count+1)*sizeof(wss_ext_t *)))) ) {
+                                    WSS_log(
+                                            SERVER_ERROR,
+                                            "Unable to allocate space for extension.",
+                                            __FILE__,
+                                            __LINE__
+                                           );
+                                    return HttpStatus_InternalServerError;
+                                }
+
+                                if ( unlikely(NULL == (header->ws_extensions[header->ws_extensions_count] = WSS_malloc(sizeof(wss_ext_t))))) {
+                                    WSS_log(
+                                            SERVER_ERROR,
+                                            "Unable to allocate space for extension.",
+                                            __FILE__,
+                                            __LINE__
+                                           );
+                                    return HttpStatus_InternalServerError;
+                                }
+                                header->ws_extensions[header->ws_extensions_count]->ext = ext;
+                                header->ws_extensions[header->ws_extensions_count]->name = sep;
+                                header->ws_extensions[header->ws_extensions_count]->accepted = accepted;
+                                header->ws_extensions_count += 1;
+                            }
+                        }
+                    }
+
+                    sep = trim(strtok_r(NULL, ",", &sepptr));
+                }
             } else if ( strncasecmp("Host", line, 4) == 0 ) {
                 header->host = (strtok_r(NULL, "", &lineptr)+1);
             } else if ( strncasecmp("WebSocket-Protocol", line, 18) == 0 ) {
@@ -595,11 +667,6 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
         }
     }
 
-    /**
-     * TODO: extensions
-     */
-    header->ws_extension = NULL;
-
     WSS_log(
             CLIENT_TRACE,
             "Accepted handshake, switching protocol",
@@ -617,6 +684,12 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
  * @return            [void]
  */
 void WSS_free_header(header_t *header) {
+    size_t i;
+    for (i = 0; i < header->ws_extensions_count; i++) {
+        WSS_free((void **) &header->ws_extensions[i]->accepted);
+        WSS_free((void **) &header->ws_extensions[i]);
+        WSS_free((void **) &header->ws_extensions);
+    }
     WSS_free((void **) &header->content);
     WSS_free((void **) &header);
 }
