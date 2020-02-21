@@ -69,6 +69,18 @@ static void config_add_port_to_hosts(config_t *config) {
     }
 }
 
+static void * config_alloc (size_t size, int zero, void * user_data)
+{
+   (void) user_data;
+   return zero ? WSS_calloc (1, size) : WSS_malloc (size);
+}
+
+static void config_release (void * ptr, void * user_data)
+{
+   (void) user_data;
+   WSS_free(&ptr);
+}
+
 /**
  * Loads configuration from JSON file
  *
@@ -77,34 +89,27 @@ static void config_add_port_to_hosts(config_t *config) {
  * @return 			[wss_error_t]   "The error status"
  */
 wss_error_t config_load(config_t *config, char *path) {
+    char error[1024];
     unsigned int i, j, length;
     char *name;
     json_value *value, *val, *temp;
 
     json_settings settings = (json_settings){
-        .settings = json_enable_comments
+        .settings = json_enable_comments,
+        .mem_alloc = config_alloc,
+        .mem_free = config_release
     };
-    char *error = WSS_malloc(1024*sizeof(char *));
-
-    if ( unlikely(NULL == error) ) {
-        return CONFIG_ERROR;
-    }
 
     config->length = strload(path, &config->string);
     if ( unlikely(NULL == config->string) ) {
+        WSS_log_error("Unable to load JSON file: %s", error);
         return CONFIG_LOAD_ERROR;
     }
 
     config->data = json_parse_ex(&settings, config->string, config->length, error);
 
     if ( unlikely(config->data == 0) ) {
-        WSS_log(
-                SERVER_ERROR,
-                error,
-                __FILE__,
-                __LINE__
-               );
-        WSS_free((void **) &error);
+        WSS_log_error("Unable to parse JSON config: %s", error);
         return JSON_PARSE_ERROR;
     } else {
         if ( likely(config->data->type == json_object) ) {
@@ -123,6 +128,7 @@ wss_error_t config_load(config_t *config, char *path) {
                         }
 
                         if ( unlikely(NULL == (config->hosts = WSS_calloc(length, sizeof(char *)))) ) {
+                            WSS_log_error("Unable to calloc hosts");
                             return MEMORY_ERROR;
                         }
 
@@ -147,6 +153,7 @@ wss_error_t config_load(config_t *config, char *path) {
                         }
 
                         if ( unlikely(NULL == (config->origins = WSS_calloc(length, sizeof(char *)))) ) {
+                            WSS_log_error("Unable to calloc origins");
                             return MEMORY_ERROR;
                         }
 
@@ -171,6 +178,7 @@ wss_error_t config_load(config_t *config, char *path) {
                         }
 
                         if ( unlikely(NULL == (config->paths = WSS_calloc(length, sizeof(char *)))) ) {
+                            WSS_log_error("Unable to calloc paths");
                             return MEMORY_ERROR;
                         }
 
@@ -195,6 +203,7 @@ wss_error_t config_load(config_t *config, char *path) {
                         }
 
                         if ( unlikely(NULL == (config->queries = WSS_calloc(length, sizeof(char *)))) ) {
+                            WSS_log_error("Unable to calloc queries");
                             return MEMORY_ERROR;
                         }
 
@@ -220,10 +229,12 @@ wss_error_t config_load(config_t *config, char *path) {
                             }
 
                             if ( unlikely(NULL == (config->subprotocols = WSS_calloc(length, sizeof(char *)))) ) {
+                                WSS_log_error("Unable to calloc subprotocols");
                                 return MEMORY_ERROR;
                             }
 
                             if ( unlikely(NULL == (config->subprotocols_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                WSS_log_error("Unable to calloc subprotocols configuration");
                                 return MEMORY_ERROR;
                             }
 
@@ -263,10 +274,12 @@ wss_error_t config_load(config_t *config, char *path) {
                             }
 
                             if ( unlikely(NULL == (config->extensions = WSS_calloc(length, sizeof(char *)))) ) {
+                                WSS_log_error("Unable to calloc extensions");
                                 return MEMORY_ERROR;
                             }
 
                             if ( unlikely(NULL == (config->extensions_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                WSS_log_error("Unable to calloc extensions configuration");
                                 return MEMORY_ERROR;
                             }
 
@@ -298,6 +311,12 @@ wss_error_t config_load(config_t *config, char *path) {
                     if ( (val = json_value_find(value, "favicon")) != NULL ) {
                         if ( likely(val->type == json_string) ) {
                             config->favicon = (char *)val->u.string.ptr;
+                        }
+                    }
+
+                    if ( (val = json_value_find(value, "log_level")) != NULL ) {
+                        if ( likely(val->type == json_integer) ) {
+                            config->log = (unsigned int)val->u.integer;
                         }
                     }
 
@@ -383,10 +402,10 @@ wss_error_t config_load(config_t *config, char *path) {
                                     (unsigned int)temp->u.integer;
                             }
 
-                            // Getting pipe size
-                            temp = json_value_find(val, "pipe");
+                            // Getting ringbuffer size
+                            temp = json_value_find(val, "ringbuffer");
                             if ( likely(temp->type == json_integer) ) {
-                                config->size_pipe =
+                                config->size_ringbuffer =
                                     (unsigned int)temp->u.integer;
                             }
 
@@ -433,13 +452,7 @@ wss_error_t config_load(config_t *config, char *path) {
                 }
             }
         } else {
-            WSS_log(
-                    SERVER_TRACE,
-                    "Root level of configuration is expected to be a JSON Object.",
-                    __FILE__,
-                    __LINE__
-                   );
-            WSS_free((void **) &error);
+            WSS_log_error("Root level of configuration is expected to be a JSON Object.");
             return JSON_ROOT_ERROR;
         }
     }
@@ -447,8 +460,6 @@ wss_error_t config_load(config_t *config, char *path) {
     if ( likely(config->port_http > 0 || config->port_https > 0) ) {
         config_add_port_to_hosts(config);
     }
-
-    WSS_free((void **) &error);
 
     return SUCCESS;
 }

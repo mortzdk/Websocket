@@ -84,7 +84,7 @@ ifeq ($(.SHELLSTATUS), 0)
 	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
 endif
 
-.PHONY: valgrind clean autobahn count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+.PHONY: valgrind cachegrind callgrind clean autobahn count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
 all: bin build docs log $(NAME)
@@ -108,10 +108,10 @@ debug_mode:
 	$(eval EXEC = $(DEBUG))
 
 profiling_mode:
-	$(eval EXEC = $(profile))
+	$(eval EXEC = $(PROFILE))
 
 space_mode:
-	$(eval EXEC = $(space))
+	$(eval EXEC = $(SPACE))
 
 # Recompile when headers change
 -include $(DEPS)
@@ -141,7 +141,7 @@ $(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) --param max-inline-insns-single=1000 -fprofile-arcs –ftest-coverage $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) --coverage --param max-inline-insns-single=1000 $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -153,7 +153,7 @@ ${TEST_NAMES}: debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
 	@echo
 	$(CC) ${CFLAGS} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
 		$(filter-out $(addsuffix .o, $(addprefix ${BUILD_FOLDER}/, main)), $(filter-out ${BUILD_FOLDER}/test_%.o, $(ALL_OBJ)))\
-		${FLAGS_EXTRA} ${FLAGS_CRITERION} $(INCLUDES)
+		${FLAGS_EXTRA} -lgcov ${FLAGS_CRITERION} $(INCLUDES)
 	@echo
 	@echo ================ [$@ compiled succesfully] ================
 
@@ -163,7 +163,21 @@ valgrind: clean debug_mode all
 	@echo ================ [Executing $(NAME) using Valgrind] ================
 	@echo
 	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
-	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json -l 63
+	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json
+
+#make cachegrind
+cachegrind: clean profiling_mode all
+	@echo
+	@echo ================ [Executing $(NAME) using Cachegrind] ================
+	@echo
+	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json
+
+#make callgrind
+callgrind: clean profiling_mode all
+	@echo
+	@echo ================ [Executing $(NAME) using Callgrind] ================
+	@echo
+	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json
 
 #make clean
 clean:
@@ -184,7 +198,7 @@ count:
 #make autobahn
 autobahn: release
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
-	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
+	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
 	--network="host" \
@@ -194,20 +208,6 @@ autobahn: release
     --name fuzzingclient \
     wsserver/autobahn
 	pkill $(NAME) || true
-
-autobahn_debug: debug
-	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
-	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
-	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json -l 63 &
-	docker build -t wsserver/autobahn -f Dockerfile .
-	docker run -it --rm \
-	--network="host" \
-    -v ${CONF_FOLDER}:/config \
-    -v ${REPORTS_FOLDER}:/reports \
-    -p 9001:9001 \
-    --name fuzzingclient \
-    wsserver/autobahn
-	pkill -USR1 memcheck
 
 #make test
 test: $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}}

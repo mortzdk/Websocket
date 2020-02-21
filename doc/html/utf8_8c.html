@@ -60,7 +60,8 @@ $(document).ready(function(){initNavTree('utf8_8c.html','');});
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">utf8.c File Reference</div>  </div>
 </div><!--header-->
@@ -79,12 +80,59 @@ Include dependency graph for utf8.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6b8d5a098e131a908cd6367be608171e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utf8_8c.html#a6b8d5a098e131a908cd6367be608171e">utf8_check</a> (const char *src, size_t length)</td></tr>
-<tr class="separator:a6b8d5a098e131a908cd6367be608171e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a848e59e81209fdd9ae5b6b9d31ae2984"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utf8_8c.html#a848e59e81209fdd9ae5b6b9d31ae2984">shiftless_updatestate</a> (uint32_t *<a class="el" href="server_8c.html#a4212e045d7f9f562399417a38884430c">state</a>, uint32_t byte)</td></tr>
+<tr class="separator:a848e59e81209fdd9ae5b6b9d31ae2984"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dd558c73c700233e9b2d9376e238d7e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utf8_8c.html#a6dd558c73c700233e9b2d9376e238d7e">utf8_check</a> (const char *src, size_t len)</td></tr>
+<tr class="separator:a6dd558c73c700233e9b2d9376e238d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ad3b6e3136394f1dfb6e0f390f93bb2e0"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utf8_8c.html#ad3b6e3136394f1dfb6e0f390f93bb2e0">utf8d</a> []</td></tr>
+<tr class="separator:ad3b6e3136394f1dfb6e0f390f93bb2e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ddffa7d091674ff9483c8a4c78becf2"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utf8_8c.html#a6ddffa7d091674ff9483c8a4c78becf2">shifted_utf8d_transition</a> []</td></tr>
+<tr class="separator:a6ddffa7d091674ff9483c8a4c78becf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a6b8d5a098e131a908cd6367be608171e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b8d5a098e131a908cd6367be608171e">&#9670;&nbsp;</a></span>utf8_check()</h2>
+<a id="a848e59e81209fdd9ae5b6b9d31ae2984"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a848e59e81209fdd9ae5b6b9d31ae2984">&#9670;&nbsp;</a></span>shiftless_updatestate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static uint32_t shiftless_updatestate </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>byte</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="utf8_8c_source.html#l00745">745</a> of file <a class="el" href="utf8_8c_source.html">utf8.c</a>.</p>
+
+</div>
+</div>
+<a id="a6dd558c73c700233e9b2d9376e238d7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dd558c73c700233e9b2d9376e238d7e">&#9670;&nbsp;</a></span>utf8_check()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -99,7 +147,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>length</em>&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -109,12 +157,61 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p class="definition">Definition at line <a class="el" href="utf8_8c_source.html#l00752">752</a> of file <a class="el" href="utf8_8c_source.html">utf8.c</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a6ddffa7d091674ff9483c8a4c78becf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ddffa7d091674ff9483c8a4c78becf2">&#9670;&nbsp;</a></span>shifted_utf8d_transition</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t shifted_utf8d_transition[]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line">    0x0,  0x10, 0x20, 0x30, 0x50, 0x80, 0x70, 0x10, 0x10, 0x10, 0x40, 0x60,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x0,  0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x0,  0x10, 0x0,  0x10, 0x10, 0x10, 0x10, 0x10, 0x10,</div><div class="line">    0x10, 0x20, 0x10, 0x10, 0x10, 0x10, 0x10, 0x20, 0x10, 0x20, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x20,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x20, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x20, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x30, 0x10, 0x30, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x30, 0x10, 0x10, 0x10, 0x10, 0x10, 0x30,</div><div class="line">    0x10, 0x30, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x30, 0x10, 0x10,</div><div class="line">    0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10</div><div class="line">}</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="utf8_8c_source.html#l00730">730</a> of file <a class="el" href="utf8_8c_source.html">utf8.c</a>.</p>
+
+</div>
+</div>
+<a id="ad3b6e3136394f1dfb6e0f390f93bb2e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3b6e3136394f1dfb6e0f390f93bb2e0">&#9670;&nbsp;</a></span>utf8d</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t utf8d[]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, </div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, </div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, </div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,</div><div class="line">    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, </div><div class="line">    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,</div><div class="line">    1,   1,   1,   1,   1,   9,   9,   9,   9,   9,   9,</div><div class="line">    9,   9,   9,   9,   9,   9,   9,   9,   9,   9, </div><div class="line">    7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,</div><div class="line">    7,   7,   7,   7,   7,   7,   7,   7,   7,   7,   7,</div><div class="line">    7,   7,   7,   7,   7,   7,   7,   7,   7,   7, </div><div class="line">    8,   8,   2,   2,   2,   2,   2,   2,   2,   2,   2,</div><div class="line">    2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,</div><div class="line">    2,   2,   2,   2,   2,   2,   2,   2,   2,   2, </div><div class="line">    0xa, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3,</div><div class="line">    0x3, 0x3, 0x4, 0x3, 0x3, </div><div class="line">    0xb, 0x6, 0x6, 0x6, 0x5, 0x8, 0x8, 0x8, 0x8, 0x8, 0x8,</div><div class="line">    0x8, 0x8, 0x8, 0x8, 0x8 </div><div class="line">}</div></div><!-- fragment -->
 <p>Thanks to the AUTHORS of <a href="https://github.com/lemire/fastvalidate-utf-8/">https://github.com/lemire/fastvalidate-utf-8/</a>. </p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </p>
 
-<p class="definition">Definition at line <a class="el" href="utf8_8c_source.html#l00872">872</a> of file <a class="el" href="utf8_8c_source.html">utf8.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="utf8_8c_source.html#l00702">702</a> of file <a class="el" href="utf8_8c_source.html">utf8.c</a>.</p>
 
 </div>
 </div>

@@ -24,7 +24,7 @@
  */
 wss_error_t socket_create(server_t *server) {
     if ( unlikely((server->fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to create server filedescriptor: %s", strerror(errno));
         return SOCKET_CREATE_ERROR;
     }
     return SUCCESS;
@@ -39,7 +39,7 @@ wss_error_t socket_create(server_t *server) {
 wss_error_t socket_reuse(int fd) {
     int reuse = 1;
     if ( unlikely((setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) < 0) ){
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to reuse port: %s", strerror(errno));
         return SOCKET_REUSE_ERROR;
     }
     return SUCCESS;
@@ -65,7 +65,7 @@ wss_error_t socket_bind(server_t *server) {
      */
     if ( unlikely((bind(server->fd, (struct sockaddr *) &server->info,
                     sizeof(server->info))) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to bind socket to port: %s", strerror(errno));
         server->fd = -1;
         return SOCKET_BIND_ERROR;
     }
@@ -82,14 +82,14 @@ wss_error_t socket_non_blocking(int fd) {
     int flags;
 
     if ( unlikely((flags = fcntl(fd, F_GETFL, 0)) < 0)) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to fetch current filedescriptor flags: %s", strerror(errno));
         return SOCKET_NONBLOCKED_ERROR;
     }
 
     flags |= O_NONBLOCK;
 
     if ( unlikely((flags = fcntl(fd, F_SETFL, flags)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to set flags for filedescriptor: %s", strerror(errno));
         return SOCKET_NONBLOCKED_ERROR;
     }
 
@@ -107,7 +107,7 @@ wss_error_t socket_listen(int fd) {
      * Listen on the server socket for connections
      */
     if ( unlikely((listen(fd, SOMAXCONN)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to listen on filedescriptor: %s", strerror(errno));
         return SOCKET_LISTEN_ERROR;
     }
     return SUCCESS;
@@ -129,7 +129,7 @@ wss_error_t socket_epoll(server_t *server) {
      * Creating epoll instance.
      */
     if ( unlikely((server->epoll_fd = epoll_create1(0)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to create server epoll structure: %s", strerror(errno));
         server->epoll_fd = -1;
         return EPOLL_ERROR;
     }
@@ -141,7 +141,7 @@ wss_error_t socket_epoll(server_t *server) {
     event.data.fd = server->fd;
 
     if ( unlikely((epoll_ctl(server->epoll_fd, EPOLL_CTL_ADD, server->fd, &event)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_fatal("Unable to add servers filedescriptor to epoll: %s", strerror(errno));
         return EPOLL_ERROR;
     }
 
@@ -168,12 +168,7 @@ wss_error_t socket_threadpool(server_t *server) {
     for (i = 0; likely(i < server->config->pool_queues); i++) {
         if ( unlikely(NULL == (server->pool[i] = threadpool_create(server->config->pool_workers,
                         server->config->pool_size, server->config->size_thread, i*server->config->pool_workers))) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    "The threadpool failed to initialize",
-                    __FILE__,
-                    __LINE__
-                   );
+            WSS_log_fatal("The threadpool failed to initialize");
             return THREADPOOL_ERROR;
         }
     }
@@ -189,12 +184,18 @@ wss_error_t socket_threadpool(server_t *server) {
  * @return 			[wss_error_t]   "The error status"
  */
 wss_error_t socket_wait(server_t *server) {
-    // Wait for 500 milliseconds
-    int n = epoll_wait(server->epoll_fd, server->events, server->config->pool_size, 1000);
+    int n = epoll_pwait(server->epoll_fd, server->events, server->config->pool_size, -1, &server->mask);
+
+    // Wait for 1000 milliseconds
+    //int n = epoll_wait(server->epoll_fd, server->events, server->config->pool_size, 1000);
 
     if ( unlikely(n < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
-        return SOCKET_WAIT_ERROR;
+        if (errno != EINTR) {
+            WSS_log_fatal("Failed waiting for epoll: %s", strerror(errno));
+            return SOCKET_WAIT_ERROR;
+        }
+
+        return 0;
     }
 
     return n;

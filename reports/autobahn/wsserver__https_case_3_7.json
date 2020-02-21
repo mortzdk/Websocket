@@ -1,5 +1,5 @@
 {
-   "agent": "WSServer (HTTPs)",
+   "agent": "WSServer (HTTPS)",
    "behavior": "OK",
    "behaviorClose": "OK",
    "case": 34,
@@ -8,7 +8,7 @@
    "createWirelog": true,
    "description": "Send Close with <b>RSV = 7</b>.",
    "droppedByMe": false,
-   "duration": 2,
+   "duration": 1,
    "expectation": "The connection is failed immediately, since RSV must be 0.",
    "expected": {
       "OK": []
@@ -21,8 +21,8 @@
       "requireClean": false
    },
    "failedByMe": false,
-   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: +SgJuTOxs0mAueSx4uI2lQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: jLz74ZESBtRJbY4RXWu/InYTuRY=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
+   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: V7AdG6XBn1edDtvDzo2bUw==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: Y6VZ2Rls5qG0EHfym1vG+1ADZVg=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
    "id": "3.7",
    "isServer": false,
    "localCloseCode": 1000,
@@ -41,7 +41,7 @@
       "32": 1,
       "153": 1
    },
-   "started": "2020-01-29T08:53:45.067Z",
+   "started": "2020-02-21T20:26:35.084Z",
    "trafficStats": null,
    "txFrameStats": {
       "8": 2
@@ -69,7 +69,7 @@
          "RO",
          [
             153,
-            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a206a4c7a37345a4553 ..."
+            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a205936565a32526c73 ..."
          ]
       ],
       [
@@ -81,7 +81,7 @@
          8,
          true,
          7,
-         "1562711c",
+         "44168fae",
          null,
          null,
          false
@@ -90,7 +90,7 @@
          "TO",
          [
             6,
-            "f8801562711c"
+            "f88044168fae"
          ],
          false
       ],
@@ -126,7 +126,7 @@
          8,
          true,
          0,
-         "5d355163",
+         "7ff94a81",
          null,
          null,
          false
@@ -135,7 +135,7 @@
          "TO",
          [
             8,
-            "88825d3551635edd"
+            "88827ff94a817c11"
          ],
          false
       ]

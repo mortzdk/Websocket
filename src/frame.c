@@ -11,6 +11,7 @@
 #include "str.h"
 #include "header.h"
 #include "alloc.h"
+#include "log.h"
 #include "predict.h"
 
 #if defined(_MSC_VER)
@@ -80,6 +81,7 @@ static uint64_t ntohl64(uint64_t value) {
 }
 
 inline static void unmask(frame_t *frame) {
+    char *applicationData = frame->payload+frame->extensionDataLength;
 #if defined(__AVX512F__)
     uint64_t i = 0;
     __m512i masked_data;
@@ -105,8 +107,8 @@ inline static void unmask(frame_t *frame) {
 
     if ( frame->applicationDataLength > 64 ) {
         for (; likely(i <= frame->applicationDataLength - 64); i += 64) {
-            masked_data = _mm512_loadu_si512((const __m512i *)(frame->applicationData+i));
-            _mm512_storeu_si512((__m512i *)(frame->applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));
+            masked_data = _mm512_loadu_si512((const __m512i *)(applicationData+i));
+            _mm512_storeu_si512((__m512i *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));
         }
     }
 
@@ -114,10 +116,10 @@ inline static void unmask(frame_t *frame) {
     if ( likely(i < frame->applicationDataLength) ) {
         char buffer[64];
         memset(buffer, '\0', 64);
-        memcpy(buffer, frame->applicationData + i, frame->applicationDataLength - i);
+        memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
         masked_data = _mm256_loadu_si256((const __m256i *)buffer);
         _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));
-        memcpy(frame->applicationData + i, buffer, (frame->applicationDataLength - i));
+        memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__AVX2__) && defined(__AVX__)
     uint64_t i = 0;
@@ -159,8 +161,8 @@ inline static void unmask(frame_t *frame) {
 
     if ( frame->applicationDataLength > 32 ) {
         for (; likely(i <= frame->applicationDataLength - 32); i += 32) {
-            masked_data = _mm256_loadu_si256((const __m256i *)(frame->applicationData+i));
-            _mm256_storeu_si256((__m256i *)(frame->applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));
+            masked_data = _mm256_loadu_si256((const __m256i *)(applicationData+i));
+            _mm256_storeu_si256((__m256i *)(applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));
         }
     }
 
@@ -168,10 +170,10 @@ inline static void unmask(frame_t *frame) {
     if ( likely(i < frame->applicationDataLength) ) {
         char buffer[32];
         memset(buffer, '\0', 32);
-        memcpy(buffer, frame->applicationData + i, frame->applicationDataLength - i);
+        memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
         masked_data = _mm256_loadu_si256((const __m256i *)buffer);
         _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));
-        memcpy(frame->applicationData + i, buffer, (frame->applicationDataLength - i));
+        memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__SSE2__)
    uint64_t i = 0;
@@ -197,23 +199,23 @@ inline static void unmask(frame_t *frame) {
 
    if ( frame->applicationDataLength > 16 ) {
        for (; likely(i <= frame->applicationDataLength - 16); i += 16) {
-           masked_data = _mm_loadu_si128((const __m128i *)(frame->applicationData+i));
-           _mm_storeu_si128((__m128i *)(frame->applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
+           masked_data = _mm_loadu_si128((const __m128i *)(applicationData+i));
+           _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
        }
    }
 
    if ( likely(i < frame->applicationDataLength) ) {
        char buffer[16];
        memset(buffer, '\0', 16);
-       memcpy(buffer, frame->applicationData + i, frame->applicationDataLength - i);
+       memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
        masked_data = _mm_loadu_si128((const __m128i *)buffer);
        _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));
-       memcpy(frame->applicationData + i, buffer, (frame->applicationDataLength - i));
+       memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
    }
 #else
    uint64_t i, j;
    for (i = 0, j = 0; likely(i < frame->applicationDataLength); i++, j++){
-       frame->applicationData[j] = frame->applicationData[i] ^ frame->maskingKey[j % 4];
+       applicationData[j] = applicationData[i] ^ frame->maskingKey[j % 4];
    }
 #endif
 }
@@ -232,7 +234,10 @@ inline static void unmask(frame_t *frame) {
 frame_t *WSS_parse_frame(header_t *header, char *payload, size_t length, size_t *offset) {
     frame_t *frame;
 
+    WSS_log_trace("Parsing frame starting from offset %lu", *offset);
+
     if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+        WSS_log_error("Unable to allocate frame");
         return NULL;
     }
 
@@ -281,11 +286,12 @@ frame_t *WSS_parse_frame(header_t *header, char *payload, size_t length, size_t 
     frame->applicationDataLength = frame->payloadLength-frame->extensionDataLength;
     if ( likely(frame->applicationDataLength > 0) ) {
         if ( likely(*offset+frame->applicationDataLength <= length) ) {
-            if ( unlikely(NULL == (frame->applicationData = WSS_malloc(frame->applicationDataLength))) ) {
+            if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength))) ) {
+                WSS_log_error("Unable to allocate frame application data");
                 return NULL;
             }
 
-            memcpy(frame->applicationData, payload+*offset, frame->applicationDataLength);
+            memcpy(frame->payload, payload+*offset, frame->applicationDataLength);
         }
         *offset += frame->applicationDataLength;
     }
@@ -309,6 +315,8 @@ size_t WSS_stringify_frame(frame_t *frame, char **message) {
     size_t len = 2;
     char *mes;
 
+    WSS_log_trace("Creating byte message from frame");
+
     if ( likely(frame->payloadLength > 125) ) {
         if ( likely(frame->payloadLength <= 65535) ) {
             len += 2;
@@ -320,6 +328,7 @@ size_t WSS_stringify_frame(frame_t *frame, char **message) {
     len += frame->payloadLength;
 
     if ( unlikely(NULL == (mes = WSS_malloc(len*sizeof(char)))) ) {
+        WSS_log_error("Unable to allocate return message");
         *message = NULL;
         return 0;
     }
@@ -359,12 +368,12 @@ size_t WSS_stringify_frame(frame_t *frame, char **message) {
     }
 
     if (frame->extensionDataLength > 0) {
-        memcpy(mes+offset, frame->extensionData, frame->extensionDataLength);
+        memcpy(mes+offset, frame->payload, frame->extensionDataLength);
         offset += frame->extensionDataLength;
     }
 
     if ( likely(frame->applicationDataLength > 0) ) {
-        memcpy(mes+offset, frame->applicationData, frame->applicationDataLength);
+        memcpy(mes+offset, frame->payload+frame->extensionDataLength, frame->applicationDataLength);
         offset += frame->applicationDataLength;
     }
 
@@ -387,15 +396,20 @@ size_t WSS_stringify_frames(frame_t **frames, size_t size, char **message) {
     char *msg = NULL;
     size_t message_length = 0;
 
+    WSS_log_trace("Creating byte message from frames");
+
     for (i = 0; likely(i < size); i++) {
         n = WSS_stringify_frame(frames[i], &f);
+
         // If we receive less than two bytes, we did not receive a valid frame
         if ( unlikely(n < 2) ) {
+            WSS_log_error("Received invalid frame");
             return 0;
         }
 
         if ( unlikely(NULL == (msg = WSS_realloc((void **) &msg, 
                         message_length*sizeof(char), (message_length+n+1)*sizeof(char)))) ) {
+            WSS_log_error("Unable to allocate message string");
             return 0;
         }
 
@@ -423,7 +437,10 @@ frame_t *WSS_closing_frame(header_t *header, wss_close_t reason) {
     char *reason_str;
     uint16_t nbo_reason;
 
+    WSS_log_trace("Creating closing frame");
+
     if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+        WSS_log_error("Unable to allocate closing frame");
         return NULL;
     }
 
@@ -478,17 +495,19 @@ frame_t *WSS_closing_frame(header_t *header, wss_close_t reason) {
             reason_str = "Failed TLS Handshake";
             break;
         default:
+            WSS_log_error("Unknown closing reason");
             WSS_free((void **) frame);
             return NULL;
     }
     frame->applicationDataLength = strlen(reason_str)+sizeof(uint16_t);
-    if ( unlikely(NULL == (frame->applicationData = WSS_malloc(frame->applicationDataLength+1))) ) {
+    if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {
+        WSS_log_error("Unable to allocate closing frame application data");
         WSS_free((void **) frame);
         return NULL;
     }
     nbo_reason = htons(reason);
-    memcpy(frame->applicationData, &nbo_reason, sizeof(uint16_t));
-    memcpy(frame->applicationData+sizeof(uint16_t), reason_str, strlen(reason_str));
+    memcpy(frame->payload, &nbo_reason, sizeof(uint16_t));
+    memcpy(frame->payload+sizeof(uint16_t), reason_str, strlen(reason_str));
 
     frame->payloadLength += frame->extensionDataLength;
     frame->payloadLength += frame->applicationDataLength;
@@ -503,9 +522,12 @@ frame_t *WSS_closing_frame(header_t *header, wss_close_t reason) {
  * @return 		     [frame_t *]    "A websocket frame"
  */
 frame_t *WSS_ping_frame(header_t *header) {
+    WSS_log_trace("Creating ping frame");
+
     frame_t *frame;
 
     if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+        WSS_log_error("Unable to allocate ping frame");
         return NULL;
     }
 
@@ -513,8 +535,9 @@ frame_t *WSS_ping_frame(header_t *header) {
     frame->opcode = 0x9;
     frame->mask = 0;
 
-    frame->applicationDataLength = 1024;
-    if ( unlikely(NULL == (frame->applicationData = random_bytes(frame->applicationDataLength))) ) {
+    frame->applicationDataLength = 120;
+    if ( unlikely(NULL == (frame->payload = random_bytes(frame->applicationDataLength))) ) {
+        WSS_log_error("Unable to allocate ping frame application data");
         WSS_free((void **) frame);
         return NULL;
     }
@@ -533,6 +556,8 @@ frame_t *WSS_ping_frame(header_t *header) {
  * @return 		     [frame_t *]    "A websocket frame"
  */
 frame_t *WSS_pong_frame(header_t *header, frame_t *ping) {
+    WSS_log_trace("Converting ping frame to pong frame");
+
     ping->fin = 1;
     ping->rsv1 = 0;
     ping->rsv2 = 0;
@@ -552,7 +577,6 @@ frame_t *WSS_pong_frame(header_t *header, frame_t *ping) {
  * @return 		     [void]         
  */
 void WSS_free_frame(frame_t *frame) {
-    WSS_free((void **) &frame->applicationData);
-    WSS_free((void **) &frame->extensionData);
+    WSS_free((void **) &frame->payload);
     WSS_free((void **) &frame);
 }

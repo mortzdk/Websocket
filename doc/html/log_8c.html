@@ -67,9 +67,12 @@ $(document).ready(function(){initNavTree('log_8c.html','');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;stdarg.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
+<code>#include &lt;sys/time.h&gt;</code><br />
 <code>#include &lt;pthread.h&gt;</code><br />
-<code>#include &quot;server.h&quot;</code><br />
 <code>#include &quot;log.h&quot;</code><br />
 <code>#include &quot;predict.h&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -82,44 +85,129 @@ Include dependency graph for log.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a1ab8de432bf35bd49e77c51d4183feba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a1ab8de432bf35bd49e77c51d4183feba">WSS_log</a> (log_t type, char *msg, char *name, int line)</td></tr>
-<tr class="separator:a1ab8de432bf35bd49e77c51d4183feba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bc3e379a4386e0ace62a6ea201638c8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a0bc3e379a4386e0ace62a6ea201638c8">time_to_str</a> (char *)</td></tr>
+<tr class="separator:a0bc3e379a4386e0ace62a6ea201638c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92d638030a86fd259063b074c20e74eb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a92d638030a86fd259063b074c20e74eb">lock</a> (void)</td></tr>
+<tr class="separator:a92d638030a86fd259063b074c20e74eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb7cc7eb4e959fda6a43c8dd85f20090"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#abb7cc7eb4e959fda6a43c8dd85f20090">unlock</a> (void)</td></tr>
+<tr class="separator:abb7cc7eb4e959fda6a43c8dd85f20090"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a670c547ace6683148e5f480c4fc4c0f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a670c547ace6683148e5f480c4fc4c0f0">log_set_udata</a> (void *<a class="el" href="log_8c.html#a697ce711b67313990d351b5c95f87aed">udata</a>)</td></tr>
+<tr class="separator:a670c547ace6683148e5f480c4fc4c0f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93d6674a530b372c85e6bdf275e6e6b4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a93d6674a530b372c85e6bdf275e6e6b4">log_set_lock</a> (log_LockFn fn)</td></tr>
+<tr class="separator:a93d6674a530b372c85e6bdf275e6e6b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0f33363d4098787cac5b47f0a6ad443"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#af0f33363d4098787cac5b47f0a6ad443">log_set_fp</a> (FILE *<a class="el" href="log_8c.html#aa065f30aa9f5f9a42132c82c787ee70b">fp</a>)</td></tr>
+<tr class="separator:af0f33363d4098787cac5b47f0a6ad443"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2493e94f152a28b2ba4e3a2e2bba65d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#af2493e94f152a28b2ba4e3a2e2bba65d">log_set_level</a> (int <a class="el" href="log_8c.html#acf4d33ee4cff36f69b924471174dcb11">level</a>)</td></tr>
+<tr class="separator:af2493e94f152a28b2ba4e3a2e2bba65d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15fc2e61d925edc83d6eaa748a7fb40c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a15fc2e61d925edc83d6eaa748a7fb40c">log_set_quiet</a> (int enable)</td></tr>
+<tr class="separator:a15fc2e61d925edc83d6eaa748a7fb40c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac008ecbde449b2dd1bc4f8671d9a0e07"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#ac008ecbde449b2dd1bc4f8671d9a0e07">log_log</a> (int <a class="el" href="log_8c.html#acf4d33ee4cff36f69b924471174dcb11">level</a>, const char *file, int line, const char *fmt,...)</td></tr>
+<tr class="separator:ac008ecbde449b2dd1bc4f8671d9a0e07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a743cdbf5e9faa3e48fe6537e28c3ee6f"><td class="memItemLeft" align="right" valign="top">log_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a743cdbf5e9faa3e48fe6537e28c3ee6f">log_type</a></td></tr>
-<tr class="separator:a743cdbf5e9faa3e48fe6537e28c3ee6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15ff4169dde7db80ab77ee460ffcc63d"><td class="memItemLeft" >struct {</td></tr>
+<tr class="memitem:a4b3680f3f7a8953bb5598efac17c592e"><td class="memItemLeft" >&#160;&#160;&#160;void *&#160;&#160;&#160;<a class="el" href="log_8c.html#a697ce711b67313990d351b5c95f87aed">udata</a></td></tr>
+<tr class="separator:a4b3680f3f7a8953bb5598efac17c592e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3be5f42861c686f26f34b02b12734bf"><td class="memItemLeft" >&#160;&#160;&#160;log_LockFn&#160;&#160;&#160;<a class="el" href="log_8c.html#a9b4d82bfadfae80fd7e08baefd26f006">lock</a></td></tr>
+<tr class="separator:ab3be5f42861c686f26f34b02b12734bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab422a5c2f1610508ec0c2a1ecc4e86e2"><td class="memItemLeft" >&#160;&#160;&#160;FILE *&#160;&#160;&#160;<a class="el" href="log_8c.html#aa065f30aa9f5f9a42132c82c787ee70b">fp</a></td></tr>
+<tr class="separator:ab422a5c2f1610508ec0c2a1ecc4e86e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a576b2a50f137fff672a01486a4fd026e"><td class="memItemLeft" >&#160;&#160;&#160;int&#160;&#160;&#160;<a class="el" href="log_8c.html#acf4d33ee4cff36f69b924471174dcb11">level</a></td></tr>
+<tr class="separator:a576b2a50f137fff672a01486a4fd026e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a386bcca8cc8991f319042d73e86e1b51"><td class="memItemLeft" >&#160;&#160;&#160;int&#160;&#160;&#160;<a class="el" href="log_8c.html#a55602ca214fb365e8deef9a73c8442e7">quiet</a></td></tr>
+<tr class="separator:a386bcca8cc8991f319042d73e86e1b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15ff4169dde7db80ab77ee460ffcc63d"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a15ff4169dde7db80ab77ee460ffcc63d">L</a></td></tr>
+<tr class="separator:a15ff4169dde7db80ab77ee460ffcc63d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeac221e38b7b9ce7df8722c842bf671"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#abeac221e38b7b9ce7df8722c842bf671">year</a></td></tr>
+<tr class="separator:abeac221e38b7b9ce7df8722c842bf671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedb06abe5aff12fa3e7e0e71a374edfb"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#aedb06abe5aff12fa3e7e0e71a374edfb">month</a></td></tr>
+<tr class="separator:aedb06abe5aff12fa3e7e0e71a374edfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c11afc03fc3ee49bab660def6558f2a"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a4c11afc03fc3ee49bab660def6558f2a">day</a></td></tr>
+<tr class="separator:a4c11afc03fc3ee49bab660def6558f2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15df9ba285cfd842f284025f904edc9c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a15df9ba285cfd842f284025f904edc9c">hour</a></td></tr>
+<tr class="separator:a15df9ba285cfd842f284025f904edc9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab693b677bdc9ded12b06daf49778101c"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#ab693b677bdc9ded12b06daf49778101c">minutes</a></td></tr>
+<tr class="separator:ab693b677bdc9ded12b06daf49778101c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77bd4f876bdc3afed5acdd936f775d34"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a77bd4f876bdc3afed5acdd936f775d34">seconds</a></td></tr>
+<tr class="separator:a77bd4f876bdc3afed5acdd936f775d34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbb64e3b0553e408c9b0a567d0454eb1"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#adbb64e3b0553e408c9b0a567d0454eb1">usec</a></td></tr>
+<tr class="separator:adbb64e3b0553e408c9b0a567d0454eb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51e1093fc8c7d60746adc4d05e5c4289"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a51e1093fc8c7d60746adc4d05e5c4289">time_string</a> [100]</td></tr>
+<tr class="separator:a51e1093fc8c7d60746adc4d05e5c4289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cf96982557d56650f0f4cd3762f05a0"><td class="memItemLeft" align="right" valign="top">static struct timeval&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a9cf96982557d56650f0f4cd3762f05a0">tv</a></td></tr>
+<tr class="separator:a9cf96982557d56650f0f4cd3762f05a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f2a8f3f4d047d83e930aba651d036eb"><td class="memItemLeft" align="right" valign="top">static struct tm *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a></td></tr>
+<tr class="separator:a9f2a8f3f4d047d83e930aba651d036eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ee99f12766d97f932da55d2232f5cf5"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a6ee99f12766d97f932da55d2232f5cf5">level_names</a> []</td></tr>
+<tr class="separator:a6ee99f12766d97f932da55d2232f5cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a2ced25981b49f1555d16f390df6006"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="log_8c.html#a8a2ced25981b49f1555d16f390df6006">level_colors</a> []</td></tr>
+<tr class="separator:a8a2ced25981b49f1555d16f390df6006"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a1ab8de432bf35bd49e77c51d4183feba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ab8de432bf35bd49e77c51d4183feba">&#9670;&nbsp;</a></span>WSS_log()</h2>
+<a id="a92d638030a86fd259063b074c20e74eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92d638030a86fd259063b074c20e74eb">&#9670;&nbsp;</a></span>lock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void lock </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00075">75</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="ac008ecbde449b2dd1bc4f8671d9a0e07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac008ecbde449b2dd1bc4f8671d9a0e07">&#9670;&nbsp;</a></span>log_log()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void WSS_log </td>
+          <td class="memname">void log_log </td>
           <td>(</td>
-          <td class="paramtype">log_t&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>level</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>msg</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>line</em>&#160;</td>
+          <td class="paramname"><em>line</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>fmt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -129,36 +217,538 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Function that logs whatever is given to it. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">type</td><td>[log_t] "The type of logging" </td></tr>
-    <tr><td class="paramname">msg</td><td>[char *] "The error message" </td></tr>
-    <tr><td class="paramname">name</td><td>[char *] "The name of the file where the log came from" </td></tr>
-    <tr><td class="paramname">line</td><td>[int] "The linenumber that the log was called" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00020">20</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00107">107</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
 
 </div>
 </div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="a743cdbf5e9faa3e48fe6537e28c3ee6f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a743cdbf5e9faa3e48fe6537e28c3ee6f">&#9670;&nbsp;</a></span>log_type</h2>
+<a id="af0f33363d4098787cac5b47f0a6ad443"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0f33363d4098787cac5b47f0a6ad443">&#9670;&nbsp;</a></span>log_set_fp()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">log_t log_type</td>
+          <td class="memname">void log_set_fp </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>fp</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00009">9</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00095">95</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="af2493e94f152a28b2ba4e3a2e2bba65d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2493e94f152a28b2ba4e3a2e2bba65d">&#9670;&nbsp;</a></span>log_set_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_set_level </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>level</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00099">99</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a93d6674a530b372c85e6bdf275e6e6b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93d6674a530b372c85e6bdf275e6e6b4">&#9670;&nbsp;</a></span>log_set_lock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_set_lock </td>
+          <td>(</td>
+          <td class="paramtype">log_LockFn&#160;</td>
+          <td class="paramname"><em>fn</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00091">91</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a15fc2e61d925edc83d6eaa748a7fb40c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15fc2e61d925edc83d6eaa748a7fb40c">&#9670;&nbsp;</a></span>log_set_quiet()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_set_quiet </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00103">103</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a670c547ace6683148e5f480c4fc4c0f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a670c547ace6683148e5f480c4fc4c0f0">&#9670;&nbsp;</a></span>log_set_udata()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void log_set_udata </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>udata</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00087">87</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a0bc3e379a4386e0ace62a6ea201638c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bc3e379a4386e0ace62a6ea201638c8">&#9670;&nbsp;</a></span>time_to_str()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void time_to_str </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buf</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00148">148</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="abb7cc7eb4e959fda6a43c8dd85f20090"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb7cc7eb4e959fda6a43c8dd85f20090">&#9670;&nbsp;</a></span>unlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void unlock </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00081">81</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a4c11afc03fc3ee49bab660def6558f2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c11afc03fc3ee49bab660def6558f2a">&#9670;&nbsp;</a></span>day</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int day</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00046">46</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="aa065f30aa9f5f9a42132c82c787ee70b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa065f30aa9f5f9a42132c82c787ee70b">&#9670;&nbsp;</a></span>fp</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FILE* fp</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00037">37</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a15df9ba285cfd842f284025f904edc9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15df9ba285cfd842f284025f904edc9c">&#9670;&nbsp;</a></span>hour</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int hour</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00047">47</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a15ff4169dde7db80ab77ee460ffcc63d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15ff4169dde7db80ab77ee460ffcc63d">&#9670;&nbsp;</a></span>L</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct { ... }   L</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acf4d33ee4cff36f69b924471174dcb11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf4d33ee4cff36f69b924471174dcb11">&#9670;&nbsp;</a></span>level</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int level</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00038">38</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a8a2ced25981b49f1555d16f390df6006"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a2ced25981b49f1555d16f390df6006">&#9670;&nbsp;</a></span>level_colors</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* level_colors[]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line">    <span class="stringliteral">&quot;\x1b[35m&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;\x1b[31m&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;\x1b[33m&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;\x1b[32m&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;\x1b[36m&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;\x1b[94m&quot;</span></div><div class="line">}</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00066">66</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a6ee99f12766d97f932da55d2232f5cf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ee99f12766d97f932da55d2232f5cf5">&#9670;&nbsp;</a></span>level_names</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* level_names[]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line">    <span class="stringliteral">&quot;FATAL&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;ERROR&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;WARN&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;INFO&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;DEBUG&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;TRACE&quot;</span></div><div class="line">}</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00057">57</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a9b4d82bfadfae80fd7e08baefd26f006"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b4d82bfadfae80fd7e08baefd26f006">&#9670;&nbsp;</a></span>lock</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">log_LockFn lock</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00036">36</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="ab693b677bdc9ded12b06daf49778101c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab693b677bdc9ded12b06daf49778101c">&#9670;&nbsp;</a></span>minutes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int minutes</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00048">48</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="aedb06abe5aff12fa3e7e0e71a374edfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedb06abe5aff12fa3e7e0e71a374edfb">&#9670;&nbsp;</a></span>month</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int month</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00045">45</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a55602ca214fb365e8deef9a73c8442e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55602ca214fb365e8deef9a73c8442e7">&#9670;&nbsp;</a></span>quiet</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int quiet</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00039">39</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a77bd4f876bdc3afed5acdd936f775d34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77bd4f876bdc3afed5acdd936f775d34">&#9670;&nbsp;</a></span>seconds</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int seconds</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00049">49</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a51e1093fc8c7d60746adc4d05e5c4289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51e1093fc8c7d60746adc4d05e5c4289">&#9670;&nbsp;</a></span>time_string</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char time_string[100]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00052">52</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a9f2a8f3f4d047d83e930aba651d036eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f2a8f3f4d047d83e930aba651d036eb">&#9670;&nbsp;</a></span>tm</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct tm* tm</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00055">55</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a9cf96982557d56650f0f4cd3762f05a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cf96982557d56650f0f4cd3762f05a0">&#9670;&nbsp;</a></span>tv</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct timeval tv</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00054">54</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="a697ce711b67313990d351b5c95f87aed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a697ce711b67313990d351b5c95f87aed">&#9670;&nbsp;</a></span>udata</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* udata</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00035">35</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="adbb64e3b0553e408c9b0a567d0454eb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbb64e3b0553e408c9b0a567d0454eb1">&#9670;&nbsp;</a></span>usec</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int usec</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00050">50</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+
+</div>
+</div>
+<a id="abeac221e38b7b9ce7df8722c842bf671"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeac221e38b7b9ce7df8722c842bf671">&#9670;&nbsp;</a></span>year</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int year</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00044">44</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
 
 </div>
 </div>

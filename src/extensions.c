@@ -32,129 +32,75 @@ void load_extensions(config_t *config)
     wss_extension_t* proto;
     int name_length = 0;
 
-    WSS_log(
-            SERVER_TRACE,
-            "Loading extensions",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Loading extensions");
 
     for (i = 0; i < config->extensions_length; i++) {
-        WSS_log(
-                SERVER_TRACE,
-                config->extensions[i],
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Loading extension %s", config->extensions[i]);
 
         if ( unlikely(NULL == (handle = dlopen(config->extensions[i], RTLD_LAZY))) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
+            WSS_log_error("Failed to load shared object: %s", dlerror());
             continue;
         }
 
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_extension_t)))) ) {
-            (void)dlclose(proto->handle);
+            WSS_log_error("Unable to allocate extension structure");
+            dlclose(proto->handle);
             return;
         }
         proto->handle = handle;
 
         if ( unlikely((*(void**)(&proto->init) = dlsym(proto->handle, "onInit")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onInit' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->open) = dlsym(proto->handle, "onOpen")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onOpen' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->inframe) = dlsym(proto->handle, "inFrame")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'inFrame' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->inframes) = dlsym(proto->handle, "inFrames")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'inFrames' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->outframe) = dlsym(proto->handle, "outFrame")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'outFrame' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->outframes) = dlsym(proto->handle, "outFrames")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'outFrames' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->close) = dlsym(proto->handle, "onClose")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onClose' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->destroy) = dlsym(proto->handle, "onDestroy")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void)dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onDestroy' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
@@ -165,7 +111,8 @@ void load_extensions(config_t *config)
         }
 
         if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
-            (void) dlclose(proto->handle);
+            WSS_log_error("Unable to allocate name");
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             return;
         }
@@ -174,14 +121,11 @@ void load_extensions(config_t *config)
 
         HASH_ADD_KEYPTR(hh, extensions, proto->name, name_length, proto);
 
+        WSS_log_trace("Initializing extension %s", proto->name);
+
         proto->init(config->extensions_config[i]);
 
-        WSS_log(
-                SERVER_TRACE,
-                "Successfully loaded",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_info("Successfully loaded %s extension", proto->name);
     }
 }
 
@@ -210,7 +154,7 @@ void destroy_extensions() {
     HASH_ITER(hh, extensions, proto, tmp) {
         HASH_DEL(extensions, proto);
         proto->destroy();
-        (void)dlclose(proto->handle);
+        dlclose(proto->handle);
         WSS_free((void **) &proto->name);
         WSS_free((void **) &proto);
     }

@@ -98,13 +98,13 @@ size_t strload(char *path, char **str) {
     FILE *file = fopen(path, "rb");
 
     if ( unlikely(NULL == file) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to open file: %s", strerror(errno));
         *str = NULL;
         return 0;
     }
 
     if ( unlikely(fseek(file, 0, SEEK_END) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to seek to the end of file: %s", strerror(errno));
         *str = NULL;
         return 0;
     }
@@ -112,26 +112,27 @@ size_t strload(char *path, char **str) {
     size = ftell(file);
 
     if ( unlikely(fseek(file, 0, SEEK_SET)) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to seek back to the start of file: %s", strerror(errno));
         *str = NULL;
         return 0;
     }
 
 
     if ( unlikely(NULL == (*str = (char *)WSS_malloc(size + 1))) ) {
+        WSS_log_error("Unable to allocate for string");
         *str = NULL;
         return 0;
     }
 
     if ( unlikely(fread(*str, size, 1, file) != 1) ) {
+        WSS_log_error("Didn't read what was expected");
         WSS_free((void **) &str);
-        WSS_log(SERVER_ERROR, "Didn't read what was expected", __FILE__, __LINE__);
         return 0;
     }
 
     if ( unlikely(fclose(file) != 0) ) {
+        WSS_log_error("Unable to close file: %s", strerror(errno));
         WSS_free((void **) &str);
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
         return 0;
     }
 

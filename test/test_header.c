@@ -18,6 +18,7 @@ Test(WSS_parse_header, unsupported_http_method) {
     size_t l = strlen(HEADER_WRONG_HTTP_METHOD);
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
+    int fd = -1;
 
     sprintf(h, "%s", HEADER_WRONG_HTTP_METHOD);
 
@@ -26,7 +27,7 @@ Test(WSS_parse_header, unsupported_http_method) {
     header->content = h;
     header->length = l;
 
-    code = WSS_parse_header(header, conf);
+    code = WSS_parse_header(fd, header, conf);
     
     cr_assert(code == HttpStatus_MethodNotAllowed);
 
@@ -43,6 +44,7 @@ Test(WSS_parse_header, unsupported_http_path) {
     size_t l = strlen(HEADER_WRONG_HTTP_PATH);
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
+    int fd = -1;
 
     sprintf(h, "%s", HEADER_WRONG_HTTP_PATH);
 
@@ -51,7 +53,7 @@ Test(WSS_parse_header, unsupported_http_path) {
     header->content = h;
     header->length = l;
 
-    code = WSS_parse_header(header, conf);
+    code = WSS_parse_header(fd, header, conf);
     
     cr_assert(code == HttpStatus_NotFound);
 
@@ -68,6 +70,7 @@ Test(WSS_parse_header, unsupported_http_version) {
     size_t l = strlen(HEADER_WRONG_HTTP_VERSION);
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
+    int fd = -1;
 
     sprintf(h, "%s", HEADER_WRONG_HTTP_VERSION);
 
@@ -76,7 +79,7 @@ Test(WSS_parse_header, unsupported_http_version) {
     header->content = h;
     header->length = l;
 
-    code = WSS_parse_header(header, conf);
+    code = WSS_parse_header(fd, header, conf);
     
     cr_assert(code == HttpStatus_HTTPVersionNotSupported);
 

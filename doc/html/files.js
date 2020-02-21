@@ -4,6 +4,7 @@ var files =
     [ "base64.c", "base64_8c.html", "base64_8c" ],
     [ "comm.c", "comm_8c.html", "comm_8c" ],
     [ "config.c", "config_8c.html", "config_8c" ],
+    [ "extensions.c", "extensions_8c.html", "extensions_8c" ],
     [ "frame.c", "frame_8c.html", "frame_8c" ],
     [ "header.c", "header_8c.html", "header_8c" ],
     [ "http.c", "http_8c.html", "http_8c" ],

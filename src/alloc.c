@@ -3,7 +3,6 @@
 #include <malloc.h>             
 
 #include "alloc.h"
-#include "log.h"
 #include "predict.h"
 
 /**
@@ -21,12 +20,6 @@ void *WSS_malloc(size_t size) {
 	buffer = malloc( size );
 
 	if ( unlikely(NULL == buffer) ) {
-        WSS_log(
-                SERVER_ERROR,
-                "Failed to allocate memory: OUT OF MEMORY",
-                __FILE__,
-                __LINE__
-               );
 		return NULL;
 	}
 
@@ -52,12 +45,6 @@ void *WSS_calloc(size_t memb, size_t size) {
 	buffer = calloc(memb, size);
 
 	if ( unlikely(NULL == buffer) ) {
-        WSS_log(
-                SERVER_ERROR,
-                "Failed to allocate memory: OUT OF MEMORY",
-                __FILE__,
-                __LINE__
-               );
 		return NULL;
 	}
 
@@ -88,12 +75,6 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize) {
 
 	if ( unlikely(NULL == buffer) ) {
         WSS_free(ptr);
-        WSS_log(
-                SERVER_ERROR,
-                "Failed to re-allocate memory: OUT OF MEMORY",
-                __FILE__,
-                __LINE__
-               );
 		return NULL;
 	}
 

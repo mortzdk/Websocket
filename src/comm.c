@@ -201,12 +201,7 @@ static message_t * WSS_handshake_response(header_t *header, enum HttpStatus_Code
         return NULL;
     }
 
-    WSS_log(
-        CLIENT_DEBUG,
-        message,
-        __FILE__,
-        __LINE__
-    );
+    WSS_log_debug("Handshake Response: \n%s", message);
 
     msg->msg = message;
     msg->length = length;
@@ -444,76 +439,42 @@ static message_t * WSS_http_response(header_t *header, enum HttpStatus_Code code
     return msg;
 }
 
-inline static void WSS_diconnect_internal(server_t *server, session_t *session) {
-    int size;
-    char *message;
+inline static void WSS_disconnect_internal(server_t *server, session_t *session) {
+    int fd = session->fd;
     struct epoll_event event;
     memset(&event, 0, sizeof(event));
 
     session->state = CLOSING;
 
-    size = strlen(STRING_DISCONNECTED)*sizeof(char) +
-        strlen(session->ip)*sizeof(char) +
-        (log10(session->port)+1)*sizeof(char) +
-        strlen(STRING_HTTP)*sizeof(char) +
-        2+1;
-
-#ifdef USE_OPENSSL
-    if (NULL == server->ssl_ctx) {
-        size++;
-    }
-#endif
-
-    if ( unlikely(NULL == (message = (char *) WSS_malloc(size))) ) {
-        return;
-    }
-
 #ifdef USE_OPENSSL
     if (NULL == server->ssl_ctx) {
 #endif
-        snprintf(
-                message,
-                (size_t) size,
-                "%s%s:%d%s",
-                STRING_DISCONNECTED,
-                session->ip,
-                session->port,
-                STRING_HTTP
-                );
-        WSS_log(CLIENT_TRACE, message, __FILE__, __LINE__);
+        WSS_log_trace("User disconnected from ip: %s:%d using HTTP request", session->ip, session->port);
 #ifdef USE_OPENSSL
     } else {
-        snprintf(
-                message,
-                (size_t) size,
-                "%s%s:%d%s",
-                STRING_DISCONNECTED,
-                session->ip,
-                session->port,
-                STRING_HTTPS
-                );
-        WSS_log(CLIENT_TRACE, message, __FILE__, __LINE__);
+        WSS_log_trace("User disconnected from ip: %s:%d using HTTPS request", session->ip, session->port);
     }
 #endif
-    WSS_free((void **) &message);
 
-    WSS_log(CLIENT_TRACE, "Informing subprotocol about session close", __FILE__, __LINE__);
+
+    WSS_log_trace("Informing subprotocol about session close");
 
     session->header->ws_protocol->close(session->fd);
 
-    WSS_log(CLIENT_TRACE, "Removing clients filedescriptor from the pool", __FILE__, __LINE__);
-
+    WSS_log_trace("Removing clients filedescriptor (%d) from the epoll queue", session->fd);
     if ( unlikely((epoll_ctl(server->epoll_fd, EPOLL_CTL_DEL, session->fd, &event)) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to remove epoll from queue: %s", strerror(errno));
         return;
     }
 
-    WSS_log(CLIENT_TRACE, "Deleting clients session", __FILE__, __LINE__);
+    WSS_log_trace("Deleting client session");
 
     if ( unlikely(SUCCESS != WSS_session_delete(session)) ) {
-        WSS_log(SERVER_ERROR, "Unable to delete client session", __FILE__, __LINE__);
+        WSS_log_error("Unable to delete client session");
         return;
     }
+
+    WSS_log_info("Client with session %d disconnected", fd);
 }
 
 
@@ -532,7 +493,7 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
 
     memset(&event, 0, sizeof(event));
 
-    WSS_log(CLIENT_TRACE, "Performing SSL handshake", __FILE__, __LINE__);
+    WSS_log_trace("Performing SSL handshake");
 
     if (NULL != server->ssl_ctx) {
         ret = SSL_do_handshake(session->ssl);
@@ -540,7 +501,7 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
 
         // If something more needs to be read in order for the handshake to finish
         if (err == SSL_ERROR_WANT_READ) {
-            WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_READ", __FILE__, __LINE__);
+            WSS_log_trace("Need to wait for further reads");
 
             event.events = EPOLLIN | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
             event.data.fd = session->fd;
@@ -552,8 +513,8 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
                 }
 
                 if ( unlikely(n < 0) ) {
-                    WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
-                    WSS_diconnect_internal(server, session);
+                    WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
+                    WSS_disconnect_internal(server, session);
                     return;
                 }
             }
@@ -563,7 +524,7 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
 
         // If something more needs to be written in order for the handshake to finish
         if (err == SSL_ERROR_WANT_WRITE) {
-            WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_WRITE", __FILE__, __LINE__);
+            WSS_log_trace("Need to wait for further writes");
 
             event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
             event.data.fd = session->fd;
@@ -575,8 +536,8 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
                 }
 
                 if ( unlikely(n < 0) ) {
-                    WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
-                    WSS_diconnect_internal(server, session);
+                    WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
+                    WSS_disconnect_internal(server, session);
                     return;
                 }
             }
@@ -587,18 +548,19 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
         if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
             char message[1024];
             ERR_error_string_n(err, message, 1024);
-            WSS_log(CLIENT_ERROR, message, __FILE__, __LINE__);
+            WSS_log_error("Handshake error: %s", message);
 
             while ( (err = ERR_get_error()) != 0 ) {
+                memset(message, '\0', 1024);
                 ERR_error_string_n(err, message, 1024);
-                WSS_log(CLIENT_ERROR, message, __FILE__, __LINE__);
+                WSS_log_error("Handshake error: %s", message);
             }
 
-            WSS_diconnect_internal(server, session);
+            WSS_disconnect_internal(server, session);
             return;
         }
 
-        WSS_log(CLIENT_TRACE, "SSL handshake was successfull", __FILE__, __LINE__);
+        WSS_log_trace("SSL handshake was successfull");
 
         session->ssl_connected = true;
 
@@ -612,13 +574,13 @@ static void WSS_ssl_handshake(server_t *server, session_t *session) {
             }
 
             if ( unlikely(n < 0) ) {
-                WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
-                WSS_diconnect_internal(server, session);
+                WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
+                WSS_disconnect_internal(server, session);
                 return;
             }
         }
 
-        WSS_log(CLIENT_TRACE, "Added client to pool of filedescriptors", __FILE__, __LINE__);
+        WSS_log_trace("Added client to pool of filedescriptors");
     }
 
     session->state = STALE;
@@ -638,19 +600,20 @@ void WSS_disconnect(void *args, int id) {
     server_t *server = arguments->server;
     int fd = arguments->fd;
 
-    WSS_log(CLIENT_TRACE, "Disconnecting client", __FILE__, __LINE__);
+    WSS_log_trace("Disconnecting client");
 
     WSS_free((void **) &arguments);
 
-    WSS_log(CLIENT_TRACE, "Finding session", __FILE__, __LINE__);
+    WSS_log_trace("Finding session");
 
     if ( unlikely(NULL == (session = WSS_session_find(fd))) ) {
+        WSS_log_trace("Unable to find client with session %d", fd);
         return;
     }
 
-    WSS_log(CLIENT_TRACE, "Session found", __FILE__, __LINE__);
+    WSS_log_trace("Session found: %d", session->fd);
 
-    WSS_diconnect_internal(server, session);
+    WSS_disconnect_internal(server, session);
 }
 
 /**
@@ -665,9 +628,7 @@ void WSS_connect(void *arg, int id) {
 #ifdef USE_OPENSSL
     char ssl_msg[1024];
 #endif
-    char *message;
     int client_fd;
-    int size;
     struct epoll_event event;
     struct sockaddr_in client;
     size_t ringbuf_obj_size;
@@ -689,116 +650,76 @@ void WSS_connect(void *arg, int id) {
                 break;
             }
 
-            WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+            WSS_log_fatal("Accept failed: %s", strerror(errno));
             break;
         }
 
-        WSS_log(CLIENT_TRACE, "Received incoming connection", __FILE__, __LINE__);
+        WSS_log_trace("Received incoming connection");
 
         socket_non_blocking(client_fd);
 
-        WSS_log(CLIENT_TRACE, "Set client filedescriptor to non-blocking", __FILE__, __LINE__);
+        WSS_log_trace("Client filedescriptor was set to non-blocking");
 
         if ( unlikely(NULL == (session = WSS_session_add(client_fd,
                         inet_ntoa(client.sin_addr), ntohs(client.sin_port)))) ) {
             continue;
         }
         session->state = CONNECTING;
-        WSS_log(CLIENT_TRACE, "Created client session structure", __FILE__, __LINE__);
+        WSS_log_trace("Created client session: %d", client_fd);
 
         // Creating ringbuffer for session
         ringbuf_get_sizes(workers, &ringbuf_obj_size, NULL);
         if ( unlikely(NULL == (ringbuf = WSS_malloc(ringbuf_obj_size))) ) {
-            WSS_log(SERVER_ERROR, "Not enough memory to allocate ringbuf", __FILE__, __LINE__);
+            WSS_log_fatal("Failed to allocate memory for ringbuffer");
             return;
         }
 
-        if ( unlikely(NULL == (session->messages = WSS_malloc(server->config->size_pipe*sizeof(message_t *)))) ) {
-            WSS_log(SERVER_ERROR, "Not enough memory to allocate messages buffer", __FILE__, __LINE__);
+        if ( unlikely(NULL == (session->messages = WSS_malloc(server->config->size_ringbuffer*sizeof(message_t *)))) ) {
+            WSS_log_fatal("Failed to allocate memory for ringbuffer messages");
             WSS_free((void **)&ringbuf);
             return;
         }
-        session->messages_count = server->config->size_pipe;
+        session->messages_count = server->config->size_ringbuffer;
 
-        ringbuf_setup(ringbuf, workers, server->config->size_pipe);
+        ringbuf_setup(ringbuf, workers, server->config->size_ringbuffer);
         session->ringbuf = ringbuf;
 
-        // Allocate memory to write client trace
-        size = strlen(STRING_CONNECTED)*sizeof(char) +
-            strlen(session->ip)*sizeof(char) +
-            (log10(session->port)+1)*sizeof(char) +
-            2+1;
-
-#ifdef USE_OPENSSL
-        if (NULL == server->ssl_ctx) {
-            size += strlen(STRING_HTTPS)*sizeof(char);
-        } else {
-#endif
-            size += strlen(STRING_HTTP)*sizeof(char);
-#ifdef USE_OPENSSL
-        }
-#endif
-
-        if ( unlikely(NULL == (message = (char *) WSS_malloc(size))) ) {
-            WSS_log(SERVER_ERROR, "Not enough memory to allocate log message", __FILE__, __LINE__);
-            return;
-        }
-
 #ifdef USE_OPENSSL
         if (NULL == server->ssl_ctx) {
 #endif
-            snprintf(
-                    message,
-                    (size_t) size,
-                    "%s%s:%d%s",
-                    STRING_CONNECTED,
-                    session->ip,
-                    session->port,
-                    STRING_HTTP
-                    );
-            WSS_log(CLIENT_TRACE, message, __FILE__, __LINE__);
+            WSS_log_trace("User connected from ip: %s:%d using HTTP request", session->ip, session->port);
 #ifdef USE_OPENSSL
         } else {
-            snprintf(
-                    message,
-                    (size_t) size,
-                    "%s%s:%d%s",
-                    STRING_CONNECTED,
-                    inet_ntoa(client.sin_addr),
-                    ntohs(client.sin_port),
-                    STRING_HTTPS
-                    );
-            WSS_log(CLIENT_TRACE, message, __FILE__, __LINE__);
+            WSS_log_trace("User connected from ip: %s:%d using HTTPS request", session->ip, session->port);
         }
 #endif
-        WSS_free((void **) &message);
 
 #ifdef USE_OPENSSL
         if (NULL != server->ssl_ctx) {
-            WSS_log(CLIENT_TRACE, "Creating ssl client structure", __FILE__, __LINE__);
+            WSS_log_trace("Creating ssl client structure");
             if ( unlikely(NULL == (session->ssl = SSL_new(server->ssl_ctx))) ) {
                 ERR_error_string_n(ERR_get_error(), ssl_msg, 1024);
-                WSS_log(CLIENT_ERROR, ssl_msg, __FILE__, __LINE__);
+                WSS_log_error("Unable to create SSL structure: %s", ssl_msg);
                 return;
             }
 
-            WSS_log(CLIENT_TRACE, "Associating structure with client filedescriptor", __FILE__, __LINE__);
+            WSS_log_trace("Associating structure with client filedescriptor");
             if ( unlikely(SSL_set_fd(session->ssl, session->fd) != 1) ) {
                 ERR_error_string_n(ERR_get_error(), ssl_msg, 1024);
-                WSS_log(CLIENT_ERROR, ssl_msg, __FILE__, __LINE__);
+                WSS_log_error("Unable to bind filedescriptor to SSL structure: %s", ssl_msg);
                 return;
             }
 
-            WSS_log(CLIENT_TRACE, "Allow writes to be partial", __FILE__, __LINE__);
+            WSS_log_trace("Allow writes to be partial");
             SSL_set_mode(session->ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
 
-            //WSS_log(CLIENT_TRACE, "Allow write buffer to be moving as it is allocated on the heap", __FILE__, __LINE__);
+            //WSS_log_trace("Allow write buffer to be moving as it is allocated on the heap");
             //SSL_set_mode(session->ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
-            WSS_log(CLIENT_TRACE, "Allow read and write buffers to be released when they are no longer needed", __FILE__, __LINE__);
+            WSS_log_trace("Allow read and write buffers to be released when they are no longer needed");
             SSL_set_mode(session->ssl, SSL_MODE_RELEASE_BUFFERS);
 
-            WSS_log(CLIENT_TRACE, "Setting accept state", __FILE__, __LINE__);
+            WSS_log_trace("Setting accept state");
             SSL_set_accept_state(session->ssl);
 
             WSS_ssl_handshake(server, session);
@@ -809,16 +730,19 @@ void WSS_connect(void *arg, int id) {
 
             if ( unlikely((epoll_ctl(server->epoll_fd, EPOLL_CTL_ADD, session->fd,
                             &event)) < 0) ) {
-                WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+                WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
                 return;
             }
 
-            WSS_log(CLIENT_TRACE, "Added client to pool of filedescriptors", __FILE__, __LINE__);
+            WSS_log_trace("Added client to pool of filedescriptors");
             session->state = STALE;
 #ifdef USE_OPENSSL
         }
+
+        WSS_log_info("Client with session %d connected", session->fd);
 #endif
     }
+
 }
 
 /**
@@ -833,13 +757,14 @@ static void WSS_write_internal(session_t *session, message_t *mes, int id) {
     ringbuf_worker_t *w;
     ssize_t off;
 
-    WSS_log(CLIENT_TRACE, "Putting message into ringbuffer", __FILE__, __LINE__);
+    WSS_log_trace("Putting message into ringbuffer");
 
     w = ringbuf_register(session->ringbuf, id);
     if ( unlikely(-1 == (off = ringbuf_acquire(session->ringbuf, w, 1))) ) {
         WSS_free((void **) &mes->msg);
         WSS_free((void **) &mes);
-        WSS_log(CLIENT_ERROR, "Failed to aquire space in ringbuffer", __FILE__, __LINE__);
+
+        WSS_log_error("Failed to aquire space in ringbuffer");
         return;
     }
     session->messages[off] = mes;
@@ -861,7 +786,7 @@ static void WSS_write_notify(server_t *server, int fd, bool closing) {
 
     memset(&event, 0, sizeof(event));
 
-    WSS_log(CLIENT_TRACE, "Notifying client, that it needs to do WRITE", __FILE__, __LINE__);
+    WSS_log_trace("Notifying client, that it needs to do WRITE");
 
     event.events = EPOLLOUT | EPOLLET | EPOLLONESHOT;
     if (! closing) {
@@ -870,7 +795,7 @@ static void WSS_write_notify(server_t *server, int fd, bool closing) {
     event.data.fd = fd;
 
     if ( unlikely(epoll_ctl(server->epoll_fd, EPOLL_CTL_MOD, fd, &event) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
     }
 }
 
@@ -887,13 +812,13 @@ static void WSS_read_notify(server_t *server, int fd) {
 
     memset(&event, 0, sizeof(event));
 
-    WSS_log(CLIENT_TRACE, "Notifying client, that it needs to do READ", __FILE__, __LINE__);
+    WSS_log_trace("Notifying client, that it needs to do READ");
 
     event.events = EPOLLIN | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
     event.data.fd = fd;
 
     if ( unlikely(epoll_ctl(server->epoll_fd, EPOLL_CTL_MOD, fd, &event) < 0) ) {
-        WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+        WSS_log_error("Unable to rearm epoll: %s", strerror(errno));
     }
 }
 
@@ -923,7 +848,7 @@ static int WSS_read_internal(server_t *server, session_t *session, char *buffer)
             
         // There's no space to write to the kernel, wait for filedescriptor.
         if (err == SSL_ERROR_WANT_WRITE) {
-            WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_WRITE", __FILE__, __LINE__);
+            WSS_log_debug("SSL_ERROR_WANT_WRITE");
 
             WSS_write_notify(server, session->fd, false);
 
@@ -934,11 +859,12 @@ static int WSS_read_internal(server_t *server, session_t *session, char *buffer)
         if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
             char msg[1024];
             ERR_error_string_n(err, msg, 1024);
-            WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+            WSS_log_error("SSL read failed: %s", msg);
 
             while ( (err = ERR_get_error()) != 0 ) {
+                memset(msg, '\0', 1024);
                 ERR_error_string_n(err, msg, 1024);
-                WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+                WSS_log_error("SSL read failed: %s", msg);
             }
 
             n = -1;
@@ -953,7 +879,7 @@ static int WSS_read_internal(server_t *server, session_t *session, char *buffer)
         n = read(session->fd, buffer, server->config->size_buffer);
         if (n == -1) {
             if ( unlikely(errno != EAGAIN && errno != EWOULDBLOCK) ) {
-                WSS_log(CLIENT_ERROR, strerror(errno), __FILE__, __LINE__);
+                WSS_log_error("Read failed: %s", strerror(errno));
             } else {
                 n = 0;
             }
@@ -990,7 +916,8 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
     }
 #endif
 
-    WSS_log(CLIENT_TRACE, "Preparing client header", __FILE__, __LINE__);
+    WSS_log_trace("Preparing client header");
+
     if ( unlikely(NULL != session->header) ) {
         header = session->header;
         session->header = NULL;
@@ -1020,6 +947,8 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
         header->ws_key3             = NULL;
     }
 
+    WSS_log_trace("Reading headers");
+
     // Continue reading until we get no bytes back
     do {
         n = WSS_read_internal(server, session, buffer);
@@ -1031,6 +960,8 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
                 return;
             // An error occured, notify client by writing back to it
             case -1:
+                WSS_log_trace("Rejecting HTTP request due to being unable to read from client");
+
                 if ( likely(NULL != (message = WSS_http_response(header,
                                 HttpStatus_InternalServerError, "Unable to read from client"))) ) {
                     WSS_write_internal(session, message, id);
@@ -1045,6 +976,7 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
             default:
                 // Reallocate space for the header and copy buffer into it
                 if ( unlikely(NULL == (header->content = WSS_realloc((void **) &header->content, header->length*sizeof(char), (header->length+n+1)*sizeof(char)))) ) {
+                    WSS_log_fatal("Unable to realloc header content");
                     return;
                 }
                 memcpy(header->content+header->length, buffer, n);
@@ -1054,7 +986,7 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
                 // Check if payload from client is too large for the server to handle.
                 // If so write error back to the client
                 if ( unlikely(header->length > (server->config->size_header+server->config->size_uri+server->config->size_payload)) ) {
-                    WSS_log(CLIENT_ERROR, "The client payload is too large for the server to handle", __FILE__, __LINE__);
+                    WSS_log_trace("Rejecting HTTP request as client payload is too large for the server to handle");
 
                     if ( likely(NULL != (message = WSS_http_response(header, HttpStatus_PayloadTooLarge,
                                     "The given payload is too large for the server to handle"))) ) {
@@ -1072,13 +1004,14 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
 
     session->state = STALE;
 
-    WSS_log(CLIENT_DEBUG, header->content, __FILE__, __LINE__);
-    WSS_log(CLIENT_TRACE, "Starting parsing content received from client", __FILE__, __LINE__);
+    WSS_log_debug("Client header: \n%s", header->content);
+
+    WSS_log_trace("Starting parsing header received from client");
 
     // Parsing HTTP header
     // If header could not be parsed correctly, notify client with response.
     if ( (code = WSS_parse_header(session->fd, header, server->config)) != HttpStatus_OK ) {
-        WSS_log(CLIENT_TRACE, "Unable to parse clients http header", __FILE__, __LINE__);
+        WSS_log_trace("Rejecting HTTP request due to header not being correct");
 
         if ( likely(NULL != (message = WSS_http_response(header, code, "Unable to parse header"))) ) {
             WSS_write_internal(session, message, id);
@@ -1093,10 +1026,14 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
     // Serve favicon
     if (strlen(header->path) == 12 && strncmp(header->path, "/favicon.ico", 12) == 0) {
         if (NULL != (message = WSS_favicon_response(header, code, server->config))) {
+            WSS_log_trace("Serving a favicon to the client");
+
             // Find and serve favicon.
             WSS_write_internal(session, message, id);
             WSS_write_notify(server, session->fd, true);
         } else {
+            WSS_log_trace("Rejecting HTTP request due to favicon not being available");
+
             // Else notify client that favicon could not be found
             code = HttpStatus_NotFound;
             if ( likely(NULL != (message = WSS_http_response(header, code, "File not found"))) ) {
@@ -1110,16 +1047,18 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
         return;
     }
 
-    WSS_log(CLIENT_TRACE, "Parsed header", __FILE__, __LINE__);
+    WSS_log_trace("Header successfully parsed");
 
     // Create Upgrade HTTP header based on clients header
     code = WSS_upgrade_header(header, server->config, ssl, server->port);
     switch (code) {
         case HttpStatus_UpgradeRequired:
+            WSS_log_trace("Rejecting HTTP request as the service requires use of the Websocket protocol.");
             message = WSS_upgrade_response(header, code,
                     "This service requires use of the Websocket protocol.");
             break;
         case HttpStatus_NotImplemented:
+            WSS_log_trace("Rejecting HTTP request as Websocket protocol is not yet implemented");
             message = WSS_http_response(header, code,
                     "Websocket protocol is not yet implemented");
             break;
@@ -1127,14 +1066,17 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
             message = WSS_handshake_response(header, code);
             break;
         case HttpStatus_NotFound:
+            WSS_log_trace("Rejecting HTTP request as the page requested was not found.");
             message = WSS_http_response(header, code,
                     "The page requested was not found.");
             break;
         case HttpStatus_Forbidden:
+            WSS_log_trace("Rejecting HTTP request as the origin is not allowed to establish a websocket connection.");
             message = WSS_http_response(header, code,
                     "The origin is not allowed to establish a websocket connection.");
             break;
         default:
+            WSS_log_trace("Rejecting HTTP request as server was unable to parse http header as websocket request");
             message = WSS_http_response(header, code,
                     "Unable to parse http header as websocket request");
             break;
@@ -1142,12 +1084,7 @@ static void WSS_handshake(server_t *server, session_t *session, int id) {
 
     // If code status isnt switching protocols, we notify client with a HTTP error
     if (code != HttpStatus_SwitchingProtocols) {
-        WSS_log(
-                CLIENT_TRACE,
-                "Unable to establish websocket connection",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Unable to establish websocket connection");
 
         WSS_write_internal(session, message, id);
         WSS_write_notify(server, session->fd, true);
@@ -1183,8 +1120,8 @@ void WSS_read(void *args, int id) {
     int n;
     size_t len;
     uint16_t code;
-    struct epoll_event event;
     frame_t *frame;
+    char *msg;
     size_t offset = 0, prev_offset = 0;
     frame_t **frames = NULL;
     char *payload = NULL;
@@ -1198,8 +1135,8 @@ void WSS_read(void *args, int id) {
     receiver_t *r, *tmp;
     session_t *receiver;
     size_t receivers_count = 0;
-    char *msg = NULL;
     size_t msg_length = 0;
+    size_t msg_offset = 0;
     size_t starting_frame = 0;
     bool rearmed = false;
     bool fragmented = false;
@@ -1209,9 +1146,11 @@ void WSS_read(void *args, int id) {
     int fd = arguments->fd;
     session_t *session;
 
-    WSS_log(CLIENT_TRACE, "Starting initial steps to read from client", __FILE__, __LINE__);
+    WSS_log_trace("Starting initial steps to read from client");
 
     if ( unlikely(NULL == (session = WSS_session_find(fd))) ) {
+        WSS_log_trace("Unable to find client with session %d", fd);
+
         WSS_free((void **) &arguments);
         return;
     }
@@ -1240,20 +1179,18 @@ void WSS_read(void *args, int id) {
 
     session->state = READING;
 
-    WSS_log(CLIENT_TRACE, "Found client session", __FILE__, __LINE__);
+    WSS_log_trace("Found client session");
 
     // If no initial header has been seen for the session, the websocket
     // handshake is yet to be made.
     if ( unlikely(! session->handshaked) ){
-        WSS_log(CLIENT_TRACE, "Doing websocket handshake", __FILE__, __LINE__);
+        WSS_log_trace("Doing websocket handshake");
         WSS_handshake(server, session, id);
         return;
     }
 
     char buffer[server->config->size_buffer];
     memset(buffer, '\0', server->config->size_buffer);
-
-    memset(&event, 0, sizeof(event));
 
     // Use earlier payload
     payload = session->payload;
@@ -1278,6 +1215,7 @@ void WSS_read(void *args, int id) {
         switch (n) {
             // Wait for IO for either read or write on the filedescriptor
             case -2:
+                WSS_log_trace("Detected that server needs further IO to complete the reading");
                 session->payload = payload;
                 session->payload_length = payload_length;
                 return;
@@ -1290,6 +1228,7 @@ void WSS_read(void *args, int id) {
                 WSS_free_frame(frame);
 
                 if ( unlikely(NULL == (m = WSS_malloc(sizeof(message_t)))) ) {
+                    WSS_log_error("Unable to allocate the message structure");
                     return;
                 }
                 m->msg = message;
@@ -1305,6 +1244,7 @@ void WSS_read(void *args, int id) {
             // Empty buffer into payload
             default:
                 if ( unlikely(NULL == (payload = WSS_realloc((void **) &payload, payload_length*sizeof(char), (payload_length+n+1)*sizeof(char)))) ) {
+                    WSS_log_error("Unable to reallocate the payload");
                     return;
                 }
 
@@ -1315,19 +1255,23 @@ void WSS_read(void *args, int id) {
         }
     } while ( likely(n != 0) );
 
-    WSS_log(CLIENT_TRACE, "Payload from client was read, parsing frames...", __FILE__, __LINE__);
+    WSS_log_trace("Payload from client was read, parsing frames...");
+    WSS_log_debug("Payload: %s (%lu bytes)", payload, payload_length);
 
     // Parse the payload into websocket frames
     do {
         prev_offset = offset;
 
         if ( unlikely(NULL == (frame = WSS_parse_frame(session->header, payload, payload_length, &offset))) ) {
+            WSS_log_trace("Unable to parse frame");
             WSS_free((void **) &payload);
             return;
         }
 
         // Check if we were forced to read beyond the payload to create a full frame
         if ( unlikely(offset > payload_length) ) {
+            WSS_log_trace("Detected that data was missing in order to complete frame, will wait for more");
+
             WSS_free_frame(frame);
 
             session->payload = payload;
@@ -1342,7 +1286,7 @@ void WSS_read(void *args, int id) {
 
         // If no extension is negotiated, the rsv bits must not be used
         if ( unlikely(NULL == session->header->ws_extensions && (frame->rsv1 || frame->rsv2 || frame->rsv3)) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: rsv bits must not be set without using extensions", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: rsv bits must not be set without using extensions");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
         } else
@@ -1350,28 +1294,28 @@ void WSS_read(void *args, int id) {
         // If opcode is unknown
         if ( unlikely((frame->opcode >= 0x3 && frame->opcode <= 0x7) ||
                 (frame->opcode >= 0xB && frame->opcode <= 0xF)) ) {
-            WSS_log(CLIENT_TRACE, "Type Error: Unknown upcode", __FILE__, __LINE__);
+            WSS_log_trace("Type Error: Unknown upcode");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_TYPE);
         } else
 
         // Server expects all received data to be masked
         if ( unlikely(! frame->mask) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: Client message should always be masked", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: Client message should always be masked");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
         } else
 
         // Control frames cannot be fragmented
         if ( unlikely(! frame->fin && frame->opcode >= 0x8 && frame->opcode <= 0xA) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: Control frames cannot be fragmented", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: Control frames cannot be fragmented");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
         } else
 
         // Control frames cannot have a payload length larger than 125 bytes
         if ( unlikely(frame->opcode >= 0x8 && frame->opcode <= 0xA && frame->payloadLength > 125) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: Control frames cannot have payload larger than 125 bytes", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: Control frames cannot have payload larger than 125 bytes");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
         } else
@@ -1380,14 +1324,14 @@ void WSS_read(void *args, int id) {
         if ( unlikely(frame->opcode == 0x8) ) {
             // A code of 2 byte must be present if there is any application data for closing frame
             if ( unlikely(frame->applicationDataLength > 0 && frame->applicationDataLength < 2) ) {
-                WSS_log(CLIENT_TRACE, "Protocol Error: Closing frame with payload have 2 byte error code", __FILE__, __LINE__);
+                WSS_log_trace("Protocol Error: Closing frame with payload too small bytewise error code");
                 WSS_free_frame(frame);
                 frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
             } else 
                 
             // The payload after the code, must be valid UTF8
-            if ( unlikely(frame->applicationDataLength >= 2 && ! utf8_check(frame->applicationData+2, frame->applicationDataLength-2)) ) {
-                WSS_log(CLIENT_TRACE, "UTF8 Error: Closing frame with payload must contain UTF8 data", __FILE__, __LINE__);
+            if ( unlikely(frame->applicationDataLength >= 2 && ! utf8_check(frame->payload+2, frame->applicationDataLength-2)) ) {
+                WSS_log_trace("Protocol Error: Payload of error frame must be valid UTF8.");
                 WSS_free_frame(frame);
                 frame = WSS_closing_frame(session->header, CLOSE_UTF8);
             } else 
@@ -1395,12 +1339,12 @@ void WSS_read(void *args, int id) {
             // Check status code is within valid range
             if (frame->applicationDataLength >= 2) {
                 // Copy code
-                memcpy(&code, frame->applicationData, sizeof(uint16_t));
+                memcpy(&code, frame->payload, sizeof(uint16_t));
                 code = ntohs(code);
 
                 // Current rfc6455 codes
                 if ( unlikely(code < 1000 || (code >= 1004 && code <= 1006) || (code >= 1015 && code < 3000) || code >= 5000) ) {
-                    WSS_log(CLIENT_TRACE, "Protocol Error: Closing frame has error code less than 1000", __FILE__, __LINE__);
+                    WSS_log_trace("Protocol Error: Closing frame has invalid error code");
                     WSS_free_frame(frame);
                     frame = WSS_closing_frame(session->header, CLOSE_PROTOCOL);
                 }
@@ -1409,7 +1353,7 @@ void WSS_read(void *args, int id) {
 
         // Pong
         if ( unlikely(frame->opcode == 0xA) ) {
-            WSS_log(CLIENT_TRACE, "Pong received", __FILE__, __LINE__);
+            WSS_log_trace("Pong received");
             // TODO:
             // Have cleanup thread, which loops through session list and removes
             // those that has not responded with a pong
@@ -1419,12 +1363,13 @@ void WSS_read(void *args, int id) {
 
         // Ping
         if ( unlikely(frame->opcode == 0x9) ) {
-            WSS_log(CLIENT_TRACE, "Ping received, replying with a pong", __FILE__, __LINE__);
+            WSS_log_trace("Ping received");
             frame = WSS_pong_frame(session->header, frame);
         }
 
         if ( unlikely(NULL == (frames = WSS_realloc((void **) &frames, frames_length*sizeof(frame_t *),
                         (frames_length+1)*sizeof(frame_t *)))) ) {
+            WSS_log_error("Unable to reallocate frames");
             return;
         }
         frames[frames_length] = frame;
@@ -1432,20 +1377,23 @@ void WSS_read(void *args, int id) {
 
         // Close
         if ( unlikely(frame->opcode == 0x8) ) {
+            WSS_log_trace("Stopping frame validation as closing frame was parsed");
             break;
         }
     } while ( likely(offset < payload_length) );
 
     WSS_free((void **) &payload);
 
-    WSS_log(CLIENT_TRACE, "Frames was parsed, validating frames...", __FILE__, __LINE__);
+    WSS_log_trace("A total of %lu frames was parsed.", frames_length);
+
+    WSS_log_trace("Starting frame validation");
 
     // Validating frames.
     for (i = 0; likely(i < frames_length); i++) {
         // If we are not processing a fragmented set of frames, expect the
         // opcode different from the continuation frame.
         if ( unlikely(! fragmented && (frames[i]->opcode == 0x0)) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: continuation opcode used in non-fragmented message", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: continuation opcode used in non-fragmented message");
             for (j = i; likely(j < frames_length); j++) {
                 WSS_free_frame(frames[j]);
             }
@@ -1456,10 +1404,14 @@ void WSS_read(void *args, int id) {
 
         // If we receive control frame within fragmented frames.
         if ( unlikely(fragmented && (frames[i]->opcode >= 0x8 && frames[i]->opcode <= 0xA)) ) {
+            WSS_log_trace("Received control frame within fragmented message");
+
             frame = frames[i];
             // If we received a closing frame substitue the fragment with the
             // closing frame and end validation
             if (frames[i]->opcode == 0x8) {
+                WSS_log_trace("Stopping further validation of fragmented message as a closing frame was detected");
+
                 for (j = starting_frame; likely(j < frames_length); j++) {
                     if ( unlikely(j != i) ) {
                         WSS_free_frame(frames[j]);
@@ -1473,6 +1425,7 @@ void WSS_read(void *args, int id) {
                 break;
             // Else rearrange the frames, such that control frame is first
             } else {
+                WSS_log_trace("Rearranging frames such that control frame will be written before fragmented frames");
                 for (j = i; likely(j > starting_frame); j--) {
                     frames[j] = frames[j-1];
                 }
@@ -1484,7 +1437,7 @@ void WSS_read(void *args, int id) {
         // If we are processing a fragmented set of frames, expect the opcode
         // to be a contination frame.
         if ( unlikely(fragmented && frames[i]->opcode != 0x0) ) {
-            WSS_log(CLIENT_TRACE, "Protocol Error: during fragmented message received other opcode than continuation", __FILE__, __LINE__);
+            WSS_log_trace("Protocol Error: during fragmented message received other opcode than continuation");
             for (j = starting_frame; likely(j < frames_length); j++) {
                 WSS_free_frame(frames[j]);
             }
@@ -1504,53 +1457,6 @@ void WSS_read(void *args, int id) {
         }
 
         if (frames[i]->fin) {
-            // Apply extensions to collection of frames (message)
-            for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
-                len = i-starting_frame+1;
-
-                // Apply extension perframe
-                for (k = 0; likely(k < len); k++) {
-                    session->header->ws_extensions[j]->ext->inframe(
-                            session->fd,
-                            (void *)frames[k]);
-                }
-
-                // Apply extension for set of frames
-                session->header->ws_extensions[j]->ext->inframes(
-                        session->fd,
-                        (void **)frames+starting_frame,
-                        len);
-            }
-
-            // If message consist of text frames, validate the text as UTF8
-            if (frames[starting_frame]->opcode == 0x1) {
-                for (j = starting_frame; likely(j <= i); j++) {
-                    if ( unlikely(NULL == (msg = WSS_realloc((void **) &msg, msg_length*sizeof(char), (msg_length+frames[j]->applicationDataLength+1)*sizeof(char)))) ) {
-                        return;
-                    }
-                    memcpy(msg+msg_length, frames[j]->applicationData, frames[j]->applicationDataLength);
-                    msg_length += frames[j]->applicationDataLength;
-                }
-
-                if ( unlikely(! utf8_check(msg, msg_length)) ) {
-                    WSS_log(CLIENT_TRACE, "UTF8 Error: the text was not UTF8 encoded correctly", __FILE__, __LINE__);
-
-                    for (j = starting_frame; likely(j <= i); j++) {
-                        WSS_free_frame(frames[j]);
-                    }
-                    frames[starting_frame] = WSS_closing_frame(session->header, CLOSE_UTF8);
-                    frames_length = starting_frame+1;
-                    WSS_free((void **) &msg);
-                    msg_length = 0;
-                    fragmented = false;
-                    break;
-                }
-
-                WSS_free((void **) &msg);
-            }
-
-            msg = NULL;
-            msg_length = 0;
             fragmented = false;
         }
     }
@@ -1558,7 +1464,7 @@ void WSS_read(void *args, int id) {
     // If fragmented is still true, we did not receive the whole message, and
     // we hence want to wait until we get the rest.
     if ( unlikely(fragmented) ) {
-        WSS_log(CLIENT_TRACE, "Missing frames in fragmented message, will wait for READ.", __FILE__, __LINE__);
+        WSS_log_trace("Detected missing frames in fragmented message, will wait for further IO");
 
         session->frames = frames;
         session->frames_length = frames_length;
@@ -1569,37 +1475,72 @@ void WSS_read(void *args, int id) {
 
     session->state = STALE;
 
-    WSS_log(CLIENT_TRACE, "Frames was validated, sending frames...", __FILE__, __LINE__);
+    WSS_log_trace("Frames was validated");
+    WSS_log_trace("Starting sending frames to receivers based on the subprotocol");
 
     // Sending message to subprotocol and sending it to the filedescriptors
     // returned by the subprotocol.
     for (i = 0; likely(i < frames_length); i++) {
-        if ( unlikely(NULL == (msg = WSS_realloc((void **) &msg, msg_length*sizeof(char), (msg_length+frames[i]->applicationDataLength+1)*sizeof(char)))) ) {
-            return;
-        }
-        memcpy(msg+msg_length, frames[i]->applicationData, frames[i]->applicationDataLength);
-        msg_length += frames[i]->applicationDataLength;
-
         // If message consists of single frame or we have the starting frame of
         // a multiframe message, store the starting index
-        if ( frames[i]->fin && !(frames[i]->opcode == 0x0) ) {
+        if ( (frames[i]->fin && !(frames[i]->opcode == 0x0)) || (! frames[i]->fin && frames[i]->opcode != 0x0) ) {
             starting_frame = i;
-        } else if ( ! frames[i]->fin && frames[i]->opcode != 0x0 ) {
-            starting_frame = i;
-            fragmented = true;
         }
 
         if (frames[i]->fin) {
-            WSS_log(CLIENT_DEBUG, "Received following message from client:", __FILE__, __LINE__);
-            WSS_log(CLIENT_DEBUG, msg, __FILE__, __LINE__);
+            len = i-starting_frame+1;
 
-            // Use subprotocol
-            session->header->ws_protocol->message(session->fd, msg, msg_length, &receivers, &receivers_count);
+            WSS_log_trace("Applying extensions on input");
+
+            // Apply extensions to collection of frames (message)
+            for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
+                // Apply extension perframe
+                for (k = 0; likely(k < len); k++) {
+                    session->header->ws_extensions[j]->ext->inframe(
+                            session->fd,
+                            (void *)frames[k+starting_frame]);
+                }
+
+                // Apply extension for set of frames
+                session->header->ws_extensions[j]->ext->inframes(
+                        session->fd,
+                        (void **)frames+starting_frame,
+                        len);
+            }
+
+            WSS_log_trace("Assembling message");
+
+            for (j = starting_frame; likely(j <= i); j++) {
+                msg_length += frames[j]->applicationDataLength;
+            }
+
+            if ( unlikely(NULL == (msg = WSS_malloc((msg_length+1)*sizeof(char)))) ) {
+                WSS_log_error("Unable to allocate message");
+                return;
+            }
+
+            for (j = starting_frame; likely(j <= i); j++) {
+                memcpy(msg+msg_offset, frames[j]->payload+frames[j]->extensionDataLength, frames[j]->applicationDataLength);
+                msg_offset += frames[j]->applicationDataLength;
+            }
+
+            // Check utf8 for text frames
+            if ( unlikely(frames[starting_frame]->opcode == 0x1 && ! utf8_check(msg, msg_length)) ) {
+                WSS_log_trace("UTF8 Error: the text was not UTF8 encoded correctly");
+
+                for (j = starting_frame; likely(j < frames_length); j++) {
+                    WSS_free_frame(frames[j]);
+                }
+                frames[starting_frame] = WSS_closing_frame(session->header, CLOSE_UTF8);
+                frames_length = starting_frame+1;
+                i = starting_frame;
+                len = 1;
+            }
+            
+            WSS_log_trace("Applying extensions to output");
 
             // Use extensions
             for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
-                len = i-starting_frame+1;
-                
                 session->header->ws_extensions[j]->ext->outframes(
                         session->fd,
                         (void **)frames+starting_frame,
@@ -1608,58 +1549,85 @@ void WSS_read(void *args, int id) {
                 for (k = 0; likely(k < len); k++) {
                     session->header->ws_extensions[j]->ext->outframe(
                             session->fd,
-                            (void *)frames[starting_frame]);
+                            (void *)frames[starting_frame+k]);
                 }
             }
 
-            message_length = WSS_stringify_frames(&frames[starting_frame],
-                    i-starting_frame+1, &message);
+            message_length = WSS_stringify_frames(&frames[starting_frame], len, &message);
 
-            WSS_log(CLIENT_DEBUG, "Replying with message: ", __FILE__, __LINE__);
-            WSS_log(CLIENT_DEBUG, message, __FILE__, __LINE__);
+            WSS_log_debug("Replying with message (%lu bytes): \n%s", message_length, message);
 
             if ( unlikely(NULL == (m = WSS_malloc(sizeof(message_t)))) ) {
+                WSS_log_error("Unable to allocate message structure");
                 return;
             }
             m->msg = message;
             m->length = message_length;
             m->framed = true;
 
-            for (j = 0; likely(j < receivers_count); j++) {
-                if (receivers[j] == session->fd) {
-                    receiver = session;
-                    rearmed = true;
-                } else {
-                    if ( NULL == (receiver = WSS_session_find(receivers[j])) ) {
-                        continue;
+            WSS_log_trace("Building list of receivers");
+
+            // If data frame, get receivers from subprotocol 
+            if ( likely(frames[starting_frame]->opcode == 0x1 || frames[starting_frame]->opcode == 0x2) ) {
+                WSS_log_trace("Notifying subprotocol of message");
+
+                // Use subprotocol
+                session->header->ws_protocol->message(session->fd, msg, msg_length, &receivers, &receivers_count);
+
+                WSS_log_debug("Received following message (%lu bytes) from client: \n%s", msg_length, msg);
+
+                for (j = 0; likely(j < receivers_count); j++) {
+                    if (receivers[j] == session->fd) {
+                        receiver = session;
+                        rearmed = true;
+                    } else {
+                        if ( NULL == (receiver = WSS_session_find(receivers[j])) ) {
+                            continue;
+                        }
                     }
+
+                    HASH_FIND_INT(total_receivers, &receivers[j], r);
+                    if ( likely(NULL == r) ) {
+                        if ( unlikely(NULL == (r = malloc(sizeof(receiver_t)))) ) {
+                            WSS_log_error("Unable to allocate receiver structure");
+                            return;
+                        }
+                        r->fd = receivers[j];
+
+                        HASH_ADD_INT( total_receivers, fd, r );
+                    }
+
+                    WSS_write_internal(receiver, m, id);
                 }
 
-                HASH_FIND_INT(total_receivers, &receivers[j], r);
-                if (NULL == r) {
+                WSS_free((void **) &receivers);
+            } else {
+                rearmed = true;
+                HASH_FIND_INT(total_receivers, &session->fd, r);
+                if ( likely(NULL == r) ) {
                     if ( unlikely(NULL == (r = malloc(sizeof(receiver_t)))) ) {
+                        WSS_log_error("Unable to allocate receiver structure");
                         return;
                     }
-                    r->fd = receivers[j];
+                    r->fd = session->fd;
                     HASH_ADD_INT( total_receivers, fd, r );
                 }
-
                 WSS_write_internal(session, m, id);
             }
 
-            WSS_free((void **) &receivers);
-            WSS_free((void **) &msg);
-
-            msg = NULL;
             msg_length = 0;
-            fragmented = false;
+            msg_offset = 0;
+            WSS_free((void **) &msg);
         }
     }
+        
+    WSS_log_trace("Notifying receivers about incoming message");
 
     HASH_ITER(hh, total_receivers, r, tmp) {
         if ( unlikely(r != NULL) ) {
             HASH_DEL(total_receivers, r);
 
+            WSS_log_trace("Sending message to session %d", r->fd);
             WSS_write_notify(server, r->fd, false);
 
             WSS_free((void **) &r);
@@ -1687,7 +1655,6 @@ void WSS_write(void *args, int id) {
     args_t *arguments = (args_t *) args;
     int fd = arguments->fd;
     server_t *server = arguments->server;
-    struct epoll_event event;
     session_t *session;
     message_t *message;
     unsigned int i;
@@ -1697,6 +1664,7 @@ void WSS_write(void *args, int id) {
     bool closing = false;
 
     if ( unlikely(NULL == (session = WSS_session_find(fd))) ) {
+        WSS_log_trace("Unable to find client with session %d", fd);
         WSS_free((void **) &arguments);
         return;
     }
@@ -1723,17 +1691,16 @@ void WSS_write(void *args, int id) {
             break;
     }
 
-    WSS_log(CLIENT_TRACE, "Starting initial steps to write to client", __FILE__, __LINE__);
+    WSS_log_trace("Starting initial steps to write to client");
 
     session->state = WRITING;
 
-    memset(&event, 0, sizeof(event));
-
-    WSS_log(CLIENT_TRACE, "Popping messages from ringbuffer", __FILE__, __LINE__);
+    WSS_log_trace("Popping messages from ringbuffer");
 
     while ( likely(0 != (len = ringbuf_consume(session->ringbuf, &off))) ) {
         for (i = 0; likely(i < len); i++) {
             if ( unlikely(session->handshaked && closing) ) {
+                WSS_log_trace("No further messages are necessary as client connection is closing");
                 break;
             }
 
@@ -1758,7 +1725,7 @@ void WSS_write(void *args, int id) {
 
                     // If something more needs to be read in order for the handshake to finish
                     if (err == SSL_ERROR_WANT_READ) {
-                        WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_READ", __FILE__, __LINE__);
+                        WSS_log_trace("Need to wait for further reads");
 
                         session->written = bytes_sent;
                         ringbuf_release(session->ringbuf, i);
@@ -1769,7 +1736,7 @@ void WSS_write(void *args, int id) {
 
                     // If something more needs to be written in order for the handshake to finish
                     if (err == SSL_ERROR_WANT_WRITE) {
-                        WSS_log(CLIENT_DEBUG, "SSL_ERROR_WANT_WRITE", __FILE__, __LINE__);
+                        WSS_log_trace("Need to wait for further writes");
 
                         session->written = bytes_sent;
 
@@ -1782,14 +1749,14 @@ void WSS_write(void *args, int id) {
                     if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
                         char msg[1024];
                         ERR_error_string_n(err, msg, 1024);
-                        WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+                        WSS_log_error("SSL write failed: %s", msg);
 
                         while ( (err = ERR_get_error()) != 0 ) {
                             ERR_error_string_n(err, msg, 1024);
-                            WSS_log(CLIENT_ERROR, msg, __FILE__, __LINE__);
+                            WSS_log_error("SSL write failed: %s", msg);
                         }
 
-                        WSS_diconnect_internal(server, session);
+                        WSS_disconnect_internal(server, session);
 
                         return;
                     } else {
@@ -1803,8 +1770,8 @@ void WSS_write(void *args, int id) {
                     n = write(session->fd, message->msg+bytes_sent, message_length-bytes_sent);
                     if (unlikely(n == -1)) {
                         if ( unlikely(errno != EAGAIN && errno != EWOULDBLOCK) ) {
-                            WSS_log(CLIENT_ERROR, strerror(errno), __FILE__, __LINE__);
-                            WSS_diconnect_internal(server, session);
+                            WSS_log_error("Write failed: %s", strerror(errno));
+                            WSS_disconnect_internal(server, session);
                             return;
                         }
 
@@ -1835,15 +1802,15 @@ void WSS_write(void *args, int id) {
         ringbuf_release(session->ringbuf, len);
     }
 
-    WSS_log(CLIENT_TRACE, "Done writing to filedescriptor.", __FILE__, __LINE__);
+    WSS_log_trace("Done writing to filedescriptors");
 
     session->state = STALE;
 
     if (closing) {
-        WSS_log(CLIENT_TRACE, "Closing connection, since closing frame has been sent.", __FILE__, __LINE__);
-        WSS_diconnect_internal(server, session);
+        WSS_log_trace("Closing connection, since closing frame has been sent");
+        WSS_disconnect_internal(server, session);
     } else {
-        WSS_log(CLIENT_TRACE, "Set epoll file descriptor to read mode", __FILE__, __LINE__);
+        WSS_log_trace("Set epoll file descriptor to read mode");
 
         WSS_read_notify(server, session->fd);
     }

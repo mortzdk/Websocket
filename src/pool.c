@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include "pool.h"
+#include "alloc.h"
 
 typedef struct {
     int id;
@@ -125,7 +126,7 @@ threadpool_t *threadpool_create(int thread_count, int queue_size,
 
     /* TODO: Check for negative or otherwise very big input parameters */
 
-    if ((pool = (threadpool_t *)malloc(sizeof(threadpool_t))) == NULL) {
+    if ((pool = (threadpool_t *)WSS_malloc(sizeof(threadpool_t))) == NULL) {
         goto err;
     }
 
@@ -140,8 +141,8 @@ threadpool_t *threadpool_create(int thread_count, int queue_size,
     pthread_attr_setstacksize(&pool->attr, thread_size);
 
     /* Allocate thread and task queue */
-    pool->threads = (pthread_t *) malloc(sizeof(pthread_t) * thread_count);
-    pool->queue = (threadpool_task_t *) malloc(sizeof(threadpool_task_t) * queue_size);
+    pool->threads = (pthread_t *) WSS_malloc(sizeof(pthread_t) * thread_count);
+    pool->queue = (threadpool_task_t *) WSS_malloc(sizeof(threadpool_task_t) * queue_size);
 
     /* Initialize mutex and conditional variable first */
     if ( (pthread_mutex_init(&(pool->lock), NULL) != 0) ||
@@ -153,7 +154,7 @@ threadpool_t *threadpool_create(int thread_count, int queue_size,
 
     /* Start worker threads */
     for (i = 0; i < thread_count; i++) {
-        if ((args[i] = (threadpool_args_t *)malloc(sizeof(threadpool_args_t))) == NULL) {
+        if ((args[i] = (threadpool_args_t *)WSS_malloc(sizeof(threadpool_args_t))) == NULL) {
             goto err;
         }
         args[i]->id = flags+i; 
@@ -278,8 +279,8 @@ int threadpool_free(threadpool_t *pool) {
     /* Did we manage to allocate ? */
     if (pool->threads) {
         pthread_attr_destroy(&pool->attr);
-        free(pool->threads);
-        free(pool->queue);
+        WSS_free((void **) &pool->threads);
+        WSS_free((void **) &pool->queue);
 
         /* Because we allocate pool->threads after initializing the
            mutex and condition variable, we're sure they're
@@ -289,7 +290,7 @@ int threadpool_free(threadpool_t *pool) {
         pthread_cond_destroy(&(pool->notify));
     }
 
-    free(pool);
+    WSS_free((void **) &pool);
     return 0;
 }
 
@@ -300,7 +301,7 @@ static void *threadpool_thread(void *arguments) {
     int id = args->id;
     threadpool_task_t task;
 
-    free(args);
+    WSS_free((void **) &args);
 
     for (;;) {
         /* Lock must be taken to wait on conditional variable */
@@ -326,7 +327,6 @@ static void *threadpool_thread(void *arguments) {
 
         /* Unlock */
         pthread_mutex_unlock(&(pool->lock));
-
         /* Get to work */
         (*(task.function))(task.argument, id);
     }

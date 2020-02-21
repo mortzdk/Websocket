@@ -22,6 +22,7 @@
                 "config" : "server_max_window_bits=10;client_max_window_bits=10;memory_level=8"
             }
         ],
+        "log_level": 3,
         "favicon" : "resources/favicon.ico",
         "timeout" : 1000,
 		"port" : {
@@ -35,7 +36,8 @@
 			"buffer" : 25600,
 			"thread" : 524288,
 			"queue" : 1024,
-            "pipe" : 128
+            "ringbuffer" : 128,
+            "frame" : 8096
 		},
 		"pool" : {
 			"size" : 8192,

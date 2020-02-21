@@ -32,92 +32,54 @@ void load_subprotocols(config_t *config)
     wss_subprotocol_t* proto;
     int name_length = 0;
 
-    WSS_log(
-            SERVER_TRACE,
-            "Loading subprotocols",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Loading subprotocols");
+
     for (i = 0; i < config->subprotocols_length; i++) {
-        WSS_log(
-                SERVER_TRACE,
-                config->subprotocols[i],
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Loading subprotocol %s", config->subprotocols[i]);
 
         if ( unlikely(NULL == (handle = dlopen(config->subprotocols[i], RTLD_LAZY))) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
+            WSS_log_error("Failed to load shared object: %s", dlerror());
             continue;
         }
 
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_subprotocol_t)))) ) {
-            (void) dlclose(proto->handle);
+            WSS_log_error("Unable to allocate subprotocol structure");
+            dlclose(proto->handle);
             return;
         }
         proto->handle = handle;
 
         if ( unlikely((*(void**)(&proto->init) = dlsym(proto->handle, "onInit")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onInit' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->connect) = dlsym(proto->handle, "onConnect")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onConnect' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->message) = dlsym(proto->handle, "onMessage")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onMessage' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->write) = dlsym(proto->handle, "onWrite")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onWrite' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
 
         if ( unlikely((*(void**)(&proto->close) = dlsym(proto->handle, "onClose")) == NULL) ) {
-            WSS_log(
-                    SERVER_ERROR,
-                    dlerror(),
-                    __FILE__,
-                    __LINE__
-                   );
-            (void) dlclose(proto->handle);
+            WSS_log_error("Failed to find 'onClose' function: %s", dlerror());
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
         }
@@ -128,7 +90,8 @@ void load_subprotocols(config_t *config)
         }
 
         if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
-            (void) dlclose(proto->handle);
+            WSS_log_error("Unable to allocate name");
+            dlclose(proto->handle);
             WSS_free((void **) &proto);
             return;
         }
@@ -137,14 +100,11 @@ void load_subprotocols(config_t *config)
 
         HASH_ADD_KEYPTR(hh, subprotocols, proto->name, name_length, proto);
 
+        WSS_log_trace("Initializing subprotocol %s", proto->name);
+
         proto->init(config->subprotocols_config[i]);
 
-        WSS_log(
-                SERVER_TRACE,
-                "Successfully loaded",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_info("Successfully loaded %s extension", proto->name);
     }
 }
 
@@ -172,7 +132,7 @@ void destroy_subprotocols() {
 
     HASH_ITER(hh, subprotocols, proto, tmp) {
         HASH_DEL(subprotocols, proto);
-        (void)dlclose(proto->handle);
+        dlclose(proto->handle);
         WSS_free((void **) &proto->name);
         WSS_free((void **) &proto);
     }

@@ -62,9 +62,8 @@ typedef struct {
     bool mask;
     uint64_t payloadLength;
     char maskingKey[4];
-    char *extensionData;
+    char *payload;
     uint64_t extensionDataLength;
-    char *applicationData;
     uint64_t applicationDataLength;
 } frame_t;
 

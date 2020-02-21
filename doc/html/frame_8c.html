@@ -74,8 +74,10 @@ $(document).ready(function(){initNavTree('frame_8c.html','');});
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;arpa/inet.h&gt;</code><br />
 <code>#include &quot;frame.h&quot;</code><br />
+<code>#include &quot;str.h&quot;</code><br />
 <code>#include &quot;header.h&quot;</code><br />
 <code>#include &quot;alloc.h&quot;</code><br />
+<code>#include &quot;log.h&quot;</code><br />
 <code>#include &quot;predict.h&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for frame.c:</div>
@@ -143,7 +145,7 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>[uint64_t] "The 64 bit unsigned integer in network byte order" </dd></dl>
 <p>If these check is true, the system is using the little endian convention. Else the system is using the big endian convention, which means that we do not have to represent our integers in another way.</p>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00063">63</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00065">65</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -180,7 +182,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[char *] "Random byte string of the given length" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00043">43</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00045">45</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -208,7 +210,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00081">81</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00083">83</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -248,7 +250,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00438">438</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00435">435</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -277,7 +279,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00583">583</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00579">579</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -332,7 +334,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00231">231</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00234">234</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -361,7 +363,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00522">522</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00524">524</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -441,7 +443,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00324">324</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00313">313</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -488,7 +490,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00401">401</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00393">393</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>

@@ -38,7 +38,7 @@ pthread_mutex_t lock;
 wss_error_t WSS_session_init_lock() {
     int err;
     if ( unlikely((err = pthread_mutex_init(&lock, NULL)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to initialize session lock: %s", strerror(err));
         return LOCK_ERROR;
     }
     return SUCCESS;
@@ -52,7 +52,7 @@ wss_error_t WSS_session_init_lock() {
 wss_error_t WSS_session_destroy_lock() {
     int err;
     if ( unlikely((err = pthread_mutex_destroy(&lock)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to destroy session lock: %s", strerror(err));
         return LOCK_ERROR;
     }
     return SUCCESS;
@@ -70,16 +70,19 @@ session_t *WSS_session_add(int fd, char* ip, int port) {
     int length, err;
     session_t *session = NULL;
 
+    WSS_log_trace("Adding session");
+
     if ( unlikely(NULL != (session = WSS_session_find(fd))) ) {
         return NULL;
     }
 
     if ( unlikely((err = pthread_mutex_lock(&lock)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to lock session lock: %s", strerror(err));
         return NULL;
     }
 
     if ( unlikely(NULL == (session = (session_t *) WSS_malloc(sizeof(session_t)))) ) {
+        WSS_log_error("Unable to allocate memory for session");
         pthread_mutex_unlock(&lock);
         return NULL;
     }
@@ -91,7 +94,7 @@ session_t *WSS_session_add(int fd, char* ip, int port) {
     length = strlen(ip);
     if ( unlikely(NULL == (session->ip = (char *) WSS_malloc( (length+1)*sizeof(char)))) ) {
         WSS_free((void **) &session);
-        WSS_log(SERVER_ERROR, "Unable to allocate memory for IP", __FILE__, __LINE__);
+        WSS_log_error("Unable to allocate memory for IP");
         pthread_mutex_unlock(&lock);
         return NULL;
     }
@@ -116,22 +119,22 @@ wss_error_t WSS_session_delete(session_t *session) {
     int i, err = 0;
     size_t j;
 
-    WSS_log(CLIENT_TRACE, "Locking hash table", __FILE__, __LINE__);
+    WSS_log_trace("Deleting session");
 
     if ( unlikely((err = pthread_mutex_lock(&lock)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to lock session lock: %s", strerror(err));
         return LOCK_ERROR;
     }
 
     if ( likely(NULL != session) ) {
-        WSS_log(CLIENT_TRACE, "Deleting client from hash table", __FILE__, __LINE__);
+        WSS_log_trace("Deleting client from hash table");
 
         HASH_DEL(sessions, session);
 
-        WSS_log(CLIENT_TRACE, "Free ip string", __FILE__, __LINE__);
+        WSS_log_trace("Free ip string");
         WSS_free((void **) &session->ip);
 
-        WSS_log(CLIENT_TRACE, "Free session header structure", __FILE__, __LINE__);
+        WSS_log_trace("Free session header structure");
         if ( likely(NULL != session->header) ) {
             for (j = 0; j < session->header->ws_extensions_count; j++) {
                 session->header->ws_extensions[j]->ext->close(session->fd);
@@ -139,7 +142,7 @@ wss_error_t WSS_session_delete(session_t *session) {
             WSS_free_header(session->header);
         }
 
-        WSS_log(CLIENT_TRACE, "Free ringbuf", __FILE__, __LINE__);
+        WSS_log_trace("Free ringbuf");
         for (i = 0; likely(i < session->messages_count); i++) {
             if ( likely(NULL != session->messages[i]) ) {
                 if ( likely(NULL != session->messages[i]->msg) ) {
@@ -152,7 +155,7 @@ wss_error_t WSS_session_delete(session_t *session) {
         WSS_free((void **) &session->ringbuf);
 
 #ifdef USE_OPENSSL
-        WSS_log(CLIENT_TRACE, "Free ssl structure", __FILE__, __LINE__);
+        WSS_log_trace("Free ssl structure");
         if (NULL != session->ssl) {
             if ( unlikely(SSL_shutdown(session->ssl) < 0) ) {
                 err = SSL_ERROR;
@@ -162,19 +165,17 @@ wss_error_t WSS_session_delete(session_t *session) {
         }
 #endif
 
-        WSS_log(CLIENT_TRACE, "Closing client filedescriptor", __FILE__, __LINE__);
+        WSS_log_trace("Closing client filedescriptor");
         if ( unlikely(close(session->fd) < 0) ) {
-            WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+            WSS_log_error("Unable to close clients filedescriptor: %s", strerror(err));
             err = FD_ERROR;
         }
 
-        WSS_log(CLIENT_TRACE, "Free session structure", __FILE__, __LINE__);
+        WSS_log_trace("Free session structure");
         WSS_free((void **) &session);
     }
 
     pthread_mutex_unlock(&lock);
-
-    WSS_log(CLIENT_TRACE, "Unlocked hash table", __FILE__, __LINE__);
 
     return err;
 }
@@ -189,8 +190,10 @@ wss_error_t WSS_session_delete_all() {
     size_t j;
     session_t *session, *tmp;
 
+    WSS_log_trace("Deleting all sessions");
+
     if ( unlikely((err = pthread_mutex_lock(&lock)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to lock session lock: %s", strerror(err));
         return LOCK_ERROR;
     }
 
@@ -231,7 +234,7 @@ wss_error_t WSS_session_delete_all() {
 #endif
 
             if ( likely(close(session->fd) < 0) ) {
-                WSS_log(SERVER_ERROR, strerror(errno), __FILE__, __LINE__);
+                WSS_log_error("Unable to close clients filedescriptor: %s", strerror(errno));
                 err = FD_ERROR;
             }
 
@@ -253,8 +256,10 @@ session_t *WSS_session_find(int fd) {
     int err;
     session_t *session = NULL;
 
+    WSS_log_trace("Finding session");
+
     if ( unlikely((err = pthread_mutex_lock(&lock)) != 0) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("Unable to lock session lock", strerror(err));
         return NULL;
     }
 

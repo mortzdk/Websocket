@@ -43,6 +43,7 @@
 
 /* Get prototype. */
 #include "base64.h"
+#include "alloc.h"
 
 /* Get malloc. */
 #include <stdlib.h>
@@ -124,7 +125,7 @@ size_t base64_encode_alloc (const char *in, size_t inlen, char **out) {
         return 0;
     }
 
-    *out = malloc (outlen);
+    *out = WSS_malloc(outlen);
     if (!*out)
         return outlen;
 
@@ -393,13 +394,13 @@ base64_decode_alloc (const char *in, size_t inlen, char **out,
        Dividing before multiplying avoids the possibility of overflow.  */
     size_t needlen = 3 * (inlen / 4) + 2;
 
-    *out = malloc (needlen);
+    *out = WSS_malloc(needlen);
     if (!*out)
         return true;
 
     if (!base64_decode (in, inlen, *out, &needlen))
     {
-        free (*out);
+        WSS_free((void *)out);
         *out = NULL;
         return false;
     }

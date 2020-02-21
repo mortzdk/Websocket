@@ -1,4 +1,6 @@
+#ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
+#endif
 
 #include <errno.h> 				/* errno */
 #include <unistd.h>             /* close */
@@ -57,12 +59,7 @@ static wss_error_t server_add_to_pool(server_t *server, void (*func)(void *, int
                 );
 
         if (unlikely(err != 0 && err != threadpool_queue_full)) {
-            WSS_log(
-                    SERVER_ERROR,
-                    threadpool_strerror(err),
-                    __FILE__,
-                    __LINE__
-                   );
+            WSS_log_fatal("Threadpool returned with error: %s", threadpool_strerror(err));
             return THREADPOOL_ERROR;
         }
 
@@ -88,34 +85,40 @@ void *server_run(void *arg) {
     int n = 0, i = 0;
 
     if ( unlikely(NULL == (server->events = WSS_calloc(server->config->pool_size, sizeof(event)))) ) {
+        WSS_log_fatal("Unable to calloc server epoll events");
         pthread_exit( ((void *) MEMORY_ERROR) );
     }
 
     // Listen for epoll events
     while (1) {
         if (unlikely(state.state != RUNNING)) {
+#ifdef USE_OPENSSL
+            if (server->ssl_ctx != NULL) {
+                WSS_log_trace("Stopping HTTPS server");
+            } else {
+#endif
+                WSS_log_trace("Stopping HTTP server");
+#ifdef USE_OPENSSL
+            }
+#endif
             break;
         }
 
         if ( unlikely((n = socket_wait(server)) < 0) ) {
             pthread_exit( ((void *) SOCKET_WAIT_ERROR) );
-        }
+        } 
         
         for (i = 0; i < n; i++) {
             if ( unlikely((server->events[i].events & EPOLLHUP) ||
                     (server->events[i].events & EPOLLERR) ||
                     (server->events[i].events & EPOLLRDHUP)) ) {
                 if ( unlikely(server->events[i].data.fd == server->fd) ) {
-                    WSS_log(
-                            SERVER_ERROR,
-                            "Epoll reported error on the servers filedescriptor",
-                            __FILE__,
-                            __LINE__
-                           );
+                    WSS_log_fatal("Epoll reported error on the servers filedescriptor");
                     pthread_exit( ((void *) EPOLL_ERROR) );
                 } else {
                     args_t *args = (args_t *) WSS_malloc(sizeof(args_t));
                     if ( unlikely(NULL == args) ) {
+                        WSS_log_fatal("Unable to allocate args structure");
                         pthread_exit( ((void *) MEMORY_ERROR) );
                     }
                     args->server = server;
@@ -123,7 +126,8 @@ void *server_run(void *arg) {
 
                     if ( unlikely((err = server_add_to_pool(server, &WSS_disconnect,
                                     (void *)args, queues)) != 0) ) {
-                        free(args);
+                        WSS_log_fatal("Failed adding job to worker pool");
+                        WSS_free((void **)&args);
                         pthread_exit( ((void *) EPOLL_CONN_ERROR) );
                     }
                 }
@@ -133,6 +137,7 @@ void *server_run(void *arg) {
                  */
                 if ( unlikely((err = server_add_to_pool(server, &WSS_connect,
                                 (void *)server, queues)) != 0) ) {
+                    WSS_log_fatal("Failed adding job to worker pool");
                     pthread_exit( ((void *) EPOLL_CONN_ERROR) );
                 }
             } else {
@@ -142,6 +147,7 @@ void *server_run(void *arg) {
                      */
                     args_t *args = (args_t *) WSS_malloc(sizeof(args_t));
                     if ( unlikely(NULL == args) ) {
+                        WSS_log_fatal("Unable to allocate args structure");
                         pthread_exit( ((void *) MEMORY_ERROR) );
                     }
                     args->server = server;
@@ -149,7 +155,8 @@ void *server_run(void *arg) {
 
                     if ( unlikely((err = server_add_to_pool(server, &WSS_read,
                                     (void *)args, queues)) != 0) ) {
-                        free(args);
+                        WSS_log_fatal("Failed adding job to worker pool");
+                        WSS_free((void **)&args);
                         pthread_exit( ((void *) EPOLL_READ_ERROR) );
                     }
                 }
@@ -160,6 +167,7 @@ void *server_run(void *arg) {
                      */
                     args_t *args = (args_t *) WSS_malloc(sizeof(args_t));
                     if ( unlikely(NULL == args) ) {
+                        WSS_log_fatal("Unable to allocate args structure");
                         pthread_exit( ((void *) MEMORY_ERROR) );
                     }
                     args->server = server;
@@ -167,6 +175,7 @@ void *server_run(void *arg) {
 
                     if ( unlikely((err = server_add_to_pool(server, &WSS_write,
                                     (void *)args, queues)) != 0) ) {
+                        WSS_log_fatal("Failed adding job to worker pool");
                         free(args);
                         pthread_exit( ((void *) EPOLL_WRITE_ERROR) );
                     }
@@ -174,6 +183,7 @@ void *server_run(void *arg) {
             }
         }
     }
+
     pthread_exit( ((void *) ((uintptr_t)SUCCESS)) );
 }
 
@@ -190,17 +200,15 @@ static void server_interrupt(int sig) {
         case SIGSEGV:
         case SIGILL:
         case SIGFPE:
-            (void) signal(sig, SIG_IGN);
-            WSS_log(
-                    SERVER_TRACE,
-                    "Server is shutting down gracefully",
-                    __FILE__,
-                    __LINE__
-                   );
-            server_set_state(SHUTDOWN);
+            if (state.state != SHUTDOWN) {
+                WSS_log_trace("Server is shutting down gracefully");
+                server_set_state(SHUTDOWN);
+
+                // To signal second server thread
+                kill(getpid(), SIGINT);
+            }
             break;
         case SIGPIPE:
-            (void) signal(sig, SIG_IGN);
             break;
         default:
             return;
@@ -240,17 +248,14 @@ int server_start(config_t *config) {
     server_t *http = NULL;
     server_t *https = NULL;
     int ret = EXIT_SUCCESS;
-
-    log_type = SERVER_ERROR | CLIENT_ERROR | config->log;
-#ifndef NDEBUG
-    log_type |= SERVER_DEBUG | CLIENT_DEBUG;
-#endif
+    struct sigaction sa;
+    sigset_t mask, orig_mask;
 
     if ( unlikely((err = pthread_mutex_init(&state.lock, NULL)) != 0) ) {
         server_free(http);
         server_free(https);
 
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_fatal("Failed initializing state lock: %s", strerror(err));
 
         return EXIT_FAILURE;
     }
@@ -262,49 +267,96 @@ int server_start(config_t *config) {
     load_subprotocols(config);
 
     // Setting starting state
-    WSS_log(SERVER_TRACE, "Starting server.", __FILE__, __LINE__);
+    WSS_log_trace("Starting server");
     server_set_state(STARTING);
 
     // Listening for signals that could terminate program
-    WSS_log(SERVER_TRACE, "Listening for signals.", __FILE__, __LINE__);
+    WSS_log_trace("Listening for signals");
+
+    // Blocking signals
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGTERM);
+    sigaddset(&mask, SIGHUP);
+    sigaddset(&mask, SIGINT);
+    sigaddset(&mask, SIGSEGV);
+    sigaddset(&mask, SIGFPE);
+    sigaddset(&mask, SIGPIPE);
+
+    if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    // Set up the structure to specify the new action
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = server_interrupt;
+    sa.sa_flags = 0;
+
+    if (sigaction (SIGINT, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGINT signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (sigaction (SIGSEGV, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGSEGV signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (sigaction (SIGILL, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGILL signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (sigaction (SIGHUP, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGHUB signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (sigaction (SIGFPE, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGFPE signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (sigaction (SIGPIPE, &sa, NULL) == -1) {
+        WSS_log_fatal("Unable to listen for SIGPIPE signal: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    /*
     (void) signal(SIGINT , &server_interrupt);
     (void) signal(SIGSEGV, &server_interrupt);
     (void) signal(SIGILL, &server_interrupt);
     (void) signal(SIGFPE, &server_interrupt);
     (void) signal(SIGPIPE, &server_interrupt);
+    */
 
-    WSS_log(SERVER_TRACE, "Initializing sessions", __FILE__, __LINE__);
+    WSS_log_trace("Initializing sessions");
     if ( unlikely(SUCCESS != WSS_session_init_lock()) ) {
-        WSS_log(SERVER_ERROR, "Unable to initialize session mutex", __FILE__, __LINE__);
+        WSS_log_fatal("Unable to initialize session mutex");
 
         return EXIT_FAILURE;
     }
 
-    WSS_log(
-            SERVER_TRACE,
-            "Allocating memory for HTTP instance",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Allocating memory for HTTP instance");
 
     if ( unlikely(NULL == (http = WSS_malloc(sizeof(server_t)))) ) {
-        WSS_log(SERVER_ERROR, "Unable to allocate server structure", __FILE__, __LINE__);
+        WSS_log_fatal("Unable to allocate server structure");
 
         return EXIT_FAILURE;
     }
+    http->mask = orig_mask;
 
-    WSS_log(SERVER_TRACE, "Setting to running state", __FILE__, __LINE__);
+    WSS_log_trace("Setting to running state");
 
     server_set_state(RUNNING);
 
-    WSS_log(SERVER_TRACE, "Creating HTTP Instance", __FILE__, __LINE__);
+    WSS_log_trace("Creating HTTP Instance");
 
     http->config       = config;
     http->port         = config->port_http;
     if ( unlikely(SUCCESS != http_server(http)) ) {
         server_free(http);
 
-        WSS_log(SERVER_ERROR, "Unable to initialize http server", __FILE__, __LINE__);
+        WSS_log_fatal("Unable to initialize http server");
 
         return EXIT_FAILURE;
     }
@@ -312,22 +364,19 @@ int server_start(config_t *config) {
 #ifdef USE_OPENSSL
     bool ssl = NULL != config->ssl_cert && NULL != config->ssl_key && (NULL != config->ssl_ca_file || NULL != config->ssl_ca_path);
     if (ssl) {
-        WSS_log(
-                SERVER_TRACE,
-                "Allocating memory for HTTPS instance",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Allocating memory for HTTPS instance");
 
         if ( unlikely(NULL == (https = (server_t *) WSS_malloc(sizeof(server_t)))) ) {
             server_free(http);
 
-            WSS_log(SERVER_ERROR, "Unable to allocate https server structure", __FILE__, __LINE__);
+            WSS_log_fatal("Unable to allocate https server structure");
 
             return EXIT_FAILURE;
         }
 
-        WSS_log(SERVER_TRACE, "Creating HTTPS Instance", __FILE__, __LINE__);
+        https->mask = orig_mask;
+
+        WSS_log_trace("Creating HTTPS Instance");
 
         https->config       = config;
         https->port         = config->port_https;
@@ -335,7 +384,7 @@ int server_start(config_t *config) {
             server_free(http);
             server_free(https);
 
-            WSS_log(SERVER_ERROR, "Unable to establish ssl context", __FILE__, __LINE__);
+            WSS_log_fatal("Unable to establish ssl context");
 
             return EXIT_FAILURE;
         }
@@ -344,32 +393,32 @@ int server_start(config_t *config) {
             server_free(http);
             server_free(https);
 
-            WSS_log(SERVER_ERROR, "Unable to allocate https server structure", __FILE__, __LINE__);
+            WSS_log_fatal("Unable to initialize https server");
 
             return EXIT_FAILURE;
         }
     }
 #endif
 
-    WSS_log(SERVER_TRACE, "Joining server threads", __FILE__, __LINE__);
+    WSS_log_trace("Joining server threads");
 
     pthread_join(http->thread_id, (void **) &err);
     if ( unlikely(SUCCESS != err) ) {
-        WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+        WSS_log_error("HTTP Server thread returned with error: %s", strerror(err));
         server_set_state(SHUTDOWN_ERROR);
     }
 
-    WSS_log(SERVER_TRACE, "HTTP server thread has shutdown", __FILE__, __LINE__);
+    WSS_log_trace("HTTP server thread has shutdown");
 
 #ifdef USE_OPENSSL
     if (ssl) {
         pthread_join(https->thread_id, (void **) &err);
         if ( unlikely(SUCCESS != err) ) {
-            WSS_log(SERVER_ERROR, strerror(err), __FILE__, __LINE__);
+            WSS_log_error("HTTPS Server thread returned with error: %s", strerror(err));
             server_set_state(SHUTDOWN_ERROR);
         }
 
-        WSS_log(SERVER_TRACE, "HTTPS server thread has shutdown", __FILE__, __LINE__);
+        WSS_log_trace("HTTPS server thread has shutdown");
     }
 #endif
 
@@ -377,12 +426,7 @@ int server_start(config_t *config) {
         server_set_state(SHUTDOWN_ERROR);
     }
 
-    WSS_log(
-            SERVER_TRACE,
-            "Freed memory associated with HTTP server instance",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Freed memory associated with HTTP server instance");
 
 #ifdef USE_OPENSSL
     if (ssl) {
@@ -390,12 +434,7 @@ int server_start(config_t *config) {
             server_set_state(SHUTDOWN_ERROR);
         }
 
-        WSS_log(
-                SERVER_TRACE,
-                "Freed memory associated with HTTPS server instance",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Freed memory associated with HTTPS server instance");
     }
 #endif
 
@@ -403,23 +442,13 @@ int server_start(config_t *config) {
         server_set_state(SHUTDOWN_ERROR);
     }
 
-    WSS_log(
-            SERVER_TRACE,
-            "Freed all sessions",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Freed all sessions");
 
     if ( unlikely(WSS_session_destroy_lock() != SUCCESS) ) {
         server_set_state(SHUTDOWN_ERROR);
     }
 
-    WSS_log(
-            SERVER_TRACE,
-            "Destroyed session lock",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Destroyed session lock");
 
     if ( unlikely(state.state == SHUTDOWN_ERROR) ) {
         ret = EXIT_FAILURE;

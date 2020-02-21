@@ -51,7 +51,7 @@ const char *versions[] = {
  * @param   str     [char *]    "The string to trim"
  * @return          [char *]    "The input string without leading and trailing spaces"
  */
-char *trim(char *str) {
+static char *trim(char *str) {
     size_t len = 0;
     char *frontp = str;
     char *endp = NULL;
@@ -144,7 +144,10 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
     wss_subprotocol_t *proto;
     wss_extension_t *ext;
 
+    WSS_log_trace("Parsing HTTP header");
+
     if ( unlikely(NULL == token) ) {
+        WSS_log_trace("No header content");
         return HttpStatus_BadRequest;
     }
 
@@ -152,17 +155,13 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
      * Receiving and checking method of the request
      */
     if ( unlikely(NULL == (header->method = strtok_r(token, " ", &lineptr))) ) {
+        WSS_log_trace("Unable to parse header method");
         return HttpStatus_BadRequest;
     }
 
     if ( unlikely(strinarray(header->method, methods,
                 sizeof(methods)/sizeof(methods[0])) != 0) ) {
-        WSS_log(
-                CLIENT_ERROR,
-                "Method that the client is using is unknown.",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("Method that the client is using is unknown.");
         return HttpStatus_MethodNotAllowed;
     }
 
@@ -170,28 +169,19 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
      * Receiving the path of the request
      */
     if ( unlikely(NULL == (header->path = strtok_r(NULL, " ", &lineptr))) ) {
+        WSS_log_trace("Unable to parse header path");
         return HttpStatus_BadRequest;
     }
 
     if ( unlikely(strlen(header->path) > config->size_uri) ) {
-        WSS_log(
-                CLIENT_ERROR,
-                "The size of the request URI was too large",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("The size of the request URI was too large");
         return HttpStatus_URITooLong;
     } else if ( unlikely(strncmp("/", header->path, sizeof(char)*1) != 0 &&
             strncasecmp("ws://", header->path, sizeof(char)*7) != 0 &&
             strncasecmp("wss://", header->path, sizeof(char)*7) != 0 &&
             strncasecmp("http://", header->path, sizeof(char)*7) != 0 &&
             strncasecmp("https://", header->path, sizeof(char)*8) != 0) ) {
-        WSS_log(
-                CLIENT_ERROR,
-                "The request URI is not absolute URI nor relative path.",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("The request URI is not absolute URI nor relative path.");
         return HttpStatus_NotFound;
     }
 
@@ -199,17 +189,13 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
      * Receiving and checking version of the request
      */
     if ( unlikely(NULL == (header->version = strtok_r(NULL, " ", &lineptr))) ) {
+        WSS_log_trace("Unable to parse header version");
         return HttpStatus_BadRequest;
     }
 
     if ( unlikely(strinarray(header->version, versions,
                 sizeof(versions)/sizeof(versions[0])) != 0) ) {
-        WSS_log(
-                CLIENT_ERROR,
-                "HTTP version that the client is using is unknown.",
-                __FILE__,
-                __LINE__
-               );
+        WSS_log_trace("HTTP version that the client is using is unknown.");
         return HttpStatus_HTTPVersionNotSupported;
     }
 
@@ -218,12 +204,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
         header_size += strlen(token);
 
         if ( unlikely(header_size > config->size_header) ) {
-            WSS_log(
-                    CLIENT_ERROR,
-                    "Header size received is too large.",
-                    __FILE__,
-                    __LINE__
-                   );
+            WSS_log_trace("Header size received is too large.");
             return HttpStatus_RequestHeaderFieldsTooLarge;
         }
 
@@ -233,6 +214,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
             if ( strncasecmp("Sec-WebSocket-Version", line, 21) == 0 ) {
                 // The |Sec-WebSocket-Version| header field MUST NOT appear more than once in an HTTP request.
                 if ( unlikely(header->ws_version != 0) ) {
+                    WSS_log_trace("Sec-WebSocket-Version must only appear once in header");
                     return HttpStatus_BadRequest;
                 }
 
@@ -267,6 +249,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
             } else if (strncasecmp("Sec-WebSocket-Key", line, 17) == 0) {
                 //The |Sec-WebSocket-Key| header field MUST NOT appear more than once in an HTTP request.
                 if ( unlikely(header->ws_key != NULL) ) {
+                    WSS_log_trace("Sec-WebSocket-Key must only appear once in header");
                     return HttpStatus_BadRequest;
                 }
                 header->ws_key = (strtok_r(NULL, "", &lineptr)+1);
@@ -288,22 +271,12 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
                             ext->open(fd, trim(paramptr), &accepted, &valid); 
                             if ( likely(valid) ) {
                                 if ( unlikely(NULL == (header->ws_extensions = WSS_realloc((void **) &header->ws_extensions, header->ws_extensions_count*sizeof(wss_ext_t *), (header->ws_extensions_count+1)*sizeof(wss_ext_t *)))) ) {
-                                    WSS_log(
-                                            SERVER_ERROR,
-                                            "Unable to allocate space for extension.",
-                                            __FILE__,
-                                            __LINE__
-                                           );
+                                    WSS_log_error("Unable to allocate space for extension");
                                     return HttpStatus_InternalServerError;
                                 }
 
                                 if ( unlikely(NULL == (header->ws_extensions[header->ws_extensions_count] = WSS_malloc(sizeof(wss_ext_t))))) {
-                                    WSS_log(
-                                            SERVER_ERROR,
-                                            "Unable to allocate space for extension.",
-                                            __FILE__,
-                                            __LINE__
-                                           );
+                                    WSS_log_error("Unable to allocate space for extension structure");
                                     return HttpStatus_InternalServerError;
                                 }
                                 header->ws_extensions[header->ws_extensions_count]->ext = ext;
@@ -348,12 +321,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
             temp = strtok_r(NULL, "\r\n", &tokenptr);
 
             if ( unlikely(strlen(tokenptr) > config->size_payload) ) {
-                WSS_log(
-                        CLIENT_ERROR,
-                        "Payload size received is too large.",
-                        __FILE__,
-                        __LINE__
-                       );
+                WSS_log_trace("Payload size received is too large.");
                 return HttpStatus_PayloadTooLarge;
             }
 
@@ -522,30 +490,22 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
     char *sep, *sepptr;
     unsigned long key_length;
 
+    WSS_log_trace("Upgrading HTTP header");
+
     if ( unlikely(strncasecmp("http://", header->path, sizeof(char)*7) == 0 ||
          strncasecmp("https://", header->path, sizeof(char)*8) == 0) ) {
+        WSS_log_trace("Header path does not contain valid protocol");
         return HttpStatus_UpgradeRequired;
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating request_uri",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating request_uri");
     
     // It is recommended to specify paths in the config file
     request_uri = generate_request_uri(config, ssl, port);
     if ( likely(request_uri != NULL) ) {
         if ( unlikely((err = regcomp(&re, request_uri, REG_EXTENDED|REG_NOSUB)) != 0) ) {
             regerror(err, &re, msg, 1024);
-            WSS_log(
-                    CLIENT_ERROR,
-                    msg,
-                    __FILE__,
-                    __LINE__
-                   );
-
+            WSS_log_error("Unable to compile regex: %s", msg);
             WSS_free((void **) &request_uri);
             return HttpStatus_InternalServerError;
         }
@@ -553,19 +513,14 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
         err = regexec(&re, header->path, 0, NULL, 0);
         regfree(&re);
         if ( unlikely(err == REG_NOMATCH) ) {
+            WSS_log_trace("Path is not allowed: %s", header->path);
             WSS_free((void **) &request_uri);
             return HttpStatus_NotFound;
         }
 
         if ( unlikely(err != 0) ) {
             regerror(err, &re, msg, 1024);
-            WSS_log(
-                    CLIENT_ERROR,
-                    msg,
-                    __FILE__,
-                    __LINE__
-                   );
-
+            WSS_log_error("Unable to exec regex: %s", msg);
             WSS_free((void **) &request_uri);
             return HttpStatus_InternalServerError;
         }
@@ -573,45 +528,34 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
         WSS_free((void **) &request_uri);
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating host",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating host");
 
     // It is recommended to specify hosts in the config file
     if ( likely(config->hosts_length > 0) ) {
         if ( unlikely(strinarray(header->host, (const char **)config->hosts, config->hosts_length) != 0) ) {
+            WSS_log_trace("Host is not allowed: %s", header->host);
             return HttpStatus_BadRequest;
         }
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating upgrade header",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating upgrade header");
 
     if ( unlikely(NULL == header->ws_upgrade || strlen(header->ws_upgrade) < strlen(ASCII_WEBSOCKET_STRING) ||
             strncasecmp(ASCII_WEBSOCKET_STRING, header->ws_upgrade, strlen(ASCII_WEBSOCKET_STRING)) != 0) ) {
+        WSS_log_trace("Invalid upgrade header value");
         return HttpStatus_UpgradeRequired;
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating connection header",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating connection header");
 
     if ( unlikely(NULL == header->ws_connection || strlen(header->ws_connection) < strlen(ASCII_CONNECTION_STRING)) ) {
+        WSS_log_trace("Invalid connection header value");
         return HttpStatus_UpgradeRequired;
     }
 
     sep = trim(strtok_r(header->ws_connection, ",", &sepptr));
     if ( unlikely(NULL == sep) ) {
+        WSS_log_trace("Invalid connection header value");
         return HttpStatus_UpgradeRequired;
     }
 
@@ -624,55 +568,39 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
     } while ( likely(NULL != sep) );
 
     if ( unlikely(sep == NULL) ) {
+        WSS_log_trace("Invalid connection header value");
         return HttpStatus_UpgradeRequired;
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating websocket key",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating websocket key");
 
     if ( unlikely(NULL == header->ws_key || 
             ! base64_decode_alloc(header->ws_key, strlen(header->ws_key), &key, &key_length) ||
             key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
+        WSS_log_trace("Invalid websocket key");
         WSS_free((void **) &key);
         return HttpStatus_UpgradeRequired;
     }
     WSS_free((void **) &key);
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating websocket version",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating websocket version");
      
     if ( unlikely(header->ws_type != RFC6455) ) {
+        WSS_log_trace("Invalid websocket version");
         return HttpStatus_UpgradeRequired;
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Validating origin",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Validating origin");
 
     // It is recommended to specify origins in the config file
     if ( likely(config->origins_length > 0) ) {
         if ( unlikely(strinarray(header->ws_origin, (const char **)config->origins, config->origins_length) != 0) ) {
+            WSS_log_trace("Origin is not allowed: %s", header->ws_origin);
             return HttpStatus_Forbidden;
         }
     }
 
-    WSS_log(
-            CLIENT_TRACE,
-            "Accepted handshake, switching protocol",
-            __FILE__,
-            __LINE__
-           );
+    WSS_log_trace("Accepted handshake, switching protocol");
 
     return HttpStatus_SwitchingProtocols;
 }

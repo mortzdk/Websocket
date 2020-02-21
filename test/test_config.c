@@ -29,7 +29,7 @@ Test(config_init, valid_config) {
     cr_assert(SUCCESS == config_load(conf, "resources/test_wss.json"));
 
     cr_expect(strncmp(conf->favicon, "favicon.ico", 11) == 0); 
-    cr_expect(strncmp(conf->ssl_ca, "root.pem", 8) == 0); 
+    cr_expect(strncmp(conf->ssl_ca_file, "root.pem", 8) == 0); 
     cr_expect(strncmp(conf->ssl_key, "key.pem", 7) == 0); 
     cr_expect(strncmp(conf->ssl_cert, "cert.pem", 8) == 0); 
 
@@ -43,7 +43,7 @@ Test(config_init, valid_config) {
     cr_expect(conf->port_http == 9010); 
     cr_expect(conf->port_https == 9011); 
     cr_expect(conf->size_uri == 8192); 
-    cr_expect(conf->size_pipe == 128); 
+    cr_expect(conf->size_ringbuffer == 128); 
     cr_expect(conf->size_queue == 1024); 
     cr_expect(conf->size_buffer == 25600); 
     cr_expect(conf->size_header == 8192); 

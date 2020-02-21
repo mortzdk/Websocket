@@ -1,5 +1,5 @@
 {
-   "agent": "WSServer (HTTPs)",
+   "agent": "WSServer (HTTPS)",
    "behavior": "OK",
    "behaviorClose": "OK",
    "case": 221,
@@ -8,7 +8,7 @@
    "createWirelog": true,
    "description": "Send a close frame with close code and close reason which is too long (124) - total frame payload 126 octets",
    "droppedByMe": false,
-   "duration": 3,
+   "duration": 2,
    "expectation": "Clean close with protocol error code or dropped TCP connection.",
    "expected": {
       "OK": []
@@ -21,8 +21,8 @@
       "requireClean": false
    },
    "failedByMe": false,
-   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: VXbmfAbdKjJXMofU2QFCSg==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: ZVNpjbYZBX7n/x1ZEKjRoCbSzss=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
+   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: itQ/oL43+7hhuY/aNCeQFQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: nANATMqvlPQ+gYDjJg/D8N3wvks=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
    "id": "7.3.6",
    "isServer": false,
    "localCloseCode": 1000,
@@ -41,7 +41,7 @@
       "32": 1,
       "153": 1
    },
-   "started": "2020-01-29T08:53:57.750Z",
+   "started": "2020-02-21T20:26:47.366Z",
    "trafficStats": null,
    "txFrameStats": {
       "8": 1
@@ -68,7 +68,7 @@
          "RO",
          [
             153,
-            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a205a564e706a62595a ..."
+            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a206e414e41544d7176 ..."
          ]
       ],
       [
@@ -80,7 +80,7 @@
          8,
          true,
          0,
-         "eaacfe8e",
+         "0c21cda7",
          null,
          null,
          false
@@ -89,7 +89,7 @@
          "TO",
          [
             134,
-            "88fe007eeaacfe8ee944d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4c086d4a4 ..."
+            "88fe007e0c21cda70fc9e78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d260be78d ..."
          ],
          false
       ],

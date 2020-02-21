@@ -29,6 +29,7 @@ typedef enum {
     SOCKET_NONBLOCKED_ERROR  = -19,
     SOCKET_LISTEN_ERROR      = -20,
     SOCKET_WAIT_ERROR        = -21,
+    SIGNAL_ERROR             = -22,
 } wss_error_t;
 
 #endif

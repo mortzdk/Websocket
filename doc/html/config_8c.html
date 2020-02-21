@@ -88,6 +88,10 @@ Include dependency graph for config.c:</div>
 Functions</h2></td></tr>
 <tr class="memitem:aa16c919a6b27c03c0090e789f52c6b3a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8c.html#aa16c919a6b27c03c0090e789f52c6b3a">config_add_port_to_hosts</a> (config_t *config)</td></tr>
 <tr class="separator:aa16c919a6b27c03c0090e789f52c6b3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade22f95a2f255f1dc6e3877eb06fab02"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8c.html#ade22f95a2f255f1dc6e3877eb06fab02">config_alloc</a> (size_t size, int zero, void *user_data)</td></tr>
+<tr class="separator:ade22f95a2f255f1dc6e3877eb06fab02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa316f8d4388ad5f267b52c61e4443fef"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8c.html#aa316f8d4388ad5f267b52c61e4443fef">config_release</a> (void *ptr, void *user_data)</td></tr>
+<tr class="separator:aa316f8d4388ad5f267b52c61e4443fef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e130b94a2fb9858274effb394d48ba4"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8c.html#a8e130b94a2fb9858274effb394d48ba4">config_load</a> (config_t *config, char *path)</td></tr>
 <tr class="separator:a8e130b94a2fb9858274effb394d48ba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c34818cc5647f4c82fbf77fd0a68aca"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="config_8c.html#a6c34818cc5647f4c82fbf77fd0a68aca">config_free</a> (config_t *config)</td></tr>
@@ -122,6 +126,50 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ade22f95a2f255f1dc6e3877eb06fab02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade22f95a2f255f1dc6e3877eb06fab02">&#9670;&nbsp;</a></span>config_alloc()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void* config_alloc </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>zero</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00072">72</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
+
+</div>
+</div>
 <a id="a6c34818cc5647f4c82fbf77fd0a68aca"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6c34818cc5647f4c82fbf77fd0a68aca">&#9670;&nbsp;</a></span>config_free()</h2>
 
@@ -147,7 +195,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00374">374</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00473">473</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
 
 </div>
 </div>
@@ -187,7 +235,45 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00079">79</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00091">91</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
+
+</div>
+</div>
+<a id="aa316f8d4388ad5f267b52c61e4443fef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa316f8d4388ad5f267b52c61e4443fef">&#9670;&nbsp;</a></span>config_release()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void config_release </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>user_data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="config_8c_source.html#l00078">78</a> of file <a class="el" href="config_8c_source.html">config.c</a>.</p>
 
 </div>
 </div>

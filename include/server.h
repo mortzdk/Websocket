@@ -5,6 +5,7 @@
 #define WSS_SERVER_VERSION "2.0.0"
 #endif
 
+#include <signal.h>
 #include <sys/epoll.h> 			/* epoll_event, epoll_create, epoll_ctl */
 #include <sys/socket.h>         /* socket, setsockopt, inet_ntoa, accept, shutdown */
 #include <netinet/in.h>         /* sockaddr_in, inet_ntoa */
@@ -38,6 +39,7 @@ typedef struct {
     struct epoll_event *events;
     struct sockaddr_in info;
     pthread_t thread_id;
+    sigset_t mask;
 } server_t;
 
 typedef struct {

@@ -1,5 +1,5 @@
 {
-   "agent": "WSServer (HTTPs)",
+   "agent": "WSServer (HTTPS)",
    "behavior": "OK",
    "behaviorClose": "OK",
    "case": 32,
@@ -8,7 +8,7 @@
    "createWirelog": true,
    "description": "Send small binary message with <b>RSV = 5</b>.",
    "droppedByMe": false,
-   "duration": 2,
+   "duration": 1,
    "expectation": "The connection is failed immediately, since RSV must be 0.",
    "expected": {
       "OK": []
@@ -21,8 +21,8 @@
       "requireClean": false
    },
    "failedByMe": false,
-   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: cPNz8Md0VSb5tBYYhJR6Hg==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: vl/e6dArpVwyjtgOLss2JeqMQdg=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
+   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9011\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: 67qwZqu05f5toUkosAyzUA==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: hqemKwQ6nbihrEzYAW9pjZiBJEU=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
    "id": "3.5",
    "isServer": false,
    "localCloseCode": 1000,
@@ -41,7 +41,7 @@
       "32": 1,
       "153": 1
    },
-   "started": "2020-01-29T08:53:45.046Z",
+   "started": "2020-02-21T20:26:35.056Z",
    "trafficStats": null,
    "txFrameStats": {
       "2": 1,
@@ -70,7 +70,7 @@
          "RO",
          [
             153,
-            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a20766c2f6536644172 ..."
+            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a206871656d4b775136 ..."
          ]
       ],
       [
@@ -82,7 +82,7 @@
          2,
          true,
          5,
-         "6b61842b",
+         "d01d3320",
          null,
          null,
          false
@@ -91,7 +91,7 @@
          "TO",
          [
             14,
-            "d2886b61842b6b9e7ad6979a84d4"
+            "d288d01d3320d0e2cddd2ce633df"
          ],
          false
       ],
@@ -127,7 +127,7 @@
          8,
          true,
          0,
-         "ae77d9e5",
+         "9894235c",
          null,
          null,
          false
@@ -136,7 +136,7 @@
          "TO",
          [
             8,
-            "8882ae77d9e5ad9f"
+            "88829894235c9b7c"
          ],
          false
       ]

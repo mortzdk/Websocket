@@ -1,34 +1,42 @@
-#ifndef wss_log_h
-#define wss_log_h
-
-#define STRING_PORT 		"Assigning server to port "
-#define STRING_BINDING 		"Binding address of server to: "
-#define STRING_CONNECTED 	"User connected from ip: "
-#define STRING_DISCONNECTED "User disconnected from ip: "
-#define STRING_HTTP 		" using HTTP request"
-#define STRING_HTTPS 		" using HTTPS request"
-
-typedef enum {
-	DISABLED     = 0,
-	SERVER_ERROR = 1,
-	SERVER_TRACE = 2 << 0,
-	SERVER_DEBUG = 2 << 1,
-	CLIENT_ERROR = 2 << 2,
-	CLIENT_TRACE = 2 << 3,
-	CLIENT_DEBUG = 2 << 4
-} log_t;
-
 /**
- * Function that logs whatever is given to it.
+ * Copyright (c) 2017 rxi
  *
- * @param   type    [log_t]     "The type of logging"
- * @param   msg     [char *]    "The error message"
- * @param   name    [char *]    "The name of the file where the log came from"
- * @param   line    [int]       "The linenumber that the log was called"
- * @return          [void]
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the MIT license. See `log.c` for details.
  */
-void WSS_log(log_t type, char *msg, char *name, int line);
 
-log_t log_type;
+#ifndef LOG_H
+#define LOG_H
+
+#include <stdio.h>
+#include <stdarg.h>
+
+#define LOG_VERSION "0.1.0"
+
+typedef void (*log_LockFn)(void *udata, int lock);
+
+enum {
+    WSS_LOG_FATAL,
+    WSS_LOG_ERROR,
+    WSS_LOG_WARN,
+    WSS_LOG_INFO,
+    WSS_LOG_DEBUG,
+    WSS_LOG_TRACE
+};
+
+#define WSS_log_trace(...) log_log(WSS_LOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
+#define WSS_log_debug(...) log_log(WSS_LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#define WSS_log_info(...)  log_log(WSS_LOG_INFO,  __FILE__, __LINE__, __VA_ARGS__)
+#define WSS_log_warn(...)  log_log(WSS_LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
+#define WSS_log_error(...) log_log(WSS_LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
+#define WSS_log_fatal(...) log_log(WSS_LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
+
+void log_set_udata(void *udata);
+void log_set_lock(log_LockFn fn);
+void log_set_fp(FILE *fp);
+void log_set_level(int level);
+void log_set_quiet(int enable);
+
+void log_log(int level, const char *file, int line, const char *fmt, ...);
 
 #endif

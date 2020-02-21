@@ -122,8 +122,8 @@ Functions</h2></td></tr>
 <tr class="separator:ab9ff7488ece4a8efc027deb4a696c6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8619303ad844a2583010dc430a151747"><td class="memItemLeft" align="right" valign="top">static message_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="comm_8c.html#a8619303ad844a2583010dc430a151747">WSS_http_response</a> (header_t *header, enum HttpStatus_Code code, char *exp)</td></tr>
 <tr class="separator:a8619303ad844a2583010dc430a151747"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c0efebe02f6bc03059166045efd1bcd"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="comm_8c.html#a6c0efebe02f6bc03059166045efd1bcd">WSS_diconnect_internal</a> (server_t *server, session_t *session)</td></tr>
-<tr class="separator:a6c0efebe02f6bc03059166045efd1bcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdfef1bc17f9f725cdb3832c3ac036b5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="comm_8c.html#abdfef1bc17f9f725cdb3832c3ac036b5">WSS_disconnect_internal</a> (server_t *server, session_t *session)</td></tr>
+<tr class="separator:abdfef1bc17f9f725cdb3832c3ac036b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04f9613c52540eadc78032a61952a01c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="comm_8c.html#a04f9613c52540eadc78032a61952a01c">WSS_disconnect</a> (void *args, int id)</td></tr>
 <tr class="separator:a04f9613c52540eadc78032a61952a01c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc3c702cf8c7e8f61a4ebe382410f6e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="comm_8c.html#adc3c702cf8c7e8f61a4ebe382410f6e1">WSS_connect</a> (void *arg, int id)</td></tr>
@@ -197,45 +197,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00632">632</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
-
-</div>
-</div>
-<a id="a6c0efebe02f6bc03059166045efd1bcd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6c0efebe02f6bc03059166045efd1bcd">&#9670;&nbsp;</a></span>WSS_diconnect_internal()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void WSS_diconnect_internal </td>
-          <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
-          <td class="paramname"><em>server</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">session_t *&#160;</td>
-          <td class="paramname"><em>session</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00415">415</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00627">627</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -274,7 +236,45 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00603">603</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00597">597</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+
+</div>
+</div>
+<a id="abdfef1bc17f9f725cdb3832c3ac036b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdfef1bc17f9f725cdb3832c3ac036b5">&#9670;&nbsp;</a></span>WSS_disconnect_internal()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void WSS_disconnect_internal </td>
+          <td>(</td>
+          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramname"><em>server</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">session_t *&#160;</td>
+          <td class="paramname"><em>session</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00442">442</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -329,7 +329,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00194">194</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00221">221</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -383,7 +383,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00943">943</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00901">901</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -486,7 +486,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00356">356</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00383">383</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -525,7 +525,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l01149">1149</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l01119">1119</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -580,7 +580,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[int] "The amount of bytes read or -1 for error or -2 for wait for IO" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00877">877</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00834">834</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -628,7 +628,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00853">853</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00810">810</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -683,7 +683,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00305">305</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00332">332</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -722,7 +722,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l01615">1615</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l01653">1653</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -777,7 +777,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00800">800</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00756">756</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>
@@ -832,7 +832,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00827">827</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="comm_8c_source.html#l00784">784</a> of file <a class="el" href="comm_8c_source.html">comm.c</a>.</p>
 
 </div>
 </div>

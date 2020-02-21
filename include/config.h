@@ -25,7 +25,7 @@ typedef struct {
     unsigned int size_thread;
     unsigned int size_buffer;
     unsigned int size_queue;
-    unsigned int size_pipe;
+    unsigned int size_ringbuffer;
     unsigned int pool_size;
     unsigned int pool_queues;
     unsigned int pool_workers;

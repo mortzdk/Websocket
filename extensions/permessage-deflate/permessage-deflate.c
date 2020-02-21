@@ -33,7 +33,7 @@
 #define SERVER_MAX_WINDOW_BITS 15
 #define SERVER_MIN_WINDOW_BITS 8
 #define CLIENT_MAX_WINDOW_BITS 15
-#define CLIENT_MIN_WINDOW_BITS 9 // Is really 8, but zlib does not support value 8
+#define CLIENT_MIN_WINDOW_BITS 8 
 
 
 // Define a Websocket frame as exactly defined by the WSServer.
@@ -46,9 +46,8 @@ typedef struct {
     bool mask;
     uint64_t payloadLength;
     char maskingKey[4];
-    char *extensionData;
+    char *payload;
     uint64_t extensionDataLength;
-    char *applicationData;
     uint64_t applicationDataLength;
 } frame_t;
 
@@ -170,6 +169,7 @@ static void parse_param(const char *param, param_t *p) {
             if (sep[j] != '\0') {
                 j++;
                 bits = strtol(sep+j, NULL, 10);
+
                 p->client_max_window_bits = MIN(bits, CLIENT_MAX_WINDOW_BITS);
             } else {
                 // Default
@@ -183,6 +183,12 @@ static void parse_param(const char *param, param_t *p) {
 
             j++;
             bits = strtol(sep+j, NULL, 10);
+
+            // Is really 8, but zlib does not support value 8 so increase to 9
+            if (bits == SERVER_MIN_WINDOW_BITS) {
+                bits++;
+            }
+
             p->server_max_window_bits = MIN(bits, SERVER_MAX_WINDOW_BITS);
         } else if ( strncmp(EXT_CLIENT_NO_CONTEXT_TAKEOVER, sep, strlen(EXT_CLIENT_NO_CONTEXT_TAKEOVER)) == 0) {
             p->client_no_context_takeover = true;
@@ -260,7 +266,6 @@ static bool init_comp(wss_comp_t *comp) {
     comp->decompressor.next_in  = Z_NULL;
 
     if (Z_OK != inflateInit2(&comp->decompressor, -comp->params.client_max_window_bits)) {
-        free(comp);
         return false;
     }
 
@@ -272,7 +277,6 @@ static bool init_comp(wss_comp_t *comp) {
     if (Z_OK != deflateInit2(&comp->compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) {
 
         inflateEnd(&comp->decompressor);
-        free(comp);
         return false;
     }
 
@@ -356,6 +360,11 @@ void onInit(char *config) {
                 continue;
             }
 
+            // Is really 8, but zlib does not support value 8 so increase to 9
+            if (val == SERVER_MIN_WINDOW_BITS) {
+                val++;
+            }
+
             default_server_window_bits = val;
         } else if ( strncmp(EXT_CLIENT_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_CLIENT_MAX_WINDOW_BITS)) == 0) {
             j = matches[i].rm_so;
@@ -368,6 +377,7 @@ void onInit(char *config) {
             if (val < CLIENT_MIN_WINDOW_BITS || CLIENT_MAX_WINDOW_BITS < val) {
                 continue;
             }
+
             default_client_window_bits = val;
         } else if ( strncmp(EXT_SERVER_NO_CONTEXT_TAKEOVER, buffer+matches[i].rm_so, strlen(EXT_SERVER_NO_CONTEXT_TAKEOVER)) == 0) {
             default_server_no_context_takeover = true;
@@ -443,7 +453,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
 
         buffer[matches[i].rm_eo] = '\0';
 
-        if ( strncmp(EXT_CLIENT_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_CLIENT_MAX_WINDOW_BITS)) == 0) {
+        if ( strncmp(EXT_CLIENT_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_CLIENT_MAX_WINDOW_BITS)) == 0 ) {
             j = matches[i].rm_so+strlen(EXT_CLIENT_MAX_WINDOW_BITS);
             while (buffer[j] != '=' && buffer[j] != '\0') {
                 j++;
@@ -452,12 +462,12 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
             if (buffer[j] != '\0') {
                 j++;
                 val = strtol(buffer+j, NULL, 10);
-                if (CLIENT_MIN_WINDOW_BITS < val || CLIENT_MAX_WINDOW_BITS > val) {
+                if ( val < CLIENT_MIN_WINDOW_BITS || CLIENT_MAX_WINDOW_BITS < val) {
                     *valid = false;
                     return;
                 }
             }
-        } else if ( strncmp(EXT_SERVER_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_SERVER_MAX_WINDOW_BITS)) == 0) {
+        } else if ( strncmp(EXT_SERVER_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_SERVER_MAX_WINDOW_BITS)) == 0 ) {
             j = matches[i].rm_so+strlen(EXT_SERVER_MAX_WINDOW_BITS);
             while (buffer[j] != '=') {
                 j++;
@@ -465,7 +475,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
 
             j++;
             val = strtol(buffer+j, NULL, 10);
-            if (SERVER_MIN_WINDOW_BITS < val || SERVER_MAX_WINDOW_BITS > val) {
+            if ( val < SERVER_MIN_WINDOW_BITS || SERVER_MAX_WINDOW_BITS < val) {
                 *valid = false;
                 return;
             }
@@ -513,9 +523,8 @@ void inFrames(int fd, void **fs, size_t len) {
     frame_t **frames = (frame_t **)fs;
     size_t j, size;
     char *message = NULL;
-    char *payload = NULL;
-    wss_comp_t *comp = NULL;
     size_t payload_length = 0;
+    wss_comp_t *comp = NULL;
     size_t current_length = 0;
     size_t message_length = 0;
     int flush_mask = Z_SYNC_FLUSH;
@@ -541,17 +550,12 @@ void inFrames(int fd, void **fs, size_t len) {
     }
     payload_length += 4;
 
-    if (NULL == (payload = malloc(payload_length+1))) {
-        return;
-    }
-    memset(payload, '\0', payload_length+1);
+    char payload[payload_length+1];
+    payload[payload_length] = '\0';
 
     for (j = 0; j < len; j++) {
-        memcpy(payload+current_length, frames[j]->extensionData, frames[j]->extensionDataLength);
-        current_length += frames[j]->extensionDataLength;
-
-        memcpy(payload+current_length, frames[j]->applicationData, frames[j]->applicationDataLength);
-        current_length += frames[j]->applicationDataLength;
+        memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
+        current_length += frames[j]->payloadLength;
     }
 
     memcpy(payload+current_length, "\x00\x00\xff\xff", 4);
@@ -564,21 +568,23 @@ void inFrames(int fd, void **fs, size_t len) {
     }
 
     // Decompress data
+    comp->compressor.avail_in = payload_length;
+    comp->compressor.next_in = (unsigned char *)payload;
     do {
         if (NULL == (message = realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) {
-            free(payload);
             free(message);
-           return; 
+            return; 
         }
         memset(message+message_length, '\0', default_chunk_size+1); 
 
         comp->decompressor.avail_out = default_chunk_size;
         comp->decompressor.next_out = (unsigned char *)message+message_length;
         switch (inflate(&comp->decompressor, flush_mask)) {
-            case Z_NEED_DICT:
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                free(payload);
+            case Z_OK:
+            case Z_STREAM_END:
+            case Z_BUF_ERROR:
+                break;
+            default:
                 free(message);
                 return;
         }
@@ -592,29 +598,23 @@ void inFrames(int fd, void **fs, size_t len) {
     // Reallocate application data to contain the decompressed data in the same
     // amount of frames
     for (j = 0; j < len; j++) {
-        if ( NULL != frames[j]->extensionData ) {
-            free(frames[j]->extensionData);
-        }
-        frames[j]->extensionDataLength = 0;
-
         if (j+1 != len) {
             size = message_length/len;
         } else {
             size = message_length-current_length;
         }
 
-        if ( NULL == (frames[j]->applicationData = realloc(frames[j]->applicationData, size))) {
-            free(payload);
+        if ( NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) {
             free(message);
             return;
         }
-        memcpy(frames[j]->applicationData, message+current_length, size);
+        memcpy(frames[j]->payload, message+current_length, size);
         current_length += size;
+        frames[j]->extensionDataLength = 0;
         frames[j]->applicationDataLength = size;
         frames[j]->payloadLength = size;
     }
 
-    free(payload);
     free(message);
 }
 
@@ -625,7 +625,6 @@ void outFrames(int fd, void **fs, size_t len) {
     frame_t **frames = (frame_t **)fs;
     size_t j, size;
     char *message = NULL;
-    char *payload = NULL;
     size_t payload_length = 0;
     size_t current_length = 0;
     size_t message_length = 0;
@@ -652,49 +651,72 @@ void outFrames(int fd, void **fs, size_t len) {
         payload_length += frames[j]->payloadLength; 
     }
 
-    if (NULL == (payload = malloc(payload_length+1))) {
-        return;
-    }
-    memset(payload, '\0', payload_length+1);
+    char payload[payload_length+1];
+    payload[payload_length] = '\0';
 
     for (j = 0; j < len; j++) {
-        memcpy(payload+current_length, frames[j]->extensionData, frames[j]->extensionDataLength);
-        current_length += frames[j]->extensionDataLength;
-
-        memcpy(payload+current_length, frames[j]->applicationData, frames[j]->applicationDataLength);
-        current_length += frames[j]->applicationDataLength;
+        memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
+        current_length += frames[j]->payloadLength;
     }
 
-    comp->compressor.avail_in = payload_length;
-    comp->compressor.next_in = (unsigned char *)payload;
-
+    // https://github.com/madler/zlib/issues/149
     if (comp->params.server_no_context_takeover) {
-        flush_mask = Z_FULL_FLUSH;
+        flush_mask = Z_BLOCK;
     }
 
     // Compress whole message
+    comp->compressor.avail_in = payload_length;
+    comp->compressor.next_in = (unsigned char *)payload;
+
     do {
-        if (NULL == (message = realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) {
-            free(payload);
+        if (NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) {
             free(message);
-           return; 
+            return; 
         }
-        memset(message+message_length, '\0', default_chunk_size+1); 
+        memset(message+message_length, '\0', default_chunk_size+2); 
 
         comp->compressor.avail_out = default_chunk_size;
         comp->compressor.next_out = (unsigned char *)message+message_length;
         switch (deflate(&comp->compressor, flush_mask)) {
-            case Z_NEED_DICT:
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                free(payload);
+            case Z_OK:
+            case Z_STREAM_END:
+            case Z_BUF_ERROR:
+                break;
+            default:
                 free(message);
                 return;
         }
         message_length += default_chunk_size - comp->compressor.avail_out;
     } while (comp->compressor.avail_out == 0);
 
-    if (message_length >= 5 && memcmp(message+message_length-4, "\x00\x00\xff\xff", 4) == 0) {
+    // https://github.com/madler/zlib/issues/149
+    if (comp->params.server_no_context_takeover) {
+        flush_mask = Z_FULL_FLUSH;
+
+        if (NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) {
+            free(message);
+            return; 
+        }
+        memset(message+message_length, '\0', default_chunk_size+2); 
+
+        comp->compressor.avail_out = default_chunk_size;
+        comp->compressor.next_out = (unsigned char *)message+message_length;
+        switch (deflate(&comp->compressor, flush_mask)) {
+            case Z_OK:
+            case Z_STREAM_END:
+            case Z_BUF_ERROR:
+                break;
+            default:
+                free(message);
+                return;
+        }
+        message_length += default_chunk_size - comp->compressor.avail_out;
+    }
+
+    if (message_length < 5 || memcmp(message+message_length-4, "\x00\x00\xff\xff", 4) != 0) {
+        message[message_length] = '\x00';
+        message_length++;
+    } else {
         memset(message+message_length-4, '\0', 4);
         message_length -= 4;
     }
@@ -707,29 +729,23 @@ void outFrames(int fd, void **fs, size_t len) {
     // Reallocate application data to contain the compressed data in the same
     // amount of frames
     for (j = 0; j < len; j++) {
-        if ( NULL != frames[j]->extensionData ) {
-            free(frames[j]->extensionData);
-        }
-        frames[j]->extensionDataLength = 0;
-
         if ( j+1 != len ) {
-            size = message_length-current_length;
-        } else {
             size = message_length/len;
+        } else {
+            size = message_length-current_length;
         }
 
-        if ( NULL == (frames[j]->applicationData = realloc(frames[j]->applicationData, size)) ) {
-            free(payload);
+        if ( NULL == (frames[j]->payload = realloc(frames[j]->payload, size)) ) {
             free(message);
             return;
         }
-        memcpy(frames[j]->applicationData, message+current_length, size);
+        memcpy(frames[j]->payload, message+current_length, size);
         current_length += size;
+        frames[j]->extensionDataLength = 0;
         frames[j]->applicationDataLength = size;
         frames[j]->payloadLength = size;
     }
 
-    free(payload);
     free(message);
 }
 
