@@ -26,7 +26,7 @@ typedef enum {
     HYBI07   = 7,
     HYBI10   = 8,
     RFC6455  = 13
-} ws_type_t;
+} wss_type_t;
 
 typedef struct {
     unsigned int length;
@@ -37,7 +37,7 @@ typedef struct {
     char *host;
     char *payload;
     int ws_version;
-    int ws_type;
+    wss_type_t ws_type;
     wss_subprotocol_t *ws_protocol;
     char *ws_upgrade;
     char *ws_connection;
@@ -48,37 +48,37 @@ typedef struct {
     char *ws_key1;
     char *ws_key2;
     char *ws_key3;
-} header_t;
+} wss_header_t;
 
 /**
  * Parses a HTTP header into a header structure and returns the status code
  * appropriate.
  *
  * @param   fd        [int]                    "The filedescriptor"
- * @param   header    [header_t *]             "The header structure to fill"
- * @param   config    [config_t *]             "The configuration of the server"
+ * @param   header    [wss_header_t *]         "The header structure to fill"
+ * @param   config    [wss_config_t *]         "The configuration of the server"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config);
+enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config);
 
 /**
  * Upgrades a HTTP header, that is returns switching protocols response if
  * the header contains the required options.
  *
- * @param   header    [header_t *]             "The header structure to fill"
- * @param   config    [config_t *]             "The configuration of the server"
+ * @param   header    [wss_header_t *]         "The header structure to fill"
+ * @param   config    [wss_config_t *]         "The configuration of the server"
  * @param   ssl       [bool]                   "Whether server uses SSL"
  * @param   port      [int]                    "The server port"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t *config, bool ssl, int port);
+enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t *config, bool ssl, int port);
 
 /**
  * Frees a HTTP header structure
  *
- * @param   header    [header_t *]  "The HTTP header to free"
+ * @param   header    [wss_header_t *]  "The HTTP header to free"
  * @return            [void]
  */
-void WSS_free_header(header_t *header);
+void WSS_free_header(wss_header_t *header);
 
 #endif

@@ -60,7 +60,6 @@ $(document).ready(function(){initNavTree('header_8c.html','');});
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -75,7 +74,7 @@ $(document).ready(function(){initNavTree('header_8c.html','');});
 <code>#include &lt;regex.h&gt;</code><br />
 <code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &quot;header.h&quot;</code><br />
-<code>#include &quot;base64.h&quot;</code><br />
+<code>#include &quot;b64.h&quot;</code><br />
 <code>#include &quot;alloc.h&quot;</code><br />
 <code>#include &quot;httpstatuscodes.h&quot;</code><br />
 <code>#include &quot;session.h&quot;</code><br />
@@ -92,25 +91,20 @@ Include dependency graph for header.c:</div>
 </div>
 <p><a href="header_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a8fb447618db946a9e2a596d9ea18763f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#a8fb447618db946a9e2a596d9ea18763f">_DEFAULT_SOURCE</a></td></tr>
-<tr class="separator:a8fb447618db946a9e2a596d9ea18763f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a9df1d89cfea017aa8db3ff456daa59e5"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#a9df1d89cfea017aa8db3ff456daa59e5">trim</a> (char *str)</td></tr>
 <tr class="separator:a9df1d89cfea017aa8db3ff456daa59e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae60c12d29fb42915c999b4169ee4377a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#ae60c12d29fb42915c999b4169ee4377a">WSS_header_set_version</a> (header_t *header, char *v)</td></tr>
-<tr class="separator:ae60c12d29fb42915c999b4169ee4377a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70341df5a5a2037888bb063309060d6f"><td class="memItemLeft" align="right" valign="top">enum HttpStatus_Code&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#a70341df5a5a2037888bb063309060d6f">WSS_parse_header</a> (int fd, header_t *header, config_t *config)</td></tr>
-<tr class="separator:a70341df5a5a2037888bb063309060d6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafec32314a5d10dfd68c3006329cfb65"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#aafec32314a5d10dfd68c3006329cfb65">generate_request_uri</a> (config_t *config, bool ssl, int port)</td></tr>
-<tr class="separator:aafec32314a5d10dfd68c3006329cfb65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2543c46646fc3f244dad1f3ce8c79d96"><td class="memItemLeft" align="right" valign="top">enum HttpStatus_Code&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#a2543c46646fc3f244dad1f3ce8c79d96">WSS_upgrade_header</a> (header_t *header, config_t *config, bool ssl, int port)</td></tr>
-<tr class="separator:a2543c46646fc3f244dad1f3ce8c79d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6c0e7b1d77343599dc7a0e1964efaf4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#af6c0e7b1d77343599dc7a0e1964efaf4">WSS_free_header</a> (header_t *header)</td></tr>
-<tr class="separator:af6c0e7b1d77343599dc7a0e1964efaf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc6d9dfb1ff268b355d2649e7c2e6d7a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#adc6d9dfb1ff268b355d2649e7c2e6d7a">header_set_version</a> (wss_header_t *header, char *v)</td></tr>
+<tr class="separator:adc6d9dfb1ff268b355d2649e7c2e6d7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa625dc3959e3334db439657c72b5a7c"><td class="memItemLeft" align="right" valign="top">enum HttpStatus_Code&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#aaa625dc3959e3334db439657c72b5a7c">WSS_parse_header</a> (int fd, wss_header_t *header, wss_config_t *config)</td></tr>
+<tr class="separator:aaa625dc3959e3334db439657c72b5a7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa41b6490f30daac01b926cb119592a32"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#aa41b6490f30daac01b926cb119592a32">generate_request_uri</a> (wss_config_t *config, bool ssl, int port)</td></tr>
+<tr class="separator:aa41b6490f30daac01b926cb119592a32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2dc0d4b81efb9ead0a0097f7ca156d2"><td class="memItemLeft" align="right" valign="top">enum HttpStatus_Code&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#ae2dc0d4b81efb9ead0a0097f7ca156d2">WSS_upgrade_header</a> (wss_header_t *header, wss_config_t *config, bool ssl, int port)</td></tr>
+<tr class="separator:ae2dc0d4b81efb9ead0a0097f7ca156d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10ed36d0e0e2cedc7009183de7f5dd6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#a10ed36d0e0e2cedc7009183de7f5dd6e">WSS_free_header</a> (wss_header_t *header)</td></tr>
+<tr class="separator:a10ed36d0e0e2cedc7009183de7f5dd6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -119,26 +113,9 @@ Variables</h2></td></tr>
 <tr class="memitem:aff80fe4752e4723f3532f1f8b6ef1db4"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="header_8c.html#aff80fe4752e4723f3532f1f8b6ef1db4">versions</a> []</td></tr>
 <tr class="separator:aff80fe4752e4723f3532f1f8b6ef1db4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a8fb447618db946a9e2a596d9ea18763f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fb447618db946a9e2a596d9ea18763f">&#9670;&nbsp;</a></span>_DEFAULT_SOURCE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _DEFAULT_SOURCE</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00001">1</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="aafec32314a5d10dfd68c3006329cfb65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aafec32314a5d10dfd68c3006329cfb65">&#9670;&nbsp;</a></span>generate_request_uri()</h2>
+<a id="aa41b6490f30daac01b926cb119592a32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa41b6490f30daac01b926cb119592a32">&#9670;&nbsp;</a></span>generate_request_uri()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,7 +126,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">static char* generate_request_uri </td>
           <td>(</td>
-          <td class="paramtype">config_t *&#160;</td>
+          <td class="paramtype">wss_config_t *&#160;</td>
           <td class="paramname"><em>config</em>, </td>
         </tr>
         <tr>
@@ -180,7 +157,7 @@ Variables</h2></td></tr>
 <p>Generates a regular expression pattern to match the request uri of the header. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">config</td><td>[config_t *] "The configuration of the server" </td></tr>
+    <tr><td class="paramname">config</td><td>[wss_config_t *] "The configuration of the server" </td></tr>
     <tr><td class="paramname">ssl</td><td>[bool] "Whether server uses SSL" </td></tr>
     <tr><td class="paramname">port</td><td>[int] "The server port" </td></tr>
   </table>
@@ -188,7 +165,45 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[char *] "The request uri regex pattern" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00371">371</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00342">342</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+
+</div>
+</div>
+<a id="adc6d9dfb1ff268b355d2649e7c2e6d7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc6d9dfb1ff268b355d2649e7c2e6d7a">&#9670;&nbsp;</a></span>header_set_version()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void header_set_version </td>
+          <td>(</td>
+          <td class="paramtype">wss_header_t *&#160;</td>
+          <td class="paramname"><em>header</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>v</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00073">73</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
@@ -211,7 +226,7 @@ Variables</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -225,12 +240,12 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[char *] "The input string without leading and trailing spaces" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00054">54</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00052">52</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
-<a id="af6c0e7b1d77343599dc7a0e1964efaf4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6c0e7b1d77343599dc7a0e1964efaf4">&#9670;&nbsp;</a></span>WSS_free_header()</h2>
+<a id="a10ed36d0e0e2cedc7009183de7f5dd6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10ed36d0e0e2cedc7009183de7f5dd6e">&#9670;&nbsp;</a></span>WSS_free_header()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -238,7 +253,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void WSS_free_header </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
+          <td class="paramtype">wss_header_t *&#160;</td>
           <td class="paramname"><em>header</em></td><td>)</td>
           <td></td>
         </tr>
@@ -248,56 +263,18 @@ Variables</h2></td></tr>
 <p>Frees a HTTP header structure. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "The HTTP header to free" </td></tr>
+    <tr><td class="paramname">header</td><td>[wss_header_t *] "The HTTP header to free" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00614">614</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00585">585</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
-<a id="ae60c12d29fb42915c999b4169ee4377a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae60c12d29fb42915c999b4169ee4377a">&#9670;&nbsp;</a></span>WSS_header_set_version()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void WSS_header_set_version </td>
-          <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
-          <td class="paramname"><em>header</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>v</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00102">102</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
-
-</div>
-</div>
-<a id="a70341df5a5a2037888bb063309060d6f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70341df5a5a2037888bb063309060d6f">&#9670;&nbsp;</a></span>WSS_parse_header()</h2>
+<a id="aaa625dc3959e3334db439657c72b5a7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa625dc3959e3334db439657c72b5a7c">&#9670;&nbsp;</a></span>WSS_parse_header()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -311,13 +288,13 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">header_t *&#160;</td>
+          <td class="paramtype">wss_header_t *&#160;</td>
           <td class="paramname"><em>header</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">config_t *&#160;</td>
+          <td class="paramtype">wss_config_t *&#160;</td>
           <td class="paramname"><em>config</em>&#160;</td>
         </tr>
         <tr>
@@ -332,8 +309,8 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fd</td><td>[int] "The filedescriptor" </td></tr>
-    <tr><td class="paramname">header</td><td>[header_t *] "The header structure to fill" </td></tr>
-    <tr><td class="paramname">config</td><td>[config_t *] "The configuration of the server" </td></tr>
+    <tr><td class="paramname">header</td><td>[wss_header_t *] "The header structure to fill" </td></tr>
+    <tr><td class="paramname">config</td><td>[wss_config_t *] "The configuration of the server" </td></tr>
   </table>
   </dd>
 </dl>
@@ -342,12 +319,12 @@ Variables</h2></td></tr>
 <p>Receiving the path of the request</p>
 <p>Receiving and checking version of the request</p>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00138">138</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00109">109</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
-<a id="a2543c46646fc3f244dad1f3ce8c79d96"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2543c46646fc3f244dad1f3ce8c79d96">&#9670;&nbsp;</a></span>WSS_upgrade_header()</h2>
+<a id="ae2dc0d4b81efb9ead0a0097f7ca156d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2dc0d4b81efb9ead0a0097f7ca156d2">&#9670;&nbsp;</a></span>WSS_upgrade_header()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -355,13 +332,13 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">enum HttpStatus_Code WSS_upgrade_header </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
+          <td class="paramtype">wss_header_t *&#160;</td>
           <td class="paramname"><em>header</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">config_t *&#160;</td>
+          <td class="paramtype">wss_config_t *&#160;</td>
           <td class="paramname"><em>config</em>, </td>
         </tr>
         <tr>
@@ -387,8 +364,8 @@ Variables</h2></td></tr>
 <p>Upgrades a HTTP header, that is returns switching protocols response if the header contains the required options. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "The header structure to fill" </td></tr>
-    <tr><td class="paramname">config</td><td>[config_t *] "The configuration of the server" </td></tr>
+    <tr><td class="paramname">header</td><td>[wss_header_t *] "The header structure to fill" </td></tr>
+    <tr><td class="paramname">config</td><td>[wss_config_t *] "The configuration of the server" </td></tr>
     <tr><td class="paramname">ssl</td><td>[bool] "Whether server uses SSL" </td></tr>
     <tr><td class="paramname">port</td><td>[int] "The server port" </td></tr>
   </table>
@@ -396,7 +373,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[enum HttpStatus_Code] "The status code to return to the client" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00484">484</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00455">455</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
@@ -415,7 +392,7 @@ Variables</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line">    <span class="stringliteral">&quot;GET&quot;</span>,</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">}</div></div><!-- fragment -->
 <p>Acceptable HTTP methods. </p>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00027">27</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00025">25</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>
@@ -433,7 +410,7 @@ Variables</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div><div class="line"></div><div class="line"></div><div class="line">    <span class="stringliteral">&quot;HTTP/1.1&quot;</span>,</div><div class="line">    <span class="stringliteral">&quot;HTTP/2.0&quot;</span>,</div><div class="line">}</div></div><!-- fragment -->
 <p>Acceptable HTTP versions. </p>
 
-<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00041">41</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="header_8c_source.html#l00039">39</a> of file <a class="el" href="header_8c_source.html">header.c</a>.</p>
 
 </div>
 </div>

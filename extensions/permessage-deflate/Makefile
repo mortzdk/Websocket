@@ -44,7 +44,8 @@ CFLAGS = $(EXEC) \
 		 -Wpointer-arith \
 		 -Wreturn-type \
 	     -Wsign-compare \
-		 -Wuninitialized
+		 -Wuninitialized \
+		 -D_DEFAULT_SOURCE
 
 CVER = -std=c99
 
@@ -71,10 +72,10 @@ debug_mode:
 	$(eval EXEC = $(DEBUG))
 
 profiling_mode:
-	$(eval EXEC = $(profile))
+	$(eval EXEC = $(PROFILE))
 
 space_mode:
-	$(eval EXEC = $(space))
+	$(eval EXEC = $(SPACE))
 
 # Recompile when headers change
 -include $(DEPS)

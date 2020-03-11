@@ -36,6 +36,7 @@ import ycm_core
 flags = [
     '-x',
     'c',
+    '-D_DEFAULT_SOURCE',
     '-DRUPIFY',
     '-W',
     '-Wall',

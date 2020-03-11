@@ -1,8 +1,8 @@
 var config_8c =
 [
-    [ "config_add_port_to_hosts", "config_8c.html#aa16c919a6b27c03c0090e789f52c6b3a", null ],
-    [ "config_alloc", "config_8c.html#ade22f95a2f255f1dc6e3877eb06fab02", null ],
-    [ "config_free", "config_8c.html#a6c34818cc5647f4c82fbf77fd0a68aca", null ],
-    [ "config_load", "config_8c.html#a8e130b94a2fb9858274effb394d48ba4", null ],
-    [ "config_release", "config_8c.html#aa316f8d4388ad5f267b52c61e4443fef", null ]
+    [ "config_add_port_to_hosts", "config_8c.html#a9ba017c0c98328a303f601623aa877be", null ],
+    [ "WSS_config_alloc", "config_8c.html#afa9726ae69ddd05f2193e60238f64439", null ],
+    [ "WSS_config_free", "config_8c.html#a4908844773596b194edb0e76a464b366", null ],
+    [ "WSS_config_load", "config_8c.html#ac4d877b8ae95256d9f6ef94f52c00317", null ],
+    [ "WSS_config_release", "config_8c.html#a2dfa4d72d6d3998d79326ba59a54f902", null ]
 ];

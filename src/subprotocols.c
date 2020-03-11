@@ -24,7 +24,7 @@ wss_subprotocol_t *subprotocols = NULL;
  * @param 	config	[config_t *config] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_subprotocols(config_t *config)
+void WSS_load_subprotocols(wss_config_t *config)
 {
     size_t i, j;
     char *name;
@@ -114,7 +114,7 @@ void load_subprotocols(config_t *config)
  * @param 	name	[char *] 	            "The name of the subprotocol"
  * @return 	      	[wss_subprotocol_t *]   "The subprotocol or NULL"
  */
-wss_subprotocol_t *find_subprotocol(char *name) {
+wss_subprotocol_t *WSS_find_subprotocol(char *name) {
     wss_subprotocol_t *proto;
 
     HASH_FIND_STR(subprotocols, name, proto);
@@ -127,7 +127,7 @@ wss_subprotocol_t *find_subprotocol(char *name) {
  *
  * @return 	[void]
  */
-void destroy_subprotocols() {
+void WSS_destroy_subprotocols() {
     wss_subprotocol_t *proto, *tmp;
 
     HASH_ITER(hh, subprotocols, proto, tmp) {

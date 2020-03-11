@@ -7,6 +7,9 @@
 
 #ifdef USE_OPENSSL
 #include <openssl/ssl.h>
+#include <openssl/pem.h>
+#include <openssl/bn.h>
+#include <openssl/dh.h>
 #include <openssl/err.h>
 #endif
 
@@ -25,10 +28,12 @@
 /**
  * Function initializes SSL context that can be used to serve over https.
  *
- * @param   server	[server_t *] 	"The server instance"
- * @return 			[wss_error_t]   "The error status"
+ * @param   server	[wss_server_t *] 	"The server instance"
+ * @return 			[wss_error_t]       "The error status"
  */
-wss_error_t http_ssl(server_t *server) {
+wss_error_t WSS_http_ssl(wss_server_t *server) {
+    FILE *f;
+    DH *dh;
     const SSL_METHOD *method;
     int error_size = 1024;
     char error[error_size];
@@ -40,43 +45,104 @@ wss_error_t http_ssl(server_t *server) {
     OpenSSL_add_ssl_algorithms();
     OpenSSL_add_all_algorithms();
 
-    method = SSLv23_server_method();
+    method = TLS_method();
     server->ssl_ctx = SSL_CTX_new(method);
     if ( unlikely(!server->ssl_ctx) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log_error("Unable to create ssl context: %s", error);
-        return SSL_ERROR;
+        return WSS_SSL_CTX_ERROR;
     }
 
-    SSL_CTX_set_ecdh_auto(server->ssl_ctx, 1);
-
+    WSS_log_trace("Assign CA certificate(s) to ssl context");
     if ( unlikely(!SSL_CTX_load_verify_locations(server->ssl_ctx, server->config->ssl_ca_file, server->config->ssl_ca_path)) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log_error("Unable to load CA certificates: %s", error);
-        return SSL_ERROR;
+        return WSS_SSL_CA_ERROR;
     }
 
+    WSS_log_trace("Assign certificate to ssl context");
     if ( unlikely(SSL_CTX_use_certificate_file(server->ssl_ctx, server->config->ssl_cert, SSL_FILETYPE_PEM) <= 0) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log_error("Unable to load server certificate: %s", error);
-        return SSL_ERROR;
+        return WSS_SSL_CERT_ERROR;
     }
 
+    WSS_log_trace("Assign private key to ssl context");
     if ( unlikely(SSL_CTX_use_PrivateKey_file(server->ssl_ctx, server->config->ssl_key, SSL_FILETYPE_PEM) <= 0) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log_error("Unable to load server private key: %s", error);
-        return SSL_ERROR;
+        return WSS_SSL_KEY_ERROR;
     }
 
+    WSS_log_trace("Validate private key");
     if ( unlikely(!SSL_CTX_check_private_key(server->ssl_ctx)) ) {
         ERR_error_string_n(ERR_get_error(), error, error_size);
         WSS_log_error("Failed check of private key: %s", error);
-        return SSL_ERROR;
+        return WSS_SSL_KEY_ERROR;
     }
 
-    SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_NONE, 0);
+    WSS_log_trace("Use most appropriate client curve");
+    SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_ECDH_USE);
+    SSL_CTX_set_ecdh_auto(server->ssl_ctx, 1);
 
-    return SUCCESS;
+    if (! server->config->peer_cert) {
+        SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_NONE, 0);
+    } else {
+        SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 0);
+    }
+
+    WSS_log_trace("Allow writes to be partial");
+    SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_ENABLE_PARTIAL_WRITE);
+
+    //WSS_log_trace("Allow write buffer to be moving as it is allocated on the heap");
+    //SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
+    WSS_log_trace("Allow read and write buffers to be released when they are no longer needed");
+    SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
+
+    if (! server->config->ssl_compression) {
+        WSS_log_trace("Do not use compression even if it is supported.");
+        SSL_CTX_set_mode(server->ssl_ctx, SSL_OP_NO_COMPRESSION);
+    }
+
+    WSS_log_trace("When choosing a cipher, use the server's preferences instead of the client preferences.");
+    SSL_CTX_set_mode(server->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
+
+    WSS_log_trace("Disable use of session cache and resumption");
+    SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+    SSL_CTX_set_session_cache_mode(server->ssl_ctx, SSL_SESS_CACHE_OFF);
+
+    if ( NULL != server->config->ssl_cipher_list ) {
+        WSS_log_trace("Setting cipher list");
+        SSL_CTX_set_cipher_list(server->ssl_ctx, server->config->ssl_cipher_list);
+    }
+
+    if ( NULL != server->config->ssl_cipher_suites ) {
+        WSS_log_trace("Setting cipher suites");
+        SSL_CTX_set_ciphersuites(server->ssl_ctx, server->config->ssl_cipher_suites);
+    }
+
+    if ( NULL != server->config->ssl_dhparam ) {
+        if ( NULL != (f = fopen(server->config->ssl_dhparam, "r")) ) {
+            if ( NULL != (dh = PEM_read_DHparams(f, NULL, NULL, NULL)) ) {
+                SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_DH_USE);
+                if ( SSL_CTX_set_tmp_dh(server->ssl_ctx, dh) == 0 ) {
+                    ERR_error_string_n(ERR_get_error(), error, error_size);
+                    WSS_log_error("Setting dhparam failed: %s", error);
+                }
+                DH_free(dh);
+            } else {
+                ERR_error_string_n(ERR_get_error(), error, error_size);
+                WSS_log_error("Unable load dhparam: %s", error);
+            }
+
+            fclose(f);
+        } else {
+            WSS_log_error("Unable to open dhparam file: %s", strerror(errno));
+        }
+    }
+
+    return WSS_SUCCESS;
 }
 #endif
 
@@ -84,11 +150,12 @@ wss_error_t http_ssl(server_t *server) {
  * Function initialized a http server instance and creating thread where the
  * instance is being run.
  *
- * @param   server	[server_t *] 	"The server instance"
- * @return 			[wss_error_t]   "The error status"
+ * @param   server	[wss_server_t *] 	"The server instance"
+ * @return 			[wss_error_t]       "The error status"
  */
-wss_error_t http_server(server_t *server) {
+wss_error_t WSS_http_server(wss_server_t *server) {
     int err;
+    char straddr[INET6_ADDRSTRLEN];
 
 #ifdef USE_OPENSSL
     if (NULL == server->ssl_ctx) {
@@ -107,64 +174,61 @@ wss_error_t http_server(server_t *server) {
      * structure.
      */
     server->fd = -1;
-    server->epoll_fd = -1;
+    server->poll_fd = -1;
 
     WSS_log_trace("Creating socket filedescriptor");
-    if ( unlikely((err = socket_create(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_create(server)) != 0) ) {
         return err;
     }
 
     WSS_log_trace("Allowing reuse of socket");
-    if ( unlikely((err = socket_reuse(server->fd)) != 0) ) {
+    if ( unlikely((err = WSS_socket_reuse(server->fd)) != 0) ) {
         return err;
     }
 
     WSS_log_trace("Creating socket structure for instance");
-    if ( unlikely((err = socket_bind(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_bind(server)) != 0) ) {
         return err;
     }
 
-    WSS_log_trace("Binding address of server to: ", inet_ntoa(server->info.sin_addr), server->port);
+    if ( likely(NULL != inet_ntop(AF_INET6, (const void *)&server->info, straddr, sizeof(straddr)))) {
+        WSS_log_trace("Binding address of server to: ", straddr, server->port);
+    }
 
     WSS_log_trace("Making server socket non-blocking");
-    if ( unlikely((err = socket_non_blocking(server->fd)) != 0) ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->fd)) != 0) ) {
         return err;
     }
 
     WSS_log_trace("Starts listening to the server socket");
-    if ( unlikely((err = socket_listen(server->fd)) != 0) ) {
-        return err;
-    }
-
-    WSS_log_trace("Creating epoll instance and associating it with the filedescriptor");
-    if ( unlikely((err = socket_epoll(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_listen(server->fd)) != 0) ) {
         return err;
     }
 
     WSS_log_trace("Creating threadpool");
-    if ( unlikely((err = socket_threadpool(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_threadpool(server)) != 0) ) {
         return err;
     }
 
     WSS_log_trace("Creating server thread");
-    if ( unlikely(pthread_create(&server->thread_id, NULL, server_run, (void *) server) != 0) ) {
+    if ( unlikely(pthread_create(&server->thread_id, NULL, WSS_server_run, (void *) server) != 0) ) {
         WSS_log_error("Unable to create server thread", strerror(errno));
-        return THREAD_ERROR;
+        return WSS_THREAD_CREATE_ERROR;
     }
 
-    return SUCCESS;
+    return WSS_SUCCESS;
 }
 
 /**
  * Function that free op space allocated for the http server and closes the
  * filedescriptors in use..
  *
- * @param   server	[server_t *] 	"The http server"
- * @return 			[wss_error_t]   "The error status"
+ * @param   server	[wss_server_t *] 	"The http server"
+ * @return 			[wss_error_t]       "The error status"
  */
-wss_error_t http_server_free(server_t *server) {
-    unsigned int i;
-    int res = SUCCESS;
+wss_error_t WSS_http_server_free(wss_server_t *server) {
+    int err;
+    int res = WSS_SUCCESS;
 
     if ( likely(NULL != server) ) {
         /**
@@ -173,7 +237,7 @@ wss_error_t http_server_free(server_t *server) {
         if ( likely(server->fd > -1) ) {
             if ( unlikely(shutdown(server->fd, SHUT_RD) != 0) ) {
                 WSS_log_error("Unable to shutdown for reads of server socket: %s", strerror(errno));
-                res = FD_ERROR;
+                res = WSS_SOCKET_SHUTDOWN_ERROR;
             }
         }
 
@@ -181,13 +245,30 @@ wss_error_t http_server_free(server_t *server) {
          * Shutting down threadpool gracefully
          */
         if ( likely(NULL != server->pool) ) {
-            for (i = 0; likely(i < server->config->pool_queues); i++) {
-                if (unlikely(threadpool_destroy(server->pool[i], threadpool_graceful) != 0) ) {
-                    WSS_log_error("Unable to destroy threadpool gracefully: %s", threadpool_strerror(errno));
-                    res = THREADPOOL_ERROR;
+            if ( unlikely((err = threadpool_destroy(server->pool, threadpool_graceful)) != 0) ) {
+                WSS_log_error("Unable to destroy threadpool gracefully: %s", threadpool_strerror(errno));
+
+                switch (err) {
+                    case threadpool_invalid:
+                        res = WSS_THREADPOOL_LOCK_ERROR;
+                        break;
+                    case threadpool_lock_failure:
+                        res = WSS_THREADPOOL_LOCK_ERROR;
+                        break;
+                    case threadpool_queue_full:
+                        res = WSS_THREADPOOL_FULL_ERROR;
+                        break;
+                    case threadpool_shutdown:
+                        res = WSS_THREADPOOL_SHUTDOWN_ERROR;
+                        break;
+                    case threadpool_thread_failure:
+                        res = WSS_THREADPOOL_THREAD_ERROR;
+                        break;
+                    default:
+                        res = WSS_THREADPOOL_ERROR;
+                        break;
                 }
             }
-            WSS_free((void **) &server->pool);
         }
 
         /**
@@ -198,13 +279,13 @@ wss_error_t http_server_free(server_t *server) {
         /**
          * Closing epoll
          */
-        if ( likely(server->epoll_fd > -1) ) {
-            if ( unlikely(close(server->epoll_fd) != 0) ) {
+        if ( likely(server->poll_fd > -1) ) {
+            if ( unlikely(close(server->poll_fd) != 0) ) {
                 WSS_log_error("Unable to close servers epoll filedescriptor: %s", strerror(errno));
-                res = EPOLL_ERROR;
+                res = WSS_SOCKET_CLOSE_ERROR;
             }
 
-            server->epoll_fd = -1;
+            server->poll_fd = -1;
         }
 
         /**
@@ -213,7 +294,7 @@ wss_error_t http_server_free(server_t *server) {
         if ( likely(server->fd > -1)) {
             if ( unlikely(close(server->fd) != 0) ) {
                 WSS_log_error("Unable to close servers filedescriptor: %s", strerror(errno));
-                res = FD_ERROR;
+                res = WSS_SOCKET_CLOSE_ERROR;
             }
             server->fd = -1;
         }

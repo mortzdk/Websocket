@@ -1,0 +1,99 @@
+{
+    // Allowed Hosts 
+	"hosts" : [
+		"localhost",
+		"127.0.0.1"
+	],
+    // Allowed paths
+    "paths" : [
+    ],
+    // Allowed queries
+    "queries" : [
+    ],
+    // Allowed origins
+	"origins" : [
+		"http://localhost",
+		"http://127.0.0.1"
+	],
+	"setup" : {
+        // Subprotocols to load with the server
+        "subprotocols" : [
+            {
+                "file" : "subprotocols/echo/echo.so",
+                "config" : ""
+            }
+        ],
+        // Extensions to load with the server
+        "extensions" : [
+            {
+                "file" : "extensions/permessage-deflate/permessage-deflate.so",
+                "config" : "server_max_window_bits=15;client_max_window_bits=15;memory_level=4"
+            }
+        ],
+        // A favicon to present to webserver request
+        "favicon" : "resources/favicon.ico",
+        // Timeouts
+        "timeouts" : {
+            // How long the eventpoll should wait for a timeout. -1 is infinitely
+            "poll"   : -1,
+            // How long, before timeouting reading from a client. -1 is infinitely
+            "read"   : -1,
+            // How long, before timeouting writing to a client. -1 is infinitely
+            "write"  : -1,
+            // How long, since a client last was active before timing out. -1 is infinitely
+            "client" : -1,
+            // How many pings should be sent during the client timeout period
+            "pings"  : 0
+        },
+        // Ports to assign the ws and wss to
+		"port" : {
+			"http" : 9010,
+			"https" : 9011
+		},
+        // Sizes of different aspects of the server
+		"size" : {
+            // How large the payload from a client can be
+			"payload" : 16777215,
+            // How large the HTTP header from a client can be
+			"header" : 8192,
+            // How large the URI of a HTTP request from a client can be
+			"uri" : 8192,
+            // The buffer size used to read and write
+			"buffer" : 32768,
+            // How large the stack of a thread should be 
+			"thread" : 2097152,
+            // How many messages the ringbuffer is able to contain at once
+            "ringbuffer" : 1024,
+            // Max size of a single frames payload
+            "frame" : 1048576,
+            // Maximum amount of frames in fragmented message
+            "fragmented" : 1048576
+		},
+        // Configurations regarding the thread poll
+		"pool" : {
+            // How many worker threads to use
+			"workers" : 8
+		},
+        // Configurations regarding SSL
+        "ssl" : {
+            // The private key of the server
+            "key" : "",
+            // The certificate of the server
+            "cert" : "",
+            // The root CA certiface 
+            "ca_file" : "",
+            // Path to folder where root CA certificates are placed
+            "ca_path" : "",
+            // Where the dhparam file is located
+            "dhparam" : "",
+            // Allowed TLS 2.0 and below ciphers
+            "cipher_list" : "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256",
+            // Allowed TLS 3.0 cipher suites
+            "cipher_suites": "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256",
+            // Whether to use compression
+            "compression" : false,
+            // Whether a peer certificate is required from the connection clients
+            "peer_cert" : false
+        }
+	}
+}

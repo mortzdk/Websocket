@@ -45,7 +45,8 @@ CFLAGS = $(EXEC) \
 		 -Wpointer-arith \
 		 -Wreturn-type \
 	     -Wsign-compare \
-		 -Wuninitialized
+		 -Wuninitialized \
+		 -D_DEFAULT_SOURCE
 
 CVER = -std=c99
 
@@ -69,10 +70,10 @@ debug_mode:
 	$(eval EXEC = $(DEBUG))
 
 profiling_mode:
-	$(eval EXEC = $(profile))
+	$(eval EXEC = $(PROFILE))
 
 space_mode:
-	$(eval EXEC = $(space))
+	$(eval EXEC = $(SPACE))
 
 # Recompile when headers change
 -include $(DEPS)
@@ -102,9 +103,9 @@ clean:
 	@echo
 	@echo ================ [Cleaning $(NAME)] ================
 	@echo
-	rm *.d
-	rm *.o
-	rm *.so
+	rm -f *.d
+	rm -f *.o
+	rm -f *.so
 
 #make release
 release: clean release_mode all

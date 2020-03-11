@@ -3,16 +3,15 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#include "header.h"
+#include <stdlib.h>
 
 typedef enum {
-    CONTINUATION_FRAME     = 0,
-    TEXT_FRAME             = 1,
-    BINARY_FRAME           = 2,
-    CONNECTION_CLOSE_FRAME = 8,
-    PING_FRAME             = 9,
-    POING_FRAME            = 10,
+    CONTINUATION_FRAME = 0x0,
+    TEXT_FRAME         = 0x1,
+    BINARY_FRAME       = 0x2,
+    CLOSE_FRAME        = 0x8,
+    PING_FRAME         = 0x9,
+    PONG_FRAME         = 0xA,
 } wss_opcode_t;
 
 typedef enum {
@@ -65,82 +64,77 @@ typedef struct {
     char *payload;
     uint64_t extensionDataLength;
     uint64_t applicationDataLength;
-} frame_t;
+} wss_frame_t;
 
 /**
  * Parses a payload of data into a websocket frame. Returns the frame and
  * corrects the offset pointer in order for multiple frames to be processed 
  * from the same payload.
  *
- * @param   header          [header_t *]   "A HTTP header structure of the session"
- * @param   payload         [char *]       "The payload to be processed"
- * @param   payload_length  [size_t]       "The length of the payload"
- * @param   offset          [size_t *]     "A pointer to an offset"
- * @return 		            [frame_t *]    "A websocket frame"
+ * @param   payload         [char *]           "The payload to be processed"
+ * @param   payload_length  [size_t]           "The length of the payload"
+ * @param   offset          [size_t *]         "A pointer to an offset"
+ * @return 		            [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_parse_frame(header_t *header, char *payload, size_t payload_length, uint64_t *offset);
+wss_frame_t *WSS_parse_frame(char *payload, size_t payload_length, uint64_t *offset);
 
 /**
  * Converts a single frame into a char array.
  *
- * @param   frame    [frame_t *]  "The frame"
- * @param   message  [char **]    "A pointer to a char array which should be filled with the frame data"
- * @return 		     [size_t]     "The size of the frame data"
+ * @param   frame    [wss_frame_t *]  "The frame"
+ * @param   message  [char **]        "A pointer to a char array which should be filled with the frame data"
+ * @return 		     [size_t]         "The size of the frame data"
  */
-size_t WSS_stringify_frame(frame_t *frame, char **message);
+size_t WSS_stringify_frame(wss_frame_t *frame, char **message);
 
 /**
  * Converts an array of frames into a char array that can be written to others.
  *
- * @param   frames   [frames_t **]  "The frames to be converted"
- * @param   size     [size_t]       "The amount of frames"
- * @param   message  [char **]      "A pointer to a char array which should be filled with the frame data"
- * @return 		     [size_t]       "The size of the frame data"
+ * @param   frames   [wss_frame_t **]  "The frames to be converted"
+ * @param   size     [size_t]           "The amount of frames"
+ * @param   message  [char **]          "A pointer to a char array which should be filled with the frame data"
+ * @return 		     [size_t]           "The size of the frame data"
  */
-size_t WSS_stringify_frames(frame_t **frames, size_t size, char **message);
+size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message);
 
 /**
  * Creates a series of frames from a message.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @param   message  [char *]       "The message to be converted into frames"
- * @param   frames   [frame_t **]   "The frames created from the message"
- * @return 		     [size_t]       "The amount of frames created"
+ * @param   message  [char *]           "The message to be converted into frames"
+ * @param   frames   [wss_frame_t **]       "The frames created from the message"
+ * @return 		     [size_t]           "The amount of frames created"
  */
-size_t WSS_create_frames(header_t *header, size_t buffer_size, char *message, frame_t ***frames);
+size_t WSS_create_frames(size_t buffer_size, char *message, wss_frame_t ***frames);
 
 /**
  * Creates a closing frame given a reason for the closure.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @param   reason   [wss_close_t]  "The reason for the closure"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @param   reason   [wss_close_t]      "The reason for the closure"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_closing_frame(header_t *header, wss_close_t reason);
+wss_frame_t *WSS_closing_frame(wss_close_t reason);
 
 /**
  * Creates a ping frame.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_ping_frame(header_t *header);
+wss_frame_t *WSS_ping_frame();
 
 /**
  * Creates a pong frame from a received ping frame.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @param   ping     [frame_t *]    "A ping frame"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @param   ping     [wss_frame_t *]    "A ping frame"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_pong_frame(header_t *header, frame_t *ping);
+wss_frame_t *WSS_pong_frame(wss_frame_t *ping);
 
 /**
  * Releases memory used by a frame.
  *
- * @param   ping     [frame_t *]    "The frame that should be freed"
+ * @param   ping     [wss_frame_t *]    "The frame that should be freed"
  * @return 		     [void]         
  */
-void WSS_free_frame(frame_t *frame);
+void WSS_free_frame(wss_frame_t *frame);
 
 #endif

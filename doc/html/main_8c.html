@@ -60,7 +60,6 @@ $(document).ready(function(){initNavTree('main_8c.html','');});
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">main.c File Reference</div>  </div>
@@ -69,6 +68,8 @@ $(document).ready(function(){initNavTree('main_8c.html','');});
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;getopt.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;errno.h&gt;</code><br />
 <code>#include &quot;server.h&quot;</code><br />
 <code>#include &quot;config.h&quot;</code><br />
 <code>#include &quot;error.h&quot;</code><br />
@@ -83,90 +84,27 @@ Include dependency graph for main.c:</div>
 </div>
 <p><a href="main_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a861013aff36c0448f1888a2b0b5836d8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a861013aff36c0448f1888a2b0b5836d8">uthash_malloc</a>(sz)&#160;&#160;&#160;<a class="el" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(sz)      /* malloc fcn                      */</td></tr>
-<tr class="separator:a861013aff36c0448f1888a2b0b5836d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56cdf8c254fc700332c8e6a7263b4657"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a56cdf8c254fc700332c8e6a7263b4657">uthash_free</a>(ptr,  sz)&#160;&#160;&#160;<a class="el" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>(&amp;ptr)     /* free fcn                        */</td></tr>
-<tr class="separator:a56cdf8c254fc700332c8e6a7263b4657"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a670c547ace6683148e5f480c4fc4c0f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a670c547ace6683148e5f480c4fc4c0f0">log_set_udata</a> (void *<a class="el" href="log_8c.html#a697ce711b67313990d351b5c95f87aed">udata</a>)</td></tr>
-<tr class="separator:a670c547ace6683148e5f480c4fc4c0f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93d6674a530b372c85e6bdf275e6e6b4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a93d6674a530b372c85e6bdf275e6e6b4">log_set_lock</a> (log_LockFn fn)</td></tr>
-<tr class="separator:a93d6674a530b372c85e6bdf275e6e6b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0f33363d4098787cac5b47f0a6ad443"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#af0f33363d4098787cac5b47f0a6ad443">log_set_fp</a> (FILE *<a class="el" href="log_8c.html#aa065f30aa9f5f9a42132c82c787ee70b">fp</a>)</td></tr>
-<tr class="separator:af0f33363d4098787cac5b47f0a6ad443"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2493e94f152a28b2ba4e3a2e2bba65d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#af2493e94f152a28b2ba4e3a2e2bba65d">log_set_level</a> (int <a class="el" href="log_8c.html#acf4d33ee4cff36f69b924471174dcb11">level</a>)</td></tr>
-<tr class="separator:af2493e94f152a28b2ba4e3a2e2bba65d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15fc2e61d925edc83d6eaa748a7fb40c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a15fc2e61d925edc83d6eaa748a7fb40c">log_set_quiet</a> (int enable)</td></tr>
-<tr class="separator:a15fc2e61d925edc83d6eaa748a7fb40c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac82400bd4224aa4196c9e11424fd896d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#ac82400bd4224aa4196c9e11424fd896d">log_mutex</a> (void *<a class="el" href="log_8c.html#a697ce711b67313990d351b5c95f87aed">udata</a>, int <a class="el" href="log_8c.html#a92d638030a86fd259063b074c20e74eb">lock</a>)</td></tr>
-<tr class="separator:ac82400bd4224aa4196c9e11424fd896d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af663921ded6ecff4727e8017e6621d38"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#af663921ded6ecff4727e8017e6621d38">log_mutex</a> (void *<a class="el" href="log_8c.html#a697ce711b67313990d351b5c95f87aed">udata</a>, int <a class="el" href="log_8c.html#a92d638030a86fd259063b074c20e74eb">lock</a>)</td></tr>
+<tr class="separator:af663921ded6ecff4727e8017e6621d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f0747c98df40fbb6bf8955f29667fe9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a7f0747c98df40fbb6bf8955f29667fe9">wss_help</a> (FILE *stream)</td></tr>
+<tr class="separator:a7f0747c98df40fbb6bf8955f29667fe9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ddf1224851353fc92bfbff6f499fa97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
 <tr class="separator:a0ddf1224851353fc92bfbff6f499fa97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a56cdf8c254fc700332c8e6a7263b4657"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56cdf8c254fc700332c8e6a7263b4657">&#9670;&nbsp;</a></span>uthash_free</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define uthash_free</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">ptr, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">sz&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>(&amp;ptr)     /* free fcn                        */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00010">10</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
-
-</div>
-</div>
-<a id="a861013aff36c0448f1888a2b0b5836d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a861013aff36c0448f1888a2b0b5836d8">&#9670;&nbsp;</a></span>uthash_malloc</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define uthash_malloc</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">sz</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(sz)      /* malloc fcn                      */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00006">6</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ac82400bd4224aa4196c9e11424fd896d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac82400bd4224aa4196c9e11424fd896d">&#9670;&nbsp;</a></span>log_mutex()</h2>
+<a id="af663921ded6ecff4727e8017e6621d38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af663921ded6ecff4727e8017e6621d38">&#9670;&nbsp;</a></span>log_mutex()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void log_mutex </td>
+          <td class="memname">static void log_mutex </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>udata</em>, </td>
@@ -183,109 +121,14 @@ Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00026">26</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
-
-</div>
-</div>
-<a id="af0f33363d4098787cac5b47f0a6ad443"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0f33363d4098787cac5b47f0a6ad443">&#9670;&nbsp;</a></span>log_set_fp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void log_set_fp </td>
-          <td>(</td>
-          <td class="paramtype">FILE *&#160;</td>
-          <td class="paramname"><em>fp</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00095">95</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
-
-</div>
-</div>
-<a id="af2493e94f152a28b2ba4e3a2e2bba65d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2493e94f152a28b2ba4e3a2e2bba65d">&#9670;&nbsp;</a></span>log_set_level()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void log_set_level </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>level</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00099">99</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
-
-</div>
-</div>
-<a id="a93d6674a530b372c85e6bdf275e6e6b4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93d6674a530b372c85e6bdf275e6e6b4">&#9670;&nbsp;</a></span>log_set_lock()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void log_set_lock </td>
-          <td>(</td>
-          <td class="paramtype">log_LockFn&#160;</td>
-          <td class="paramname"><em>fn</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00091">91</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
-
-</div>
-</div>
-<a id="a15fc2e61d925edc83d6eaa748a7fb40c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15fc2e61d925edc83d6eaa748a7fb40c">&#9670;&nbsp;</a></span>log_set_quiet()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void log_set_quiet </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>enable</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00103">103</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
-
-</div>
-</div>
-<a id="a670c547ace6683148e5f480c4fc4c0f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a670c547ace6683148e5f480c4fc4c0f0">&#9670;&nbsp;</a></span>log_set_udata()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void log_set_udata </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>udata</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="log_8c_source.html#l00087">87</a> of file <a class="el" href="log_8c_source.html">log.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00014">14</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>
@@ -315,7 +158,35 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00040">40</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00038">38</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a7f0747c98df40fbb6bf8955f29667fe9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f0747c98df40fbb6bf8955f29667fe9">&#9670;&nbsp;</a></span>wss_help()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void wss_help </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>stream</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="main_8c_source.html#l00028">28</a> of file <a class="el" href="main_8c_source.html">main.c</a>.</p>
 
 </div>
 </div>

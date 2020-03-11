@@ -47,7 +47,8 @@ CFLAGS = $(EXEC) \
 		 -Wreturn-type \
 	     -Wsign-compare \
 		 -Wuninitialized \
-		 -DWSS_SERVER_VERSION=\"$(VER)\"
+		 -DWSS_SERVER_VERSION=\"$(VER)\" \
+		 -D_DEFAULT_SOURCE
 
 CVER = -std=c99
 
@@ -131,7 +132,7 @@ $(BUILD_FOLDER)/%.o: $(SRC_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) --param max-inline-insns-single=1000 $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -141,7 +142,7 @@ $(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) --coverage --param max-inline-insns-single=1000 $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) --coverage $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -199,6 +200,7 @@ count:
 autobahn: release
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
 	--network="host" \
@@ -208,6 +210,36 @@ autobahn: release
     --name fuzzingclient \
     wsserver/autobahn
 	pkill $(NAME) || true
+
+#make autobahn_call
+autobahn_call: profiling
+	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	sleep 1
+	docker build -t wsserver/autobahn -f Dockerfile .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${REPORTS_FOLDER}:/reports \
+    -p 9001:9001 \
+    --name fuzzingclient \
+    wsserver/autobahn
+	pkill -SIGINT memcheck
+
+#make autobahn_cache
+autobahn_cache: profiling
+	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	sleep 1
+	docker build -t wsserver/autobahn -f Dockerfile .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${REPORTS_FOLDER}:/reports \
+    -p 9001:9001 \
+    --name fuzzingclient \
+    wsserver/autobahn
+	pkill -SIGINT memcheck
 
 #make test
 test: $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}}

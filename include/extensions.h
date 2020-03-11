@@ -1,6 +1,18 @@
 #ifndef wss_extensions_h
 #define wss_extensions_h
 
+#if !defined(uthash_malloc) || !defined(uthash_free)
+#include "alloc.h"
+
+#ifndef uthash_malloc
+#define uthash_malloc(sz) WSS_malloc(sz)   /* malloc fcn */
+#endif
+
+#ifndef uthash_free
+#define uthash_free(ptr,sz) WSS_free((void **)&ptr) /* free fcn */
+#endif
+#endif
+
 #include "uthash.h"
 #include "config.h"
 
@@ -46,10 +58,10 @@ typedef struct {
  *
  * extensions/permessage-deflate/permessage-deflate.so 
  *
- * @param 	config	[config_t *] 	"The configuration of the server"
+ * @param 	config	[wss_config_t *] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_extensions(config_t *config);
+void WSS_load_extensions(wss_config_t *config);
 
 /**
  * Function that looks for a extension implementation of the name given.
@@ -57,14 +69,14 @@ void load_extensions(config_t *config);
  * @param 	name	[char *] 	          "The name of the extension"
  * @return 	      	[wss_extension_t *]   "The extension or NULL"
  */
-wss_extension_t *find_extension(char *name);
+wss_extension_t *WSS_find_extension(char *name);
 
 /**
  * Destroys all memory used to load and store the extensions 
  *
  * @return 	[void]
  */
-void destroy_extensions();
+void WSS_destroy_extensions();
 
 /**
  * Global hashtable of extensions

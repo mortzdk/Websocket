@@ -8,25 +8,25 @@
 #include "str.h"
 
 Test(config_init, none_existing_file) {
-    config_t *conf = (config_t *) WSS_malloc(sizeof(config_t));
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
 
-    cr_assert(CONFIG_LOAD_ERROR == config_load(conf, "resources/none_existing.json"));
+    cr_assert(WSS_CONFIG_LOAD_ERROR == WSS_config_load(conf, "resources/none_existing.json"));
 
     WSS_free((void**) &conf);
 }
 
 Test(config_init, invalid_config) {
-    config_t *conf = (config_t *) WSS_malloc(sizeof(config_t));
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
 
-    cr_assert(JSON_PARSE_ERROR == config_load(conf, "resources/test_invalid_wss.json"));
+    cr_assert(WSS_CONFIG_JSON_PARSE_ERROR == WSS_config_load(conf, "resources/test_invalid_wss.json"));
 
     WSS_free((void**) &conf);
 }
 
 Test(config_init, valid_config) {
-    config_t *conf = (config_t *) WSS_malloc(sizeof(config_t));
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
 
-    cr_assert(SUCCESS == config_load(conf, "resources/test_wss.json"));
+    cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
     cr_expect(strncmp(conf->favicon, "favicon.ico", 11) == 0); 
     cr_expect(strncmp(conf->ssl_ca_file, "root.pem", 8) == 0); 
@@ -44,25 +44,21 @@ Test(config_init, valid_config) {
     cr_expect(conf->port_https == 9011); 
     cr_expect(conf->size_uri == 8192); 
     cr_expect(conf->size_ringbuffer == 128); 
-    cr_expect(conf->size_queue == 1024); 
     cr_expect(conf->size_buffer == 25600); 
     cr_expect(conf->size_header == 8192); 
     cr_expect(conf->size_thread == 524288); 
 
-
-    cr_expect(conf->pool_size == 8192); 
-    cr_expect(conf->pool_queues == 32); 
     cr_expect(conf->pool_workers == 4); 
 
     WSS_free((void**) &conf);
 }
 
 Test(config_free, size_zero) {
-    config_t *conf = (config_t *) WSS_malloc(sizeof(config_t));
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
 
-    config_load(conf, "resources/test_wss.json");
+    WSS_config_load(conf, "resources/test_wss.json");
 
-    cr_assert(config_free(conf) == SUCCESS); 
+    cr_assert(WSS_config_free(conf) == WSS_SUCCESS); 
 
     cr_expect(conf->data == NULL); 
     cr_expect(conf->hosts == NULL); 

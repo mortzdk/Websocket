@@ -90,22 +90,22 @@ Include dependency graph for http.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab76cc52f9d702646e995d6636686b7ee"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http_8c.html#ab76cc52f9d702646e995d6636686b7ee">http_server</a> (server_t *server)</td></tr>
-<tr class="separator:ab76cc52f9d702646e995d6636686b7ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19c1015d580e212b5da4e852effe576f"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http_8c.html#a19c1015d580e212b5da4e852effe576f">http_server_free</a> (server_t *server)</td></tr>
-<tr class="separator:a19c1015d580e212b5da4e852effe576f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a145d9e304403c2dde4621add1f7e2d84"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http_8c.html#a145d9e304403c2dde4621add1f7e2d84">WSS_http_server</a> (wss_server_t *server)</td></tr>
+<tr class="separator:a145d9e304403c2dde4621add1f7e2d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7be3c4c8255a44561185619f5877c74a"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http_8c.html#a7be3c4c8255a44561185619f5877c74a">WSS_http_server_free</a> (wss_server_t *server)</td></tr>
+<tr class="separator:a7be3c4c8255a44561185619f5877c74a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ab76cc52f9d702646e995d6636686b7ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab76cc52f9d702646e995d6636686b7ee">&#9670;&nbsp;</a></span>http_server()</h2>
+<a id="a145d9e304403c2dde4621add1f7e2d84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a145d9e304403c2dde4621add1f7e2d84">&#9670;&nbsp;</a></span>WSS_http_server()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t http_server </td>
+          <td class="memname">wss_error_t WSS_http_server </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
@@ -115,27 +115,27 @@ Functions</h2></td></tr>
 <p>Function initialized a http server instance and creating thread where the instance is being run. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "The server instance" </td></tr>
+    <tr><td class="paramname">server</td><td>[wss_server_t *] "The server instance" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 <p>Setting port and initializes filedescriptors to -1 in the server structure.</p>
 
-<p class="definition">Definition at line <a class="el" href="http_8c_source.html#l00090">90</a> of file <a class="el" href="http_8c_source.html">http.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="http_8c_source.html#l00153">153</a> of file <a class="el" href="http_8c_source.html">http.c</a>.</p>
 
 </div>
 </div>
-<a id="a19c1015d580e212b5da4e852effe576f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19c1015d580e212b5da4e852effe576f">&#9670;&nbsp;</a></span>http_server_free()</h2>
+<a id="a7be3c4c8255a44561185619f5877c74a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7be3c4c8255a44561185619f5877c74a">&#9670;&nbsp;</a></span>WSS_http_server_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t http_server_free </td>
+          <td class="memname">wss_error_t WSS_http_server_free </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
@@ -145,7 +145,7 @@ Functions</h2></td></tr>
 <p>Function that free op space allocated for the http server and closes the filedescriptors in use. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "The http server" </td></tr>
+    <tr><td class="paramname">server</td><td>[wss_server_t *] "The http server" </td></tr>
   </table>
   </dd>
 </dl>
@@ -156,7 +156,7 @@ Functions</h2></td></tr>
 <p>Closing epoll</p>
 <p>Closing socket</p>
 
-<p class="definition">Definition at line <a class="el" href="http_8c_source.html#l00165">165</a> of file <a class="el" href="http_8c_source.html">http.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="http_8c_source.html#l00226">226</a> of file <a class="el" href="http_8c_source.html">http.c</a>.</p>
 
 </div>
 </div>

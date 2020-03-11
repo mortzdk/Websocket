@@ -1,6 +1,18 @@
 #ifndef wss_comm_h
 #define wss_comm_h
 
+#if !defined(uthash_malloc) || !defined(uthash_free)
+#include "alloc.h"
+
+#ifndef uthash_malloc
+#define uthash_malloc(sz) WSS_malloc(sz)   /* malloc fcn */
+#endif
+
+#ifndef uthash_free
+#define uthash_free(ptr,sz) WSS_free((void **)&ptr) /* free fcn */
+#endif
+#endif
+
 #include "server.h"
 #include "uthash.h"
 
@@ -50,20 +62,12 @@
                                     "</html>"
 
 /**
- * Structure used to send from event loop to threadpool
- */
-typedef struct {
-    int fd;
-    server_t *server;
-} args_t;
-
-/**
  * Structure used to find receivers
  */
 typedef struct {
     int fd;
     UT_hash_handle hh;
-} receiver_t;
+} wss_receiver_t;
 
 /**
  * Function that disconnects a session and freeing any allocated memory used by

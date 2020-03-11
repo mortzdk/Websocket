@@ -69,7 +69,6 @@ $(document).ready(function(){initNavTree('socket_8c.html','');});
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;fcntl.h&gt;</code><br />
-<code>#include &lt;sys/epoll.h&gt;</code><br />
 <code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;sys/socket.h&gt;</code><br />
 <code>#include &lt;netinet/in.h&gt;</code><br />
@@ -90,34 +89,30 @@ Include dependency graph for socket.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a62f635dc6bcb624aeaea64bfeaa6cd9f"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#a62f635dc6bcb624aeaea64bfeaa6cd9f">socket_create</a> (server_t *server)</td></tr>
-<tr class="separator:a62f635dc6bcb624aeaea64bfeaa6cd9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5c0ca08e35a8c290e2f8707ff6fc5f4"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#ad5c0ca08e35a8c290e2f8707ff6fc5f4">socket_reuse</a> (int fd)</td></tr>
-<tr class="separator:ad5c0ca08e35a8c290e2f8707ff6fc5f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaffc1b933e3bcf3dcbd6d350a7c19ba6"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#aaffc1b933e3bcf3dcbd6d350a7c19ba6">socket_bind</a> (server_t *server)</td></tr>
-<tr class="separator:aaffc1b933e3bcf3dcbd6d350a7c19ba6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc0d7067dca11fd665f8e19990d833a9"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#adc0d7067dca11fd665f8e19990d833a9">socket_non_blocking</a> (int fd)</td></tr>
-<tr class="separator:adc0d7067dca11fd665f8e19990d833a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6ff8ed9ee34d2a4ff086a9cca2e909e"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#aa6ff8ed9ee34d2a4ff086a9cca2e909e">socket_listen</a> (int fd)</td></tr>
-<tr class="separator:aa6ff8ed9ee34d2a4ff086a9cca2e909e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6b0df4085a5ec44d1e058bf270153a1"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#ac6b0df4085a5ec44d1e058bf270153a1">socket_epoll</a> (server_t *server)</td></tr>
-<tr class="separator:ac6b0df4085a5ec44d1e058bf270153a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af061b3d286967e77e28d66be701e7ead"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#af061b3d286967e77e28d66be701e7ead">socket_threadpool</a> (server_t *server)</td></tr>
-<tr class="separator:af061b3d286967e77e28d66be701e7ead"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42705536fc0a9d1d25b52825f3cd6b07"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#a42705536fc0a9d1d25b52825f3cd6b07">socket_wait</a> (server_t *server)</td></tr>
-<tr class="separator:a42705536fc0a9d1d25b52825f3cd6b07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ec99b4c730a0fe2eb738694f34e866d"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#a5ec99b4c730a0fe2eb738694f34e866d">WSS_socket_create</a> (wss_server_t *server)</td></tr>
+<tr class="separator:a5ec99b4c730a0fe2eb738694f34e866d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a276be60090b421efa4823177d1725063"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#a276be60090b421efa4823177d1725063">WSS_socket_reuse</a> (int fd)</td></tr>
+<tr class="separator:a276be60090b421efa4823177d1725063"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d1bb4d6126028efc9ed93468f3ddda9"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#a4d1bb4d6126028efc9ed93468f3ddda9">WSS_socket_bind</a> (wss_server_t *server)</td></tr>
+<tr class="separator:a4d1bb4d6126028efc9ed93468f3ddda9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac33448c8e9691bcf32053691ffb53e55"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#ac33448c8e9691bcf32053691ffb53e55">WSS_socket_non_blocking</a> (int fd)</td></tr>
+<tr class="separator:ac33448c8e9691bcf32053691ffb53e55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3de127482bed78b208960d56bcca3d8"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#ae3de127482bed78b208960d56bcca3d8">WSS_socket_listen</a> (int fd)</td></tr>
+<tr class="separator:ae3de127482bed78b208960d56bcca3d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3f684fcd900c9d54a3c53b321debaa3"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="socket_8c.html#aa3f684fcd900c9d54a3c53b321debaa3">WSS_socket_threadpool</a> (wss_server_t *server)</td></tr>
+<tr class="separator:aa3f684fcd900c9d54a3c53b321debaa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="aaffc1b933e3bcf3dcbd6d350a7c19ba6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaffc1b933e3bcf3dcbd6d350a7c19ba6">&#9670;&nbsp;</a></span>socket_bind()</h2>
+<a id="a4d1bb4d6126028efc9ed93468f3ddda9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d1bb4d6126028efc9ed93468f3ddda9">&#9670;&nbsp;</a></span>WSS_socket_bind()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_bind </td>
+          <td class="memname">wss_error_t WSS_socket_bind </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
@@ -135,20 +130,20 @@ Functions</h2></td></tr>
 <p>Setting values of our server structure</p>
 <p>Binding address.</p>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00054">54</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00053">53</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>
-<a id="a62f635dc6bcb624aeaea64bfeaa6cd9f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a62f635dc6bcb624aeaea64bfeaa6cd9f">&#9670;&nbsp;</a></span>socket_create()</h2>
+<a id="a5ec99b4c730a0fe2eb738694f34e866d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ec99b4c730a0fe2eb738694f34e866d">&#9670;&nbsp;</a></span>WSS_socket_create()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_create </td>
+          <td class="memname">wss_error_t WSS_socket_create </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
@@ -164,49 +159,18 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00025">25</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00024">24</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>
-<a id="ac6b0df4085a5ec44d1e058bf270153a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6b0df4085a5ec44d1e058bf270153a1">&#9670;&nbsp;</a></span>socket_epoll()</h2>
+<a id="ae3de127482bed78b208960d56bcca3d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3de127482bed78b208960d56bcca3d8">&#9670;&nbsp;</a></span>WSS_socket_listen()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_epoll </td>
-          <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
-          <td class="paramname"><em>server</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Function that creates epoll instance and adding the filedescriptor of the servers socket to it. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "The server instance" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
-<p>Creating epoll instance.</p>
-<p>Setting values of our epoll structure</p>
-
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00123">123</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
-
-</div>
-</div>
-<a id="aa6ff8ed9ee34d2a4ff086a9cca2e909e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6ff8ed9ee34d2a4ff086a9cca2e909e">&#9670;&nbsp;</a></span>socket_listen()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">wss_error_t socket_listen </td>
+          <td class="memname">wss_error_t WSS_socket_listen </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fd</em></td><td>)</td>
@@ -225,18 +189,18 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 <p>Listen on the server socket for connections</p>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00105">105</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00104">104</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>
-<a id="adc0d7067dca11fd665f8e19990d833a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc0d7067dca11fd665f8e19990d833a9">&#9670;&nbsp;</a></span>socket_non_blocking()</h2>
+<a id="ac33448c8e9691bcf32053691ffb53e55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac33448c8e9691bcf32053691ffb53e55">&#9670;&nbsp;</a></span>WSS_socket_non_blocking()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_non_blocking </td>
+          <td class="memname">wss_error_t WSS_socket_non_blocking </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fd</em></td><td>)</td>
@@ -254,18 +218,18 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00081">81</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00080">80</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>
-<a id="ad5c0ca08e35a8c290e2f8707ff6fc5f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad5c0ca08e35a8c290e2f8707ff6fc5f4">&#9670;&nbsp;</a></span>socket_reuse()</h2>
+<a id="a276be60090b421efa4823177d1725063"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a276be60090b421efa4823177d1725063">&#9670;&nbsp;</a></span>WSS_socket_reuse()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_reuse </td>
+          <td class="memname">wss_error_t WSS_socket_reuse </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fd</em></td><td>)</td>
@@ -283,20 +247,20 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00039">39</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00038">38</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>
-<a id="af061b3d286967e77e28d66be701e7ead"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af061b3d286967e77e28d66be701e7ead">&#9670;&nbsp;</a></span>socket_threadpool()</h2>
+<a id="aa3f684fcd900c9d54a3c53b321debaa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3f684fcd900c9d54a3c53b321debaa3">&#9670;&nbsp;</a></span>WSS_socket_threadpool()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">wss_error_t socket_threadpool </td>
+          <td class="memname">wss_error_t WSS_socket_threadpool </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
@@ -306,43 +270,14 @@ Functions</h2></td></tr>
 <p>Function that creates a threadpool which can be used handle traffic. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "The server instance" </td></tr>
+    <tr><td class="paramname">server</td><td>[wss_server_t *] "The server instance" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 <p>Creating threadpool</p>
 
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00157">157</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
-
-</div>
-</div>
-<a id="a42705536fc0a9d1d25b52825f3cd6b07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a42705536fc0a9d1d25b52825f3cd6b07">&#9670;&nbsp;</a></span>socket_wait()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">wss_error_t socket_wait </td>
-          <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
-          <td class="paramname"><em>server</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Function that waits for new events on the filedescriptors associated to the epoll instance. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "The server instance" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00186">186</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="socket_8c_source.html#l00121">121</a> of file <a class="el" href="socket_8c_source.html">socket.c</a>.</p>
 
 </div>
 </div>

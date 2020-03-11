@@ -24,7 +24,7 @@ wss_extension_t *extensions = NULL;
  * @param 	config	[config_t *] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_extensions(config_t *config)
+void WSS_load_extensions(wss_config_t *config)
 {
     size_t i, j;
     char *name;
@@ -135,7 +135,7 @@ void load_extensions(config_t *config)
  * @param 	name	[char *] 	            "The name of the extension"
  * @return 	      	[wss_extension_t *]   "The extension or NULL"
  */
-wss_extension_t *find_extension(char *name) {
+wss_extension_t *WSS_find_extension(char *name) {
     wss_extension_t *proto;
 
     HASH_FIND_STR(extensions, name, proto);
@@ -148,7 +148,7 @@ wss_extension_t *find_extension(char *name) {
  *
  * @return 	[void]
  */
-void destroy_extensions() {
+void WSS_destroy_extensions() {
     wss_extension_t *proto, *tmp;
 
     HASH_ITER(hh, extensions, proto, tmp) {

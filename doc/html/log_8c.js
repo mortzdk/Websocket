@@ -7,7 +7,7 @@ var log_8c =
     [ "log_set_lock", "log_8c.html#a93d6674a530b372c85e6bdf275e6e6b4", null ],
     [ "log_set_quiet", "log_8c.html#a15fc2e61d925edc83d6eaa748a7fb40c", null ],
     [ "log_set_udata", "log_8c.html#a670c547ace6683148e5f480c4fc4c0f0", null ],
-    [ "time_to_str", "log_8c.html#a0bc3e379a4386e0ace62a6ea201638c8", null ],
+    [ "time_to_str", "log_8c.html#abb960ebc5c41c36c4bf998f58b60f4ec", null ],
     [ "unlock", "log_8c.html#abb7cc7eb4e959fda6a43c8dd85f20090", null ],
     [ "day", "log_8c.html#a4c11afc03fc3ee49bab660def6558f2a", null ],
     [ "fp", "log_8c.html#aa065f30aa9f5f9a42132c82c787ee70b", null ],

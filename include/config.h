@@ -1,6 +1,8 @@
 #ifndef wss_config_h
 #define wss_config_h
 
+#include <stdbool.h>
+
 #include "json.h"
 #include "error.h"
 
@@ -24,16 +26,24 @@ typedef struct {
     unsigned int size_header;
     unsigned int size_thread;
     unsigned int size_buffer;
-    unsigned int size_queue;
     unsigned int size_ringbuffer;
-    unsigned int pool_size;
-    unsigned int pool_queues;
+    unsigned int size_frame;
+    unsigned int max_frames;
     unsigned int pool_workers;
-    unsigned int timeout;
+    unsigned int timeout_pings;
+    int timeout_poll;
+    int timeout_read;
+    int timeout_write;
+    long int timeout_client;
     char *ssl_key;
     char *ssl_cert;
     char *ssl_ca_file;
     char *ssl_ca_path;
+    char *ssl_cipher_list;
+    char *ssl_cipher_suites;
+    char *ssl_dhparam;
+    bool ssl_compression;
+    bool peer_cert;
     char *favicon;
     char **subprotocols;
     unsigned int subprotocols_length;
@@ -41,23 +51,23 @@ typedef struct {
     char **extensions;
     unsigned int extensions_length;
     char **extensions_config;
-} config_t;
+} wss_config_t;
 
 /**
  * Loads configuration from JSON file
  *
- * @param   config  [config_t *]    "The configuration structure to fill"
- * @param   path    [char *]        "The path to the JSON file"
- * @return 			[wss_error_t]   "The error status"
+ * @param   config  [wss_config_t *] "The configuration structure to fill"
+ * @param   path    [char *]         "The path to the JSON file"
+ * @return 			[wss_error_t]    "The error status"
  */
-wss_error_t config_load(config_t *config, char *path);
+wss_error_t WSS_config_load(wss_config_t *config, char *path);
 
 /**
  * Frees allocated memory from configuration
  *
- * @param   config  [config_t *]    "The configuration structure to free"
- * @return 			[wss_error_t]   "The error status"
+ * @param   config  [wss_config_t *] "The configuration structure to free"
+ * @return 			[wss_error_t]    "The error status"
  */
-wss_error_t config_free(config_t *config);
+wss_error_t WSS_config_free(wss_config_t *config);
 
 #endif

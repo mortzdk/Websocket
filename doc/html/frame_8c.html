@@ -75,7 +75,6 @@ $(document).ready(function(){initNavTree('frame_8c.html','');});
 <code>#include &lt;arpa/inet.h&gt;</code><br />
 <code>#include &quot;frame.h&quot;</code><br />
 <code>#include &quot;str.h&quot;</code><br />
-<code>#include &quot;header.h&quot;</code><br />
 <code>#include &quot;alloc.h&quot;</code><br />
 <code>#include &quot;log.h&quot;</code><br />
 <code>#include &quot;predict.h&quot;</code><br />
@@ -93,22 +92,22 @@ Functions</h2></td></tr>
 <tr class="separator:a5eb168cf9a6abf466f8e310df973bcbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0672b756ce5f51ad015ed1c31dec6efd"><td class="memItemLeft" align="right" valign="top">static uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a> (uint64_t value)</td></tr>
 <tr class="separator:a0672b756ce5f51ad015ed1c31dec6efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a722212a492469c579952f9941438f6be"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a722212a492469c579952f9941438f6be">unmask</a> (frame_t *frame)</td></tr>
-<tr class="separator:a722212a492469c579952f9941438f6be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad02cb45dbba180d7ce641c17fb57d835"><td class="memItemLeft" align="right" valign="top">frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#ad02cb45dbba180d7ce641c17fb57d835">WSS_parse_frame</a> (header_t *header, char *payload, size_t length, size_t *offset)</td></tr>
-<tr class="separator:ad02cb45dbba180d7ce641c17fb57d835"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85cde9b2c48d71b0c646a67e3b814934"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a85cde9b2c48d71b0c646a67e3b814934">WSS_stringify_frame</a> (frame_t *frame, char **message)</td></tr>
-<tr class="separator:a85cde9b2c48d71b0c646a67e3b814934"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa43a3b45ec3f4c75465beab7878fb869"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#aa43a3b45ec3f4c75465beab7878fb869">WSS_stringify_frames</a> (frame_t **frames, size_t size, char **message)</td></tr>
-<tr class="separator:aa43a3b45ec3f4c75465beab7878fb869"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa190a0ec24d8885ee84c0dcdd575f74d"><td class="memItemLeft" align="right" valign="top">frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#aa190a0ec24d8885ee84c0dcdd575f74d">WSS_closing_frame</a> (header_t *header, wss_close_t reason)</td></tr>
-<tr class="separator:aa190a0ec24d8885ee84c0dcdd575f74d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4ef360cd7a4ca426a9717ef8a07e893"><td class="memItemLeft" align="right" valign="top">frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#af4ef360cd7a4ca426a9717ef8a07e893">WSS_ping_frame</a> (header_t *header)</td></tr>
-<tr class="separator:af4ef360cd7a4ca426a9717ef8a07e893"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70eb4405240e58b283f8a0a67c53b398"><td class="memItemLeft" align="right" valign="top">frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a70eb4405240e58b283f8a0a67c53b398">WSS_pong_frame</a> (header_t *header, frame_t *ping)</td></tr>
-<tr class="separator:a70eb4405240e58b283f8a0a67c53b398"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5eca8e3abb13218fc17ae9e711af4d28"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a5eca8e3abb13218fc17ae9e711af4d28">WSS_free_frame</a> (frame_t *frame)</td></tr>
-<tr class="separator:a5eca8e3abb13218fc17ae9e711af4d28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a230000c7d4e67cb10b6dd282b1b55994"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a> (wss_frame_t *frame)</td></tr>
+<tr class="separator:a230000c7d4e67cb10b6dd282b1b55994"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a572b61ed22e15ac196f279f0446fc8bd"><td class="memItemLeft" align="right" valign="top">wss_frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a> (char *payload, size_t length, size_t *offset)</td></tr>
+<tr class="separator:a572b61ed22e15ac196f279f0446fc8bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5c433dfec7214fe91ec2137dc18ba2b"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a> (wss_frame_t *frame, char **message)</td></tr>
+<tr class="separator:af5c433dfec7214fe91ec2137dc18ba2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af921b15f7e265f23253c059bcd050021"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">WSS_stringify_frames</a> (wss_frame_t **frames, size_t size, char **message)</td></tr>
+<tr class="separator:af921b15f7e265f23253c059bcd050021"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35993490376ff8ee416da275575f2f19"><td class="memItemLeft" align="right" valign="top">wss_frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a35993490376ff8ee416da275575f2f19">WSS_closing_frame</a> (wss_close_t reason)</td></tr>
+<tr class="separator:a35993490376ff8ee416da275575f2f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85850b494b3e6598733e75436de3136e"><td class="memItemLeft" align="right" valign="top">wss_frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a85850b494b3e6598733e75436de3136e">WSS_ping_frame</a> ()</td></tr>
+<tr class="separator:a85850b494b3e6598733e75436de3136e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3340bd289b5863c51dc12418f7f71ce"><td class="memItemLeft" align="right" valign="top">wss_frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a> (wss_frame_t *ping)</td></tr>
+<tr class="separator:af3340bd289b5863c51dc12418f7f71ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a110cbe657181858c43bad1f86453915f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a> (wss_frame_t *frame)</td></tr>
+<tr class="separator:a110cbe657181858c43bad1f86453915f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a0672b756ce5f51ad015ed1c31dec6efd"></a>
@@ -130,7 +129,7 @@ Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -145,7 +144,7 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>[uint64_t] "The 64 bit unsigned integer in network byte order" </dd></dl>
 <p>If these check is true, the system is using the little endian convention. Else the system is using the big endian convention, which means that we do not have to represent our integers in another way.</p>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00065">65</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00064">64</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -182,12 +181,12 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[char *] "Random byte string of the given length" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00045">45</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00044">44</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="a722212a492469c579952f9941438f6be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a722212a492469c579952f9941438f6be">&#9670;&nbsp;</a></span>unmask()</h2>
+<a id="a230000c7d4e67cb10b6dd282b1b55994"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a230000c7d4e67cb10b6dd282b1b55994">&#9670;&nbsp;</a></span>unmask()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -198,44 +197,34 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">static void unmask </td>
           <td>(</td>
-          <td class="paramtype">frame_t *&#160;</td>
+          <td class="paramtype">wss_frame_t *&#160;</td>
           <td class="paramname"><em>frame</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00083">83</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00082">82</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="aa190a0ec24d8885ee84c0dcdd575f74d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa190a0ec24d8885ee84c0dcdd575f74d">&#9670;&nbsp;</a></span>WSS_closing_frame()</h2>
+<a id="a35993490376ff8ee416da275575f2f19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35993490376ff8ee416da275575f2f19">&#9670;&nbsp;</a></span>WSS_closing_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">frame_t* WSS_closing_frame </td>
+          <td class="memname">wss_frame_t* WSS_closing_frame </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
-          <td class="paramname"><em>header</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">wss_close_t&#160;</td>
-          <td class="paramname"><em>reason</em>&#160;</td>
-        </tr>
-        <tr>
+          <td class="paramname"><em>reason</em></td><td>)</td>
           <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -243,19 +232,18 @@ Functions</h2></td></tr>
 <p>Creates a closing frame given a reason for the closure. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "A HTTP header structure of the session" </td></tr>
     <tr><td class="paramname">reason</td><td>[wss_close_t] "The reason for the closure" </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00435">435</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00432">432</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="a5eca8e3abb13218fc17ae9e711af4d28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5eca8e3abb13218fc17ae9e711af4d28">&#9670;&nbsp;</a></span>WSS_free_frame()</h2>
+<a id="a110cbe657181858c43bad1f86453915f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a110cbe657181858c43bad1f86453915f">&#9670;&nbsp;</a></span>WSS_free_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -263,7 +251,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void WSS_free_frame </td>
           <td>(</td>
-          <td class="paramtype">frame_t *&#160;</td>
+          <td class="paramtype">wss_frame_t *&#160;</td>
           <td class="paramname"><em>frame</em></td><td>)</td>
           <td></td>
         </tr>
@@ -273,31 +261,25 @@ Functions</h2></td></tr>
 <p>Releases memory used by a frame. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ping</td><td>[frame_t *] "The frame that should be freed" </td></tr>
+    <tr><td class="paramname">ping</td><td>[wss_frame_t *] "The frame that should be freed" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00579">579</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00574">574</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="ad02cb45dbba180d7ce641c17fb57d835"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad02cb45dbba180d7ce641c17fb57d835">&#9670;&nbsp;</a></span>WSS_parse_frame()</h2>
+<a id="a572b61ed22e15ac196f279f0446fc8bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a572b61ed22e15ac196f279f0446fc8bd">&#9670;&nbsp;</a></span>WSS_parse_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">frame_t* WSS_parse_frame </td>
+          <td class="memname">wss_frame_t* WSS_parse_frame </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
-          <td class="paramname"><em>header</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>payload</em>, </td>
         </tr>
@@ -325,70 +307,52 @@ Functions</h2></td></tr>
 <p>Returns the frame and corrects the offset pointer in order for multiple frames to be processed from the same payload.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "A HTTP header structure of the session" </td></tr>
     <tr><td class="paramname">payload</td><td>[char *] "The payload to be processed" </td></tr>
     <tr><td class="paramname">length</td><td>[size_t] "The length of the payload" </td></tr>
     <tr><td class="paramname">offset</td><td>[size_t *] "A pointer to an offset" </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00234">234</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00232">232</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="af4ef360cd7a4ca426a9717ef8a07e893"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4ef360cd7a4ca426a9717ef8a07e893">&#9670;&nbsp;</a></span>WSS_ping_frame()</h2>
+<a id="a85850b494b3e6598733e75436de3136e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85850b494b3e6598733e75436de3136e">&#9670;&nbsp;</a></span>WSS_ping_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">frame_t* WSS_ping_frame </td>
+          <td class="memname">wss_frame_t* WSS_ping_frame </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
-          <td class="paramname"><em>header</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Creates a ping frame. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "A HTTP header structure of the session" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00524">524</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00520">520</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="a70eb4405240e58b283f8a0a67c53b398"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70eb4405240e58b283f8a0a67c53b398">&#9670;&nbsp;</a></span>WSS_pong_frame()</h2>
+<a id="af3340bd289b5863c51dc12418f7f71ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3340bd289b5863c51dc12418f7f71ce">&#9670;&nbsp;</a></span>WSS_pong_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">frame_t* WSS_pong_frame </td>
+          <td class="memname">wss_frame_t* WSS_pong_frame </td>
           <td>(</td>
-          <td class="paramtype">header_t *&#160;</td>
-          <td class="paramname"><em>header</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">wss_frame_t *&#160;</td>
+          <td class="paramname"><em>ping</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">frame_t *&#160;</td>
-          <td class="paramname"><em>ping</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -396,19 +360,18 @@ Functions</h2></td></tr>
 <p>Creates a pong frame from a received ping frame. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">header</td><td>[header_t *] "A HTTP header structure of the session" </td></tr>
-    <tr><td class="paramname">ping</td><td>[frame_t *] "A ping frame" </td></tr>
+    <tr><td class="paramname">ping</td><td>[wss_frame_t *] "A ping frame" </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>[frame_t *] "A websocket frame" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00558">558</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00553">553</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="a85cde9b2c48d71b0c646a67e3b814934"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85cde9b2c48d71b0c646a67e3b814934">&#9670;&nbsp;</a></span>WSS_stringify_frame()</h2>
+<a id="af5c433dfec7214fe91ec2137dc18ba2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5c433dfec7214fe91ec2137dc18ba2b">&#9670;&nbsp;</a></span>WSS_stringify_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -416,7 +379,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">size_t WSS_stringify_frame </td>
           <td>(</td>
-          <td class="paramtype">frame_t *&#160;</td>
+          <td class="paramtype">wss_frame_t *&#160;</td>
           <td class="paramname"><em>frame</em>, </td>
         </tr>
         <tr>
@@ -436,19 +399,19 @@ Functions</h2></td></tr>
 <p>Converts a single frame into a char array. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">frame</td><td>[frame_t *] "The frame" </td></tr>
+    <tr><td class="paramname">frame</td><td>[wss_frame_t *] "The frame" </td></tr>
     <tr><td class="paramname">message</td><td>[char **] "A pointer to a char array which should be filled with the frame data" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00313">313</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00311">311</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
-<a id="aa43a3b45ec3f4c75465beab7878fb869"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa43a3b45ec3f4c75465beab7878fb869">&#9670;&nbsp;</a></span>WSS_stringify_frames()</h2>
+<a id="af921b15f7e265f23253c059bcd050021"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af921b15f7e265f23253c059bcd050021">&#9670;&nbsp;</a></span>WSS_stringify_frames()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -456,7 +419,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">size_t WSS_stringify_frames </td>
           <td>(</td>
-          <td class="paramtype">frame_t **&#160;</td>
+          <td class="paramtype">wss_frame_t **&#160;</td>
           <td class="paramname"><em>frames</em>, </td>
         </tr>
         <tr>
@@ -482,7 +445,7 @@ Functions</h2></td></tr>
 <p>Converts an array of frames into a char array that can be written to others. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">frames</td><td>[frames_t **] "The frames to be converted" </td></tr>
+    <tr><td class="paramname">frames</td><td>[wss_frame_t **] "The frames to be converted" </td></tr>
     <tr><td class="paramname">size</td><td>[size_t] "The amount of frames" </td></tr>
     <tr><td class="paramname">message</td><td>[char **] "A pointer to a char array which should be filled with the frame data" </td></tr>
   </table>
@@ -490,7 +453,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00393">393</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00391">391</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>

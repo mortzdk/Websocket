@@ -39,8 +39,6 @@ static struct {
     int quiet;
 } L;
 
-static void time_to_str(char *);
-
 static int year;
 static int month;
 static int day;
@@ -72,13 +70,38 @@ static const char *level_colors[] = {
     "\x1b[94m"
 };
 
-static void lock(void) {
+static inline void time_to_str(char *buf) {
+    gettimeofday(&tv, NULL);
+    tm = localtime(&tv.tv_sec);
+    /* Add 1900 to get the right year value read the manual page for localtime() */
+    year    = tm->tm_year + 1900;
+    /* Months are 0 indexed in struct tm */
+    month   = tm->tm_mon + 1;
+    day     = tm->tm_mday;
+    hour    = tm->tm_hour;
+    minutes = tm->tm_min;
+    seconds = tm->tm_sec;
+    usec    = tv.tv_usec;
+    // buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
+    int len = sprintf(buf, 
+            "%04d-%02d-%02d %02d:%02d:%02d.%06d ",
+            year,
+            month,
+            day,
+            hour,
+            minutes,
+            seconds,
+            usec);
+    buf[len] = '\0';
+}
+
+static inline void lock(void) {
     if (L.lock) {
         L.lock(L.udata, 1);
     }
 }
 
-static void unlock(void) {
+static inline void unlock(void) {
     if (L.lock) {
         L.lock(L.udata, 0);
     }
@@ -143,29 +166,4 @@ void log_log(int level, const char *file, int line, const char *fmt, ...) {
 
     /* Release lock */
     unlock();
-}
-
-static void time_to_str(char *buf) {
-    gettimeofday(&tv, NULL);
-    tm = localtime(&tv.tv_sec);
-    /* Add 1900 to get the right year value read the manual page for localtime() */
-    year    = tm->tm_year + 1900;
-    /* Months are 0 indexed in struct tm */
-    month   = tm->tm_mon + 1;
-    day     = tm->tm_mday;
-    hour    = tm->tm_hour;
-    minutes = tm->tm_min;
-    seconds = tm->tm_sec;
-    usec    = tv.tv_usec;
-    // buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
-    int len = sprintf(buf, 
-            "%04d-%02d-%02d %02d:%02d:%02d.%06d ",
-            year,
-            month,
-            day,
-            hour,
-            minutes,
-            seconds,
-            usec);
-    buf[len] = '\0';
 }

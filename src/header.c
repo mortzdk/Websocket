@@ -1,5 +1,3 @@
-#define _DEFAULT_SOURCE
-
 #include <stddef.h>             /* size_t */
 #include <math.h>               /* log10 */
 #include <stdio.h> 				/* printf, fflush, fprintf, fopen, fclose */
@@ -11,7 +9,7 @@
 #include <ctype.h>              /* isspace */
 
 #include "header.h"
-#include "base64.h"
+#include "b64.h"
 #include "alloc.h"
 #include "httpstatuscodes.h"
 #include "session.h"
@@ -51,11 +49,8 @@ const char *versions[] = {
  * @param   str     [char *]    "The string to trim"
  * @return          [char *]    "The input string without leading and trailing spaces"
  */
-static char *trim(char *str) {
-    size_t len = 0;
-    char *frontp = str;
-    char *endp = NULL;
-
+static inline char *trim(char* str)
+{
     if ( unlikely(NULL == str) ) {
         return NULL;
     }
@@ -63,43 +58,19 @@ static char *trim(char *str) {
     if ( unlikely(str[0] == '\0') ) {
         return str;
     }
-
-    len = strlen(str);
-    endp = str + len;
-
-    /* Move the front and back pointers to address the first non-whitespace
-     * characters from each end.
-     */
-    while (isspace((unsigned char) *frontp)) {
-        ++frontp;
+    int start, end = strlen(str);
+    for (start = 0; isspace(str[start]); ++start) {}
+    if (str[start]) {
+        while (end > 0 && isspace(str[end-1]))
+            --end;
+        memmove(str, &str[start], end - start);
     }
-
-    if (endp != frontp) {
-        while (isspace((unsigned char) *(--endp)) && endp != frontp) {}
-    }
-
-    if (str + len - 1 != endp) {
-        *(endp + 1) = '\0';
-    } else if (frontp != str &&  endp == frontp) {
-        *str = '\0';
-    }
-
-    /* Shift the string so that it starts at str so that if it's dynamically
-     * allocated, we can still free it on the returned pointer.  Note the reuse
-     * of endp to mean the front of the string buffer now.
-     */
-    endp = str;
-    if (frontp != str) {
-        while (*frontp) {
-            *endp++ = *frontp++;
-        }
-        *endp = '\0';
-    }
+    str[end - start] = '\0';
 
     return str;
 }
 
-inline static void WSS_header_set_version(header_t *header, char *v) {
+static inline void header_set_version(wss_header_t *header, char *v) {
     int version = strtol(strtok_r(NULL, "", &v), (char **) NULL, 10);
 
     if ( likely(header->ws_version < version) ) {
@@ -118,7 +89,7 @@ inline static void WSS_header_set_version(header_t *header, char *v) {
         } else if( unlikely(version == 8) ) {
             header->ws_type = HYBI10;
             header->ws_version = version;
-        } else if( unlikely(version == 13) ) {
+        } else if( likely(version == 13) ) {
             header->ws_type = RFC6455;
             header->ws_version = version;
         }
@@ -131,11 +102,11 @@ inline static void WSS_header_set_version(header_t *header, char *v) {
  * appropriate.
  *
  * @param   fd        [int]                    "The filedescriptor"
- * @param   header    [header_t *]             "The header structure to fill"
- * @param   config    [config_t *]             "The configuration of the server"
+ * @param   header    [wss_header_t *]         "The header structure to fill"
+ * @param   config    [wss_config_t *]         "The configuration of the server"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config) {
+enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config) {
     bool valid, in_use;
     size_t i;
     char *tokenptr, *lineptr, *sepptr, *paramptr, *temp, *line, *sep, *accepted;
@@ -220,7 +191,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
 
                 sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
                 while (NULL != sep) {
-                    WSS_header_set_version(header, sep);
+                    header_set_version(header, sep);
 
                     sep = trim(strtok_r(NULL, ",", &sepptr));
                 }
@@ -233,11 +204,11 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
             } else if ( strncasecmp("Sec-WebSocket-Protocol", line, 22) == 0 ) {
                 if (NULL == header->ws_protocol) {
                     sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
-                    if (NULL != sep && NULL != (proto = find_subprotocol(sep))) {
+                    if (NULL != sep && NULL != (proto = WSS_find_subprotocol(sep))) {
                         header->ws_protocol = proto;
                     } else {
                         while (NULL != (sep = trim(strtok_r(NULL, ",", &sepptr)))) {
-                            if (NULL != (proto = find_subprotocol(sep))) {
+                            if (NULL != (proto = WSS_find_subprotocol(sep))) {
                                 header->ws_protocol = proto;
                                 break;
                             }
@@ -259,7 +230,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
                     in_use = false;
                     sep = trim(strtok_r(sep, ";", &paramptr));
 
-                    if (NULL != (ext = find_extension(sep))) {
+                    if (NULL != (ext = WSS_find_extension(sep))) {
                         for (i = 0; i < header->ws_extensions_count; i++) {
                             if ( unlikely(header->ws_extensions[i]->ext == ext) ) {
                                 in_use = true; 
@@ -295,11 +266,11 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
                 header->ws_type = HIXIE;
                 if (NULL == header->ws_protocol) {
                     sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
-                    if (NULL != sep && NULL != (proto = find_subprotocol(sep))) {
+                    if (NULL != sep && NULL != (proto = WSS_find_subprotocol(sep))) {
                         header->ws_protocol = proto;
                     } else {
                         while (NULL != (sep = trim(strtok_r(NULL, ",", &sepptr)))) {
-                            if (NULL != (proto = find_subprotocol(sep))) {
+                            if (NULL != (proto = WSS_find_subprotocol(sep))) {
                                 header->ws_protocol = proto;
                                 break;
                             }
@@ -363,12 +334,12 @@ enum HttpStatus_Code WSS_parse_header(int fd, header_t *header, config_t *config
 /**
  * Generates a regular expression pattern to match the request uri of the header.
  *
- * @param   config    [config_t *]  "The configuration of the server"
- * @param   ssl       [bool]        "Whether server uses SSL"
- * @param   port      [int]         "The server port"
- * @return            [char *]      "The request uri regex pattern"
+ * @param   config    [wss_config_t *]  "The configuration of the server"
+ * @param   ssl       [bool]            "Whether server uses SSL"
+ * @param   port      [int]             "The server port"
+ * @return            [char *]          "The request uri regex pattern"
  */
-static char *generate_request_uri(config_t * config, bool ssl, int port) {
+static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
     int i, j, k;
     size_t iw = 0, jw = 0, kw = 0;
     size_t request_uri_length = 0;
@@ -475,19 +446,19 @@ static char *generate_request_uri(config_t * config, bool ssl, int port) {
  * Upgrades a HTTP header, that is returns switching protocols response if
  * the header contains the required options.
  *
- * @param   header    [header_t *]             "The header structure to fill"
- * @param   config    [config_t *]             "The configuration of the server"
+ * @param   header    [wss_header_t *]         "The header structure to fill"
+ * @param   config    [wss_config_t *]         "The configuration of the server"
  * @param   ssl       [bool]                   "Whether server uses SSL"
  * @param   port      [int]                    "The server port"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, bool ssl, int port) {
+enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * config, bool ssl, int port) {
     int err;
     regex_t re;
     char msg[1024];
     char *request_uri;
-    char *key = NULL;
     char *sep, *sepptr;
+    unsigned char *key = NULL;
     unsigned long key_length;
 
     WSS_log_trace("Upgrading HTTP header");
@@ -575,7 +546,7 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
     WSS_log_trace("Validating websocket key");
 
     if ( unlikely(NULL == header->ws_key || 
-            ! base64_decode_alloc(header->ws_key, strlen(header->ws_key), &key, &key_length) ||
+            NULL == (key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length)) ||
             key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
         WSS_log_trace("Invalid websocket key");
         WSS_free((void **) &key);
@@ -608,10 +579,10 @@ enum HttpStatus_Code WSS_upgrade_header(header_t *header, config_t * config, boo
 /**
  * Frees a HTTP header structure
  *
- * @param   header    [header_t *]  "The HTTP header to free"
+ * @param   header    [wss_header_t *]  "The HTTP header to free"
  * @return            [void]
  */
-void WSS_free_header(header_t *header) {
+void WSS_free_header(wss_header_t *header) {
     size_t i;
     for (i = 0; i < header->ws_extensions_count; i++) {
         WSS_free((void **) &header->ws_extensions[i]->accepted);

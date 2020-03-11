@@ -202,7 +202,7 @@ pre.wirelog_tcp_closed_by_peer {color: #fff; margin: 0; background-color: #000; 
       <center><a href="http://autobahn.ws/testsuite" title="Autobahn WebSocket Testsuite"><img src="http://autobahn.ws/static/img/ws_protocol_test_report.png"          border="0" width="820" height="46" alt="Autobahn WebSocket Testsuite Report"></img></a></center>
       <center><a href="http://autobahn.ws"           title="Autobahn WebSocket">          <img src="http://autobahn.ws/static/img/ws_protocol_test_report_autobahn.png" border="0" width="300" height="68" alt="Autobahn WebSocket">                 </img></a></center>
       <br/>
-      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.2.9</b></span> : Pass - <span style="font-size: 0.9em;"><b>8146</b> ms @ 2020-02-21T20:09:10.943Z</a></p>
+      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.2.9</b></span> : Pass - <span style="font-size: 0.9em;"><b>8942</b> ms @ 2020-03-11T12:14:06.969Z</a></p>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send 1000 compressed messages each of payload size 65536, auto-fragment to 0 octets. Use default permessage-deflate offer.</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Receive echo'ed messages (with payload as sent). Timeout case after 480 secs.</p>
 
@@ -221,12 +221,12 @@ Upgrade: WebSocket
 Connection: Upgrade
 Pragma: no-cache
 Cache-Control: no-cache
-Sec-WebSocket-Key: xbmFx1jc6CU7bfi8Z6Xrfg==
+Sec-WebSocket-Key: OHRXCw1mexstSBMhZSUosQ==
 Sec-WebSocket-Extensions: permessage-deflate; client_no_context_takeover; client_max_window_bits
 Sec-WebSocket-Version: 13</pre>
       <pre class="http_dump">HTTP/1.1 101 Switching Protocols
 Sec-Websocket-Extensions: permessage-deflate;client_no_context_takeover;client_max_window_bits=10;server_max_window_bits=10
-Sec-Websocket-Accept: 3cQeMimI8OZvBC65vx5sYqn7nL0=
+Sec-Websocket-Accept: 0xitb19jGt1iTiDQB5waKxMqpIg=
 Upgrade: websocket
 Connection: Upgrade
 Server: WSServer/2.0.0</pre>
@@ -254,6 +254,8 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_header"><td>Chop Size</td><td>Count</td><td>Octets</td></tr>
          <tr class="stats_row"><td>4</td><td>1</td><td>4</td></tr>
          <tr class="stats_row"><td>278</td><td>1</td><td>278</td></tr>
+         <tr class="stats_row"><td>26534</td><td>1</td><td>26534</td></tr>
+         <tr class="stats_row"><td>32768</td><td>1</td><td>32768</td></tr>
          <tr class="stats_row"><td>53891</td><td>1</td><td>53891</td></tr>
          <tr class="stats_row"><td>53918</td><td>1</td><td>53918</td></tr>
          <tr class="stats_row"><td>53936</td><td>1</td><td>53936</td></tr>
@@ -739,7 +741,7 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>59299</td><td>1</td><td>59299</td></tr>
          <tr class="stats_row"><td>59300</td><td>2</td><td>118600</td></tr>
          <tr class="stats_row"><td>59301</td><td>1</td><td>59301</td></tr>
-         <tr class="stats_row"><td>59302</td><td>2</td><td>118604</td></tr>
+         <tr class="stats_row"><td>59302</td><td>1</td><td>59302</td></tr>
          <tr class="stats_row"><td>59303</td><td>2</td><td>118606</td></tr>
          <tr class="stats_row"><td>59304</td><td>1</td><td>59304</td></tr>
          <tr class="stats_row"><td>59305</td><td>1</td><td>59305</td></tr>
@@ -1051,7 +1053,7 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>60166</td><td>1</td><td>60166</td></tr>
          <tr class="stats_row"><td>60177</td><td>1</td><td>60177</td></tr>
          <tr class="stats_row"><td>60181</td><td>2</td><td>120362</td></tr>
-         <tr class="stats_total"><td>Total</td><td>1002</td><td>58234736</td></tr>
+         <tr class="stats_total"><td>Total</td><td>1003</td><td>58234736</td></tr>
       </table>
       <h3>Octets Transmitted by Chop Size</h3>
       <table>
@@ -1875,9 +1877,9 @@ Server: WSServer/2.0.0</pre>
          <pre class="wirelog_delay">002 WIRELOG DISABLED</pre>
          <pre class="wirelog_kill_after">003 CLOSE CONNECTION AFTER 480.000000 sec</pre>
          <pre class="wirelog_delay">004 WIRELOG ENABLED</pre>
-         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=ca205201, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=130f7b54, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               0x03e8</pre>
-         <pre class="wirelog_tx_octets">006 TX OCTETS: 8882ca205201c9c8</pre>
+         <pre class="wirelog_tx_octets">006 TX OCTETS: 8882130f7b5410e7</pre>
          <pre class="wirelog_rx_octets">007 RX OCTETS: 880203e8</pre>
          <pre class="wirelog_rx_frame">008 RX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               0x03e8</pre>

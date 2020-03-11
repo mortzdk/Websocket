@@ -5,7 +5,6 @@
                                    strtok, strtok_r */
 #include "str.h"
 #include "alloc.h"
-#include "error.h"
 #include "log.h"
 #include "predict.h"
 

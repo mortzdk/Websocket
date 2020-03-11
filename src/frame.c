@@ -9,7 +9,6 @@
 
 #include "frame.h"
 #include "str.h"
-#include "header.h"
 #include "alloc.h"
 #include "log.h"
 #include "predict.h"
@@ -62,7 +61,7 @@ static char *random_bytes(int length) {
  * @param   value  [uint64_t]   "A 64 bit unsigned integer"
  * @return 		   [uint64_t]   "The 64 bit unsigned integer in network byte order"
  */
-static uint64_t ntohl64(uint64_t value) {
+static inline uint64_t ntohl64(uint64_t value) {
 	static const int num = 42;
 
 	/**
@@ -80,7 +79,7 @@ static uint64_t ntohl64(uint64_t value) {
 	}
 }
 
-inline static void unmask(frame_t *frame) {
+static void unmask(wss_frame_t *frame) {
     char *applicationData = frame->payload+frame->extensionDataLength;
 #if defined(__AVX512F__)
     uint64_t i = 0;
@@ -225,18 +224,17 @@ inline static void unmask(frame_t *frame) {
  * corrects the offset pointer in order for multiple frames to be processed 
  * from the same payload.
  *
- * @param   header  [header_t *]   "A HTTP header structure of the session"
- * @param   payload [char *]       "The payload to be processed"
- * @param   length  [size_t]       "The length of the payload"
- * @param   offset  [size_t *]     "A pointer to an offset"
- * @return 		    [frame_t *]    "A websocket frame"
+ * @param   payload [char *]           "The payload to be processed"
+ * @param   length  [size_t]           "The length of the payload"
+ * @param   offset  [size_t *]         "A pointer to an offset"
+ * @return 		    [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_parse_frame(header_t *header, char *payload, size_t length, size_t *offset) {
-    frame_t *frame;
+wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
+    wss_frame_t *frame;
 
     WSS_log_trace("Parsing frame starting from offset %lu", *offset);
 
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
         WSS_log_error("Unable to allocate frame");
         return NULL;
     }
@@ -306,11 +304,11 @@ frame_t *WSS_parse_frame(header_t *header, char *payload, size_t length, size_t 
 /**
  * Converts a single frame into a char array.
  *
- * @param   frame    [frame_t *]  "The frame"
- * @param   message  [char **]    "A pointer to a char array which should be filled with the frame data"
- * @return 		     [size_t]     "The size of the frame data"
+ * @param   frame    [wss_frame_t *]  "The frame"
+ * @param   message  [char **]        "A pointer to a char array which should be filled with the frame data"
+ * @return 		     [size_t]         "The size of the frame data"
  */
-size_t WSS_stringify_frame(frame_t *frame, char **message) {
+size_t WSS_stringify_frame(wss_frame_t *frame, char **message) {
     size_t offset = 0;
     size_t len = 2;
     char *mes;
@@ -385,12 +383,12 @@ size_t WSS_stringify_frame(frame_t *frame, char **message) {
 /**
  * Converts an array of frames into a char array that can be written to others.
  *
- * @param   frames   [frames_t **]  "The frames to be converted"
- * @param   size     [size_t]       "The amount of frames"
- * @param   message  [char **]      "A pointer to a char array which should be filled with the frame data"
- * @return 		     [size_t]       "The size of the frame data"
+ * @param   frames   [wss_frame_t **]  "The frames to be converted"
+ * @param   size     [size_t]          "The amount of frames"
+ * @param   message  [char **]         "A pointer to a char array which should be filled with the frame data"
+ * @return 		     [size_t]          "The size of the frame data"
  */
-size_t WSS_stringify_frames(frame_t **frames, size_t size, char **message) {
+size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
     size_t i, n;
     char *f;
     char *msg = NULL;
@@ -428,24 +426,23 @@ size_t WSS_stringify_frames(frame_t **frames, size_t size, char **message) {
 /**
  * Creates a closing frame given a reason for the closure.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @param   reason   [wss_close_t]  "The reason for the closure"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @param   reason   [wss_close_t]      "The reason for the closure"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_closing_frame(header_t *header, wss_close_t reason) {
-    frame_t *frame;
+wss_frame_t *WSS_closing_frame(wss_close_t reason) {
+    wss_frame_t *frame;
     char *reason_str;
     uint16_t nbo_reason;
 
     WSS_log_trace("Creating closing frame");
 
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
         WSS_log_error("Unable to allocate closing frame");
         return NULL;
     }
 
     frame->fin = 1;
-    frame->opcode = 0x8;
+    frame->opcode = CLOSE_FRAME;
     frame->mask = 0;
 
     switch (reason) {
@@ -518,21 +515,20 @@ frame_t *WSS_closing_frame(header_t *header, wss_close_t reason) {
 /**
  * Creates a ping frame.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_ping_frame(header_t *header) {
+wss_frame_t *WSS_ping_frame() {
     WSS_log_trace("Creating ping frame");
 
-    frame_t *frame;
+    wss_frame_t *frame;
 
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(frame_t)))) ) {
+    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
         WSS_log_error("Unable to allocate ping frame");
         return NULL;
     }
 
     frame->fin = 1;
-    frame->opcode = 0x9;
+    frame->opcode = PING_FRAME;
     frame->mask = 0;
 
     frame->applicationDataLength = 120;
@@ -551,18 +547,17 @@ frame_t *WSS_ping_frame(header_t *header) {
 /**
  * Creates a pong frame from a received ping frame.
  *
- * @param   header   [header_t *]   "A HTTP header structure of the session"
- * @param   ping     [frame_t *]    "A ping frame"
- * @return 		     [frame_t *]    "A websocket frame"
+ * @param   ping     [wss_frame_t *]    "A ping frame"
+ * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-frame_t *WSS_pong_frame(header_t *header, frame_t *ping) {
+wss_frame_t *WSS_pong_frame(wss_frame_t *ping) {
     WSS_log_trace("Converting ping frame to pong frame");
 
     ping->fin = 1;
     ping->rsv1 = 0;
     ping->rsv2 = 0;
     ping->rsv3 = 0;
-    ping->opcode = 0xA;
+    ping->opcode = PONG_FRAME;
     ping->mask = 0;
 
     memset(ping->maskingKey, '\0', sizeof(uint32_t));
@@ -573,10 +568,10 @@ frame_t *WSS_pong_frame(header_t *header, frame_t *ping) {
 /**
  * Releases memory used by a frame.
  *
- * @param   ping     [frame_t *]    "The frame that should be freed"
+ * @param   ping     [wss_frame_t *]    "The frame that should be freed"
  * @return 		     [void]         
  */
-void WSS_free_frame(frame_t *frame) {
+void WSS_free_frame(wss_frame_t *frame) {
     WSS_free((void **) &frame->payload);
     WSS_free((void **) &frame);
 }

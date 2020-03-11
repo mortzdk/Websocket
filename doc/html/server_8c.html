@@ -60,7 +60,7 @@ $(document).ready(function(){initNavTree('server_8c.html','');});
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -71,15 +71,19 @@ $(document).ready(function(){initNavTree('server_8c.html','');});
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;signal.h&gt;</code><br />
-<code>#include &lt;sys/epoll.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;poll.h&gt;</code><br />
+<code>#include &lt;sys/time.h&gt;</code><br />
+<code>#include &lt;sys/resource.h&gt;</code><br />
 <code>#include &quot;server.h&quot;</code><br />
+<code>#include &quot;frame.h&quot;</code><br />
+<code>#include &quot;event.h&quot;</code><br />
 <code>#include &quot;log.h&quot;</code><br />
 <code>#include &quot;session.h&quot;</code><br />
 <code>#include &quot;alloc.h&quot;</code><br />
 <code>#include &quot;socket.h&quot;</code><br />
 <code>#include &quot;pool.h&quot;</code><br />
-<code>#include &quot;comm.h&quot;</code><br />
+<code>#include &quot;worker.h&quot;</code><br />
 <code>#include &quot;http.h&quot;</code><br />
 <code>#include &quot;error.h&quot;</code><br />
 <code>#include &quot;config.h&quot;</code><br />
@@ -93,51 +97,40 @@ Include dependency graph for server.c:</div>
 </div>
 <p><a href="server_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a8fb447618db946a9e2a596d9ea18763f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a8fb447618db946a9e2a596d9ea18763f">_DEFAULT_SOURCE</a></td></tr>
-<tr class="separator:a8fb447618db946a9e2a596d9ea18763f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structwss__servers__t.html">wss_servers_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4e7daa9c0f05d1abd40b9cb0a4e74f7a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a4e7daa9c0f05d1abd40b9cb0a4e74f7a">server_set_state</a> (state_t s)</td></tr>
-<tr class="separator:a4e7daa9c0f05d1abd40b9cb0a4e74f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0635a8352db5c3e78ed4d545c1747dc6"><td class="memItemLeft" align="right" valign="top">static wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a0635a8352db5c3e78ed4d545c1747dc6">server_add_to_pool</a> (server_t *server, void(*func)(void *, int), void *args, int queues)</td></tr>
-<tr class="separator:a0635a8352db5c3e78ed4d545c1747dc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71cb10f4c2b15c8a21b8cc23ce0dafaa"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a71cb10f4c2b15c8a21b8cc23ce0dafaa">server_run</a> (void *arg)</td></tr>
-<tr class="separator:a71cb10f4c2b15c8a21b8cc23ce0dafaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b7d1150c4e3c4399db0a960ba3ac7d2"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a9b7d1150c4e3c4399db0a960ba3ac7d2">server_interrupt</a> (int sig)</td></tr>
-<tr class="separator:a9b7d1150c4e3c4399db0a960ba3ac7d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa67975767e38fa632fa725bb0d1b4473"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#aa67975767e38fa632fa725bb0d1b4473">server_free</a> (server_t *server)</td></tr>
-<tr class="separator:aa67975767e38fa632fa725bb0d1b4473"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fbd472767a070539bf4ac8d1ebc8681"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a2fbd472767a070539bf4ac8d1ebc8681">server_start</a> (config_t *config)</td></tr>
-<tr class="separator:a2fbd472767a070539bf4ac8d1ebc8681"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4947cc39f229abfd88cde59ff7b7eed6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a4947cc39f229abfd88cde59ff7b7eed6">write_control_frame</a> (wss_frame_t *frame, wss_session_t *session, <a class="el" href="structwss__servers__t.html">wss_servers_t</a> *servers)</td></tr>
+<tr class="separator:a4947cc39f229abfd88cde59ff7b7eed6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21d8e6baf664f1c0dd98e983fb298a52"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a21d8e6baf664f1c0dd98e983fb298a52">cleanup_session</a> (wss_session_t *session, void *arg)</td></tr>
+<tr class="separator:a21d8e6baf664f1c0dd98e983fb298a52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8f5c0c2d37bc22657fed36465730d66"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#ae8f5c0c2d37bc22657fed36465730d66">WSS_server_set_state</a> (wss_state_t s)</td></tr>
+<tr class="separator:ae8f5c0c2d37bc22657fed36465730d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26c751fbd88dd81292b574af18f1bfec"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a26c751fbd88dd81292b574af18f1bfec">WSS_server_set_max_fd</a> (wss_server_t *server, int fd)</td></tr>
+<tr class="separator:a26c751fbd88dd81292b574af18f1bfec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0477cd03803f9eca3b15f9e381e2b18a"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a0477cd03803f9eca3b15f9e381e2b18a">WSS_cleanup</a> (void *arg)</td></tr>
+<tr class="separator:a0477cd03803f9eca3b15f9e381e2b18a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbb09219caed041e80ee50524eb4d6f6"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#afbb09219caed041e80ee50524eb4d6f6">WSS_server_run</a> (void *arg)</td></tr>
+<tr class="separator:afbb09219caed041e80ee50524eb4d6f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad5b974607ed65e141790bced96390ea"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#aad5b974607ed65e141790bced96390ea">WSS_server_interrupt</a> (int sig)</td></tr>
+<tr class="separator:aad5b974607ed65e141790bced96390ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef84154a3e6a5d77dc585e899b02eaee"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#aef84154a3e6a5d77dc585e899b02eaee">WSS_server_free</a> (wss_server_t *server)</td></tr>
+<tr class="separator:aef84154a3e6a5d77dc585e899b02eaee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0c740b5a4d1405d3dcbc7bd24a76936"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#ab0c740b5a4d1405d3dcbc7bd24a76936">WSS_server_start</a> (wss_config_t *config)</td></tr>
+<tr class="separator:ab0c740b5a4d1405d3dcbc7bd24a76936"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a4212e045d7f9f562399417a38884430c"><td class="memItemLeft" align="right" valign="top">server_state_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#a4212e045d7f9f562399417a38884430c">state</a></td></tr>
-<tr class="separator:a4212e045d7f9f562399417a38884430c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1633b4924f6e8653002962dd7dc12be"><td class="memItemLeft" align="right" valign="top">wss_server_state_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a></td></tr>
+<tr class="separator:aa1633b4924f6e8653002962dd7dc12be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a8fb447618db946a9e2a596d9ea18763f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fb447618db946a9e2a596d9ea18763f">&#9670;&nbsp;</a></span>_DEFAULT_SOURCE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _DEFAULT_SOURCE</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00002">2</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a0635a8352db5c3e78ed4d545c1747dc6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0635a8352db5c3e78ed4d545c1747dc6">&#9670;&nbsp;</a></span>server_add_to_pool()</h2>
+<a id="a21d8e6baf664f1c0dd98e983fb298a52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21d8e6baf664f1c0dd98e983fb298a52">&#9670;&nbsp;</a></span>cleanup_session()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -146,28 +139,16 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static wss_error_t server_add_to_pool </td>
+          <td class="memname">static void cleanup_session </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
-          <td class="paramname"><em>server</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void(*)(void *, int)&#160;</td>
-          <td class="paramname"><em>func</em>, </td>
+          <td class="paramtype">wss_session_t *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>args</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>queues</em>&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -182,23 +163,12 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Function that adds task-function and data instance to worker pool. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">server</td><td>[server_t *] "A server_t instance" </td></tr>
-    <tr><td class="paramname">func</td><td>[void (*)(void *)] "A function pointer" </td></tr>
-    <tr><td class="paramname">args</td><td>[void *] "Arguments to be served to the function" </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00050">50</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00093">93</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
-<a id="aa67975767e38fa632fa725bb0d1b4473"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa67975767e38fa632fa725bb0d1b4473">&#9670;&nbsp;</a></span>server_free()</h2>
+<a id="a4947cc39f229abfd88cde59ff7b7eed6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4947cc39f229abfd88cde59ff7b7eed6">&#9670;&nbsp;</a></span>write_control_frame()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -207,16 +177,89 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int server_free </td>
+          <td class="memname">static void write_control_frame </td>
           <td>(</td>
-          <td class="paramtype">server_t *&#160;</td>
+          <td class="paramtype">wss_frame_t *&#160;</td>
+          <td class="paramname"><em>frame</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">wss_session_t *&#160;</td>
+          <td class="paramname"><em>session</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structwss__servers__t.html">wss_servers_t</a> *&#160;</td>
+          <td class="paramname"><em>servers</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00035">35</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+
+</div>
+</div>
+<a id="a0477cd03803f9eca3b15f9e381e2b18a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0477cd03803f9eca3b15f9e381e2b18a">&#9670;&nbsp;</a></span>WSS_cleanup()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* WSS_cleanup </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>arg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Cleanup client sessions, that is, closes connections to clients which is timedout based on the servers timeout_client setting. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">arg</td><td>[void *] "Holds a structure containing the running servers" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>pthread_exit [void *] "0 if successfull and otherwise &lt;0" </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00238">238</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+
+</div>
+</div>
+<a id="aef84154a3e6a5d77dc585e899b02eaee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef84154a3e6a5d77dc585e899b02eaee">&#9670;&nbsp;</a></span>WSS_server_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int WSS_server_free </td>
+          <td>(</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
           <td class="paramname"><em>server</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -225,12 +268,12 @@ Variables</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>[int] "EXIT_SUCCESS if successfull or EXIT_FAILURE on error" </dd></dl>
 <p>Freeing memory from server instance</p>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00223">223</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00361">361</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
-<a id="a9b7d1150c4e3c4399db0a960ba3ac7d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b7d1150c4e3c4399db0a960ba3ac7d2">&#9670;&nbsp;</a></span>server_interrupt()</h2>
+<a id="aad5b974607ed65e141790bced96390ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aad5b974607ed65e141790bced96390ea">&#9670;&nbsp;</a></span>WSS_server_interrupt()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,7 +282,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void server_interrupt </td>
+          <td class="memname">static void WSS_server_interrupt </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>sig</em></td><td>)</td>
@@ -263,18 +306,18 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00197">197</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00326">326</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
-<a id="a71cb10f4c2b15c8a21b8cc23ce0dafaa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a71cb10f4c2b15c8a21b8cc23ce0dafaa">&#9670;&nbsp;</a></span>server_run()</h2>
+<a id="afbb09219caed041e80ee50524eb4d6f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbb09219caed041e80ee50524eb4d6f6">&#9670;&nbsp;</a></span>WSS_server_run()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void* server_run </td>
+          <td class="memname">void* WSS_server_run </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>arg</em></td><td>)</td>
@@ -283,32 +326,69 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Function that loops over epoll events and distribute the events to different threadpools. </p>
+<p>Function that loops over poll events and distribute the events to different threadpools. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>[void *] "Is in fact a server_t instance" </td></tr>
+    <tr><td class="paramname">arg</td><td>[void *] "Is in fact a wss_server_t instance" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>pthread_exit [void *] "0 if successfull and otherwise &lt;0" </dd></dl>
-<p>If new session has connected</p>
-<p>If new reads are ready</p>
-<p>If new writes are ready</p>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00080">80</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00280">280</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
-<a id="a4e7daa9c0f05d1abd40b9cb0a4e74f7a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e7daa9c0f05d1abd40b9cb0a4e74f7a">&#9670;&nbsp;</a></span>server_set_state()</h2>
+<a id="a26c751fbd88dd81292b574af18f1bfec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26c751fbd88dd81292b574af18f1bfec">&#9670;&nbsp;</a></span>WSS_server_set_max_fd()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void server_set_state </td>
+          <td class="memname">void WSS_server_set_max_fd </td>
           <td>(</td>
-          <td class="paramtype">state_t&#160;</td>
+          <td class="paramtype">wss_server_t *&#160;</td>
+          <td class="paramname"><em>server</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>fd</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the maximal file descriptor seen by the server. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">server</td><td>[wss_server_t *] "The server object" </td></tr>
+    <tr><td class="paramname">fd</td><td>[int] "The file descriptor seen" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00223">223</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+
+</div>
+</div>
+<a id="ae8f5c0c2d37bc22657fed36465730d66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8f5c0c2d37bc22657fed36465730d66">&#9670;&nbsp;</a></span>WSS_server_set_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void WSS_server_set_state </td>
+          <td>(</td>
+          <td class="paramtype">wss_state_t&#160;</td>
           <td class="paramname"><em>s</em></td><td>)</td>
           <td></td>
         </tr>
@@ -318,26 +398,26 @@ Variables</h2></td></tr>
 <p>Function that updates the state of the server. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">s</td><td>[state_t *] "A state_t value describing the servers state" </td></tr>
+    <tr><td class="paramname">s</td><td>[wss_state_t *] "A state_t value describing the servers state" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00036">36</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00210">210</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
-<a id="a2fbd472767a070539bf4ac8d1ebc8681"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2fbd472767a070539bf4ac8d1ebc8681">&#9670;&nbsp;</a></span>server_start()</h2>
+<a id="ab0c740b5a4d1405d3dcbc7bd24a76936"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0c740b5a4d1405d3dcbc7bd24a76936">&#9670;&nbsp;</a></span>WSS_server_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int server_start </td>
+          <td class="memname">int WSS_server_start </td>
           <td>(</td>
-          <td class="paramtype">config_t *&#160;</td>
+          <td class="paramtype">wss_config_t *&#160;</td>
           <td class="paramname"><em>config</em></td><td>)</td>
           <td></td>
         </tr>
@@ -347,32 +427,32 @@ Variables</h2></td></tr>
 <p>Starts the websocket server. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">config</td><td>[config_t *] "The configuration of the server" </td></tr>
+    <tr><td class="paramname">config</td><td>[wss_config_t *] "The configuration of the server" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[int] "EXIT_SUCCESS if successfull or EXIT_FAILURE on error" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00246">246</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00388">388</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a4212e045d7f9f562399417a38884430c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4212e045d7f9f562399417a38884430c">&#9670;&nbsp;</a></span>state</h2>
+<a id="aa1633b4924f6e8653002962dd7dc12be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1633b4924f6e8653002962dd7dc12be">&#9670;&nbsp;</a></span>state</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">server_state_t state</td>
+          <td class="memname">wss_server_state_t state</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Global state of server. </p>
 
-<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00028">28</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="server_8c_source.html#l00033">33</a> of file <a class="el" href="server_8c_source.html">server.c</a>.</p>
 
 </div>
 </div>

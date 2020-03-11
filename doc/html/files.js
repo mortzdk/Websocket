@@ -1,9 +1,9 @@
 var files =
 [
     [ "alloc.c", "alloc_8c.html", "alloc_8c" ],
-    [ "base64.c", "base64_8c.html", "base64_8c" ],
-    [ "comm.c", "comm_8c.html", "comm_8c" ],
+    [ "b64.c", "b64_8c.html", "b64_8c" ],
     [ "config.c", "config_8c.html", "config_8c" ],
+    [ "event.c", "event_8c.html", "event_8c" ],
     [ "extensions.c", "extensions_8c.html", "extensions_8c" ],
     [ "frame.c", "frame_8c.html", "frame_8c" ],
     [ "header.c", "header_8c.html", "header_8c" ],
@@ -17,5 +17,6 @@ var files =
     [ "socket.c", "socket_8c.html", "socket_8c" ],
     [ "str.c", "str_8c.html", "str_8c" ],
     [ "subprotocols.c", "subprotocols_8c.html", "subprotocols_8c" ],
-    [ "utf8.c", "utf8_8c.html", "utf8_8c" ]
+    [ "utf8.c", "utf8_8c.html", "utf8_8c" ],
+    [ "worker.c", "worker_8c.html", "worker_8c" ]
 ];

@@ -742,7 +742,7 @@ static const uint8_t shifted_utf8d_transition[] = {
     0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10
 };
 
-inline static uint32_t shiftless_updatestate(uint32_t *state, uint32_t byte) {
+static inline uint32_t shiftless_updatestate(uint32_t *state, uint32_t byte) {
   uint32_t type = utf8d[byte];
   *state = shifted_utf8d_transition[*state + type];
   return *state;

@@ -1,6 +1,18 @@
 #ifndef wss_subprotocols_h
 #define wss_subprotocols_h
 
+#if !defined(uthash_malloc) || !defined(uthash_free)
+#include "alloc.h"
+
+#ifndef uthash_malloc
+#define uthash_malloc(sz) WSS_malloc(sz)   /* malloc fcn */
+#endif
+
+#ifndef uthash_free
+#define uthash_free(ptr,sz) WSS_free((void **)&ptr) /* free fcn */
+#endif
+#endif
+
 #include "uthash.h"
 #include "config.h"
 
@@ -32,10 +44,10 @@ typedef struct {
  *
  * subprotocols/echo/echo.so 
  *
- * @param 	config	[config_t *config] 	"The configuration of the server"
+ * @param 	config	[wss_config_t *config] 	"The configuration of the server"
  * @return 	      	[void]
  */
-void load_subprotocols(config_t *config);
+void WSS_load_subprotocols(wss_config_t *config);
 
 /**
  * Function that looks for a subprotocol implementation of the name given.
@@ -43,14 +55,14 @@ void load_subprotocols(config_t *config);
  * @param 	name	[char *] 	            "The name of the subprotocol"
  * @return 	      	[wss_subprotocol_t *]   "The subprotocol or NULL"
  */
-wss_subprotocol_t *find_subprotocol(char *name);
+wss_subprotocol_t *WSS_find_subprotocol(char *name);
 
 /**
  * Destroys all memory used to load and store the subprotocols 
  *
  * @return 	[void]
  */
-void destroy_subprotocols();
+void WSS_destroy_subprotocols();
 
 /**
  * Global hashtable of subprotocols

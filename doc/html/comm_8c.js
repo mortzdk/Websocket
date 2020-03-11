@@ -14,5 +14,5 @@ var comm_8c =
     [ "WSS_upgrade_response", "comm_8c.html#ab9ff7488ece4a8efc027deb4a696c6cf", null ],
     [ "WSS_write", "comm_8c.html#a05e80b88ae94d8974773a2a46fe09044", null ],
     [ "WSS_write_internal", "comm_8c.html#acb6187f3b515879e8af5957a2ee9df0b", null ],
-    [ "WSS_write_notify", "comm_8c.html#a21992b222d35a9978fcc27f83298128d", null ]
+    [ "WSS_write_notify", "comm_8c.html#aee55231cc5e4339838edc2f5046d8345", null ]
 ];

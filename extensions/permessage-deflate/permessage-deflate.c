@@ -16,6 +16,7 @@
 
 #include "permessage-deflate.h"
 #include "uthash.h"
+#include "predict.h"
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
@@ -95,50 +96,24 @@ static int default_client_window_bits = 15;
  * @param   str     [char *]    "The string to trim"
  * @return          [char *]    "The input string without leading and trailing spaces"
  */
-inline static char *trim(char *str) {
-    size_t len = 0;
-    char *frontp = str;
-    char *endp = NULL;
-
-    if ( (NULL == str) ) {
+static inline char *trim(char* str)
+{
+    if ( unlikely(NULL == str) ) {
         return NULL;
     }
 
-    if ( str[0] == '\0' ) {
+    if ( unlikely(str[0] == '\0') ) {
         return str;
     }
 
-    len = strlen(str);
-    endp = str + len;
-
-    /* Move the front and back pointers to address the first non-whitespace
-     * characters from each end.
-     */
-    while (isspace((unsigned char) *frontp)) {
-        ++frontp;
+    int start, end = strlen(str);
+    for (start = 0; likely(isspace(str[start])); ++start) {}
+    if (likely(str[start])) {
+        while (end > 0 && isspace(str[end-1]))
+            --end;
+        memmove(str, &str[start], end - start);
     }
-
-    if (endp != frontp) {
-        while (isspace((unsigned char) *(--endp)) && endp != frontp) {}
-    }
-
-    if (str + len - 1 != endp) {
-        *(endp + 1) = '\0';
-    } else if (frontp != str &&  endp == frontp) {
-        *str = '\0';
-    }
-
-    /* Shift the string so that it starts at str so that if it's dynamically
-     * allocated, we can still free it on the returned pointer.  Note the reuse
-     * of endp to mean the front of the string buffer now.
-     */
-    endp = str;
-    if (frontp != str) {
-        while (*frontp) {
-            *endp++ = *frontp++;
-        }
-        *endp = '\0';
-    }
+    str[end - start] = '\0';
 
     return str;
 }
@@ -159,7 +134,7 @@ static void parse_param(const char *param, param_t *p) {
     p->client_max_window_bits = 0;
 
     sep = trim(strtok_r(buffer, ";", &sepptr));
-    while (NULL != sep) {
+    while ( likely(NULL != sep) ) {
         if ( strncmp(EXT_CLIENT_MAX_WINDOW_BITS, sep, strlen(EXT_CLIENT_MAX_WINDOW_BITS)) == 0) {
             j = strlen(EXT_CLIENT_MAX_WINDOW_BITS);
             while ( sep[j] != '=' && sep[j] != '\0' ) {
@@ -229,7 +204,7 @@ static char * negotiate(char *param, wss_comp_t *comp) {
     smwb_length = strlen(EXT_SERVER_MAX_WINDOW_BITS) + 1 + (log10(p->server_max_window_bits)+1);
     accepted_length += smwb_length;
 
-    if (NULL != (accepted = malloc((accepted_length+1)*sizeof(char)))) {
+    if ( likely(NULL != (accepted = malloc((accepted_length+1)*sizeof(char)))) ) {
         memset(accepted, '\0', accepted_length+1);
 
         if (p->server_no_context_takeover) {
@@ -265,7 +240,7 @@ static bool init_comp(wss_comp_t *comp) {
     comp->decompressor.avail_in = 0;
     comp->decompressor.next_in  = Z_NULL;
 
-    if (Z_OK != inflateInit2(&comp->decompressor, -comp->params.client_max_window_bits)) {
+    if ( unlikely(Z_OK != inflateInit2(&comp->decompressor, -comp->params.client_max_window_bits)) ) {
         return false;
     }
 
@@ -274,7 +249,7 @@ static bool init_comp(wss_comp_t *comp) {
     comp->compressor.zfree  = Z_NULL;
     comp->compressor.opaque = Z_NULL;
 
-    if (Z_OK != deflateInit2(&comp->compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) {
+    if ( unlikely(Z_OK != deflateInit2(&comp->compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) ) {
 
         inflateEnd(&comp->decompressor);
         return false;
@@ -304,7 +279,7 @@ void onInit(char *config) {
         return;
     }
 
-    if ( (err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) {
+    if ( unlikely((err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) ) {
         return;
     } 
 
@@ -312,11 +287,11 @@ void onInit(char *config) {
     memcpy(buffer, config, params_length);
 
     err = regexec(&re, buffer, nmatch, matches, 0);
-    if ( err != 0 ) {
+    if ( unlikely(err != 0) ) {
         return;
     }
 
-    for (i = 3; i < nmatch; i++) {
+    for (i = 3; likely(i < nmatch); i++) {
         if (matches[i].rm_so == -1) {
             continue;
         }
@@ -402,12 +377,12 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
     const char *reg_str = "^(\\s*((server_no_context_takeover)|(client_no_context_takeover)|(server_max_window_bits\\s*=\\s*[0-9]+)|(client_max_window_bits(\\s*=\\s*[0-9]+)?))*\\s*;?\\s*)*$";
 
     if ( NULL == param ) {
-        if ( pthread_mutex_lock(&lock) != 0 ) {
+        if ( unlikely(pthread_mutex_lock(&lock) != 0) ) {
             *valid = false;
             return;
         }
 
-        if ( NULL == (comp = malloc(sizeof(wss_comp_t))) ) {
+        if ( unlikely(NULL == (comp = malloc(sizeof(wss_comp_t)))) ) {
             *valid = false;
             return;
         }
@@ -418,7 +393,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
         comp->params.client_no_context_takeover = default_client_no_context_takeover;
         comp->params.server_no_context_takeover = default_server_no_context_takeover;
 
-        if (! init_comp(comp)) {
+        if ( unlikely(! init_comp(comp)) ) {
             free(comp);
             *valid = false;
             return;
@@ -432,7 +407,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
         return;
     }
 
-    if ( (err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) {
+    if ( unlikely((err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) ) {
         *valid = false;
         return;
     } 
@@ -441,12 +416,12 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
     memcpy(buffer, param, params_length);
 
     err = regexec(&re, buffer, nmatch, matches, 0);
-    if ( err != 0 ) {
+    if ( unlikely(err != 0) ) {
         *valid = false;
         return;
     }
 
-    for (i = 3; i < nmatch-1; i++) {
+    for (i = 3; likely(i < nmatch-1); i++) {
         if (matches[i].rm_so == -1) {
             continue;
         }
@@ -484,12 +459,12 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
 
     regfree(&re);
 
-    if ( pthread_mutex_lock(&lock) != 0 ) {
+    if ( unlikely(pthread_mutex_lock(&lock) != 0) ) {
         *valid = false;
         return;
     }
 
-    if ( NULL == (comp = malloc(sizeof(wss_comp_t))) ) {
+    if ( unlikely(NULL == (comp = malloc(sizeof(wss_comp_t)))) ) {
         *valid = false;
         return;
     }
@@ -502,7 +477,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
 
     *accepted = negotiate(param, comp);
 
-    if (! init_comp(comp)) {
+    if ( unlikely(! init_comp(comp)) ) {
         free(comp);
         *valid = false;
         return;
@@ -533,7 +508,7 @@ void inFrames(int fd, void **fs, size_t len) {
         return;
     }
 
-    if ( pthread_mutex_lock(&lock) != 0 ) {
+    if ( unlikely(pthread_mutex_lock(&lock) != 0) ) {
         return;
     }
 
@@ -541,11 +516,11 @@ void inFrames(int fd, void **fs, size_t len) {
 
     pthread_mutex_unlock(&lock);
 
-    if (NULL == comp) {
+    if ( unlikely(NULL == comp) ) {
         return;
     }
 
-    for (j = 0; j < len; j++) {
+    for (j = 0; likely(j < len); j++) {
         payload_length += frames[j]->payloadLength; 
     }
     payload_length += 4;
@@ -553,7 +528,7 @@ void inFrames(int fd, void **fs, size_t len) {
     char payload[payload_length+1];
     payload[payload_length] = '\0';
 
-    for (j = 0; j < len; j++) {
+    for (j = 0; likely(j < len); j++) {
         memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
         current_length += frames[j]->payloadLength;
     }
@@ -571,7 +546,7 @@ void inFrames(int fd, void **fs, size_t len) {
     comp->compressor.avail_in = payload_length;
     comp->compressor.next_in = (unsigned char *)payload;
     do {
-        if (NULL == (message = realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) {
+        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) ) {
             free(message);
             return; 
         }
@@ -589,7 +564,7 @@ void inFrames(int fd, void **fs, size_t len) {
                 return;
         }
         message_length += default_chunk_size - comp->decompressor.avail_out;
-    } while (comp->decompressor.avail_out == 0);
+    } while ( comp->decompressor.avail_out == 0 );
 
     // unset rsv1 bit
     frames[0]->rsv1 = false;
@@ -597,14 +572,14 @@ void inFrames(int fd, void **fs, size_t len) {
 
     // Reallocate application data to contain the decompressed data in the same
     // amount of frames
-    for (j = 0; j < len; j++) {
-        if (j+1 != len) {
+    for (j = 0; likely(j < len); j++) {
+        if ( likely(j+1 != len) ) {
             size = message_length/len;
         } else {
             size = message_length-current_length;
         }
 
-        if ( NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) {
+        if ( unlikely(NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) ) {
             free(message);
             return;
         }
@@ -631,11 +606,11 @@ void outFrames(int fd, void **fs, size_t len) {
     int flush_mask = Z_SYNC_FLUSH;
     wss_comp_t *comp;
 
-    if (frames[0]->opcode >= 0x8 && frames[0]->opcode <= 0xA) {
+    if ( unlikely(frames[0]->opcode >= 0x8 && frames[0]->opcode <= 0xA) ) {
         return;
     }
 
-    if ( pthread_mutex_lock(&lock) != 0 ) {
+    if ( unlikely(pthread_mutex_lock(&lock) != 0) ) {
         return;
     }
 
@@ -643,18 +618,18 @@ void outFrames(int fd, void **fs, size_t len) {
 
     pthread_mutex_unlock(&lock);
 
-    if ( NULL == comp ) {
+    if ( unlikely(NULL == comp) ) {
         return;
     }
 
-    for (j = 0; j < len; j++) {
+    for (j = 0; likely(j < len); j++) {
         payload_length += frames[j]->payloadLength; 
     }
 
     char payload[payload_length+1];
     payload[payload_length] = '\0';
 
-    for (j = 0; j < len; j++) {
+    for (j = 0; likely(j < len); j++) {
         memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
         current_length += frames[j]->payloadLength;
     }
@@ -669,7 +644,7 @@ void outFrames(int fd, void **fs, size_t len) {
     comp->compressor.next_in = (unsigned char *)payload;
 
     do {
-        if (NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) {
+        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
             free(message);
             return; 
         }
@@ -687,13 +662,13 @@ void outFrames(int fd, void **fs, size_t len) {
                 return;
         }
         message_length += default_chunk_size - comp->compressor.avail_out;
-    } while (comp->compressor.avail_out == 0);
+    } while ( comp->compressor.avail_out == 0 );
 
     // https://github.com/madler/zlib/issues/149
     if (comp->params.server_no_context_takeover) {
         flush_mask = Z_FULL_FLUSH;
 
-        if (NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) {
+        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
             free(message);
             return; 
         }
@@ -713,7 +688,7 @@ void outFrames(int fd, void **fs, size_t len) {
         message_length += default_chunk_size - comp->compressor.avail_out;
     }
 
-    if (message_length < 5 || memcmp(message+message_length-4, "\x00\x00\xff\xff", 4) != 0) {
+    if ( unlikely(message_length < 5 || memcmp(message+message_length-4, "\x00\x00\xff\xff", 4) != 0) ) {
         message[message_length] = '\x00';
         message_length++;
     } else {
@@ -728,14 +703,14 @@ void outFrames(int fd, void **fs, size_t len) {
 
     // Reallocate application data to contain the compressed data in the same
     // amount of frames
-    for (j = 0; j < len; j++) {
-        if ( j+1 != len ) {
+    for (j = 0; likely(j < len); j++) {
+        if ( likely(j+1 != len) ) {
             size = message_length/len;
         } else {
             size = message_length-current_length;
         }
 
-        if ( NULL == (frames[j]->payload = realloc(frames[j]->payload, size)) ) {
+        if ( unlikely(NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) ) {
             free(message);
             return;
         }

@@ -202,7 +202,7 @@ pre.wirelog_tcp_closed_by_peer {color: #fff; margin: 0; background-color: #000; 
       <center><a href="http://autobahn.ws/testsuite" title="Autobahn WebSocket Testsuite"><img src="http://autobahn.ws/static/img/ws_protocol_test_report.png"          border="0" width="820" height="46" alt="Autobahn WebSocket Testsuite Report"></img></a></center>
       <center><a href="http://autobahn.ws"           title="Autobahn WebSocket">          <img src="http://autobahn.ws/static/img/ws_protocol_test_report_autobahn.png" border="0" width="300" height="68" alt="Autobahn WebSocket">                 </img></a></center>
       <br/>
-      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.2.17</b></span> : Pass - <span style="font-size: 0.9em;"><b>16025</b> ms @ 2020-02-21T20:10:32.341Z</a></p>
+      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.2.17</b></span> : Pass - <span style="font-size: 0.9em;"><b>18375</b> ms @ 2020-03-11T12:15:33.923Z</a></p>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send 1000 compressed messages each of payload size 131072, auto-fragment to 4096 octets. Use default permessage-deflate offer.</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Receive echo'ed messages (with payload as sent). Timeout case after 480 secs.</p>
 
@@ -221,12 +221,12 @@ Upgrade: WebSocket
 Connection: Upgrade
 Pragma: no-cache
 Cache-Control: no-cache
-Sec-WebSocket-Key: lF8XOM43nvrZDu9nd1+vfQ==
+Sec-WebSocket-Key: KywR2y1BHljRj06WoWA7cg==
 Sec-WebSocket-Extensions: permessage-deflate; client_no_context_takeover; client_max_window_bits
 Sec-WebSocket-Version: 13</pre>
       <pre class="http_dump">HTTP/1.1 101 Switching Protocols
 Sec-Websocket-Extensions: permessage-deflate;client_no_context_takeover;client_max_window_bits=10;server_max_window_bits=10
-Sec-Websocket-Accept: Lp7VEvEW48UYw360K7p2+EE8OzI=
+Sec-Websocket-Accept: OxtdxSgB4bcNzmjmyROveiB073c=
 Upgrade: websocket
 Connection: Upgrade
 Server: WSServer/2.0.0</pre>
@@ -365,7 +365,6 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>48285</td><td>1</td><td>48285</td></tr>
          <tr class="stats_row"><td>48286</td><td>1</td><td>48286</td></tr>
          <tr class="stats_row"><td>48300</td><td>1</td><td>48300</td></tr>
-         <tr class="stats_row"><td>48305</td><td>1</td><td>48305</td></tr>
          <tr class="stats_row"><td>48308</td><td>1</td><td>48308</td></tr>
          <tr class="stats_row"><td>48316</td><td>1</td><td>48316</td></tr>
          <tr class="stats_row"><td>48324</td><td>1</td><td>48324</td></tr>
@@ -378,7 +377,7 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>48344</td><td>1</td><td>48344</td></tr>
          <tr class="stats_row"><td>48349</td><td>2</td><td>96698</td></tr>
          <tr class="stats_row"><td>48356</td><td>1</td><td>48356</td></tr>
-         <tr class="stats_row"><td>48358</td><td>1</td><td>48358</td></tr>
+         <tr class="stats_row"><td>48358</td><td>2</td><td>96716</td></tr>
          <tr class="stats_row"><td>48359</td><td>1</td><td>48359</td></tr>
          <tr class="stats_row"><td>48361</td><td>1</td><td>48361</td></tr>
          <tr class="stats_row"><td>48363</td><td>2</td><td>96726</td></tr>
@@ -498,7 +497,6 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>48883</td><td>1</td><td>48883</td></tr>
          <tr class="stats_row"><td>48886</td><td>1</td><td>48886</td></tr>
          <tr class="stats_row"><td>48891</td><td>1</td><td>48891</td></tr>
-         <tr class="stats_row"><td>48895</td><td>1</td><td>48895</td></tr>
          <tr class="stats_row"><td>48898</td><td>2</td><td>97796</td></tr>
          <tr class="stats_row"><td>48899</td><td>3</td><td>146697</td></tr>
          <tr class="stats_row"><td>48902</td><td>2</td><td>97804</td></tr>
@@ -528,6 +526,7 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>48940</td><td>2</td><td>97880</td></tr>
          <tr class="stats_row"><td>48941</td><td>1</td><td>48941</td></tr>
          <tr class="stats_row"><td>48946</td><td>1</td><td>48946</td></tr>
+         <tr class="stats_row"><td>48948</td><td>1</td><td>48948</td></tr>
          <tr class="stats_row"><td>48949</td><td>1</td><td>48949</td></tr>
          <tr class="stats_row"><td>48951</td><td>1</td><td>48951</td></tr>
          <tr class="stats_row"><td>48952</td><td>2</td><td>97904</td></tr>
@@ -915,6 +914,7 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>53301</td><td>1</td><td>53301</td></tr>
          <tr class="stats_row"><td>53307</td><td>1</td><td>53307</td></tr>
          <tr class="stats_row"><td>53308</td><td>1</td><td>53308</td></tr>
+         <tr class="stats_row"><td>53313</td><td>1</td><td>53313</td></tr>
          <tr class="stats_row"><td>53315</td><td>1</td><td>53315</td></tr>
          <tr class="stats_row"><td>53316</td><td>1</td><td>53316</td></tr>
          <tr class="stats_row"><td>53317</td><td>1</td><td>53317</td></tr>
@@ -938,7 +938,6 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>53360</td><td>1</td><td>53360</td></tr>
          <tr class="stats_row"><td>53361</td><td>1</td><td>53361</td></tr>
          <tr class="stats_row"><td>53363</td><td>1</td><td>53363</td></tr>
-         <tr class="stats_row"><td>53366</td><td>1</td><td>53366</td></tr>
          <tr class="stats_row"><td>53368</td><td>2</td><td>106736</td></tr>
          <tr class="stats_row"><td>53372</td><td>1</td><td>53372</td></tr>
          <tr class="stats_row"><td>53375</td><td>1</td><td>53375</td></tr>
@@ -984,10 +983,10 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>53492</td><td>1</td><td>53492</td></tr>
          <tr class="stats_row"><td>53502</td><td>1</td><td>53502</td></tr>
          <tr class="stats_row"><td>53510</td><td>1</td><td>53510</td></tr>
-         <tr class="stats_row"><td>53532</td><td>1</td><td>53532</td></tr>
          <tr class="stats_row"><td>53556</td><td>1</td><td>53556</td></tr>
          <tr class="stats_row"><td>53562</td><td>1</td><td>53562</td></tr>
          <tr class="stats_row"><td>53578</td><td>1</td><td>53578</td></tr>
+         <tr class="stats_row"><td>53585</td><td>1</td><td>53585</td></tr>
          <tr class="stats_row"><td>53599</td><td>1</td><td>53599</td></tr>
          <tr class="stats_row"><td>53620</td><td>1</td><td>53620</td></tr>
          <tr class="stats_row"><td>53649</td><td>1</td><td>53649</td></tr>
@@ -1058,13 +1057,13 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>53989</td><td>2</td><td>107978</td></tr>
          <tr class="stats_row"><td>53990</td><td>3</td><td>161970</td></tr>
          <tr class="stats_row"><td>53991</td><td>1</td><td>53991</td></tr>
-         <tr class="stats_row"><td>53993</td><td>2</td><td>107986</td></tr>
+         <tr class="stats_row"><td>53993</td><td>1</td><td>53993</td></tr>
          <tr class="stats_row"><td>53996</td><td>1</td><td>53996</td></tr>
          <tr class="stats_row"><td>53997</td><td>2</td><td>107994</td></tr>
          <tr class="stats_row"><td>53998</td><td>1</td><td>53998</td></tr>
          <tr class="stats_row"><td>54001</td><td>1</td><td>54001</td></tr>
          <tr class="stats_row"><td>54003</td><td>1</td><td>54003</td></tr>
-         <tr class="stats_row"><td>54004</td><td>2</td><td>108008</td></tr>
+         <tr class="stats_row"><td>54004</td><td>3</td><td>162012</td></tr>
          <tr class="stats_row"><td>54005</td><td>1</td><td>54005</td></tr>
          <tr class="stats_row"><td>54006</td><td>1</td><td>54006</td></tr>
          <tr class="stats_row"><td>54009</td><td>3</td><td>162027</td></tr>
@@ -1073,13 +1072,13 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>54012</td><td>1</td><td>54012</td></tr>
          <tr class="stats_row"><td>54014</td><td>3</td><td>162042</td></tr>
          <tr class="stats_row"><td>54015</td><td>1</td><td>54015</td></tr>
-         <tr class="stats_row"><td>54016</td><td>2</td><td>108032</td></tr>
+         <tr class="stats_row"><td>54016</td><td>1</td><td>54016</td></tr>
          <tr class="stats_row"><td>54017</td><td>2</td><td>108034</td></tr>
          <tr class="stats_row"><td>54018</td><td>1</td><td>54018</td></tr>
          <tr class="stats_row"><td>54019</td><td>1</td><td>54019</td></tr>
-         <tr class="stats_row"><td>54020</td><td>3</td><td>162060</td></tr>
+         <tr class="stats_row"><td>54020</td><td>2</td><td>108040</td></tr>
          <tr class="stats_row"><td>54021</td><td>3</td><td>162063</td></tr>
-         <tr class="stats_row"><td>54022</td><td>2</td><td>108044</td></tr>
+         <tr class="stats_row"><td>54022</td><td>1</td><td>54022</td></tr>
          <tr class="stats_row"><td>54023</td><td>1</td><td>54023</td></tr>
          <tr class="stats_row"><td>54024</td><td>1</td><td>54024</td></tr>
          <tr class="stats_row"><td>54025</td><td>1</td><td>54025</td></tr>
@@ -1095,13 +1094,15 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>54043</td><td>1</td><td>54043</td></tr>
          <tr class="stats_row"><td>54044</td><td>1</td><td>54044</td></tr>
          <tr class="stats_row"><td>54045</td><td>1</td><td>54045</td></tr>
+         <tr class="stats_row"><td>54046</td><td>1</td><td>54046</td></tr>
          <tr class="stats_row"><td>54052</td><td>1</td><td>54052</td></tr>
          <tr class="stats_row"><td>54055</td><td>1</td><td>54055</td></tr>
-         <tr class="stats_row"><td>54057</td><td>1</td><td>54057</td></tr>
          <tr class="stats_row"><td>54058</td><td>1</td><td>54058</td></tr>
          <tr class="stats_row"><td>54063</td><td>1</td><td>54063</td></tr>
+         <tr class="stats_row"><td>54069</td><td>1</td><td>54069</td></tr>
          <tr class="stats_row"><td>54070</td><td>1</td><td>54070</td></tr>
-         <tr class="stats_row"><td>54073</td><td>2</td><td>108146</td></tr>
+         <tr class="stats_row"><td>54073</td><td>3</td><td>162219</td></tr>
+         <tr class="stats_row"><td>54075</td><td>1</td><td>54075</td></tr>
          <tr class="stats_row"><td>54078</td><td>1</td><td>54078</td></tr>
          <tr class="stats_row"><td>54079</td><td>1</td><td>54079</td></tr>
          <tr class="stats_row"><td>54084</td><td>1</td><td>54084</td></tr>
@@ -1111,8 +1112,8 @@ Server: WSServer/2.0.0</pre>
          <tr class="stats_row"><td>54100</td><td>1</td><td>54100</td></tr>
          <tr class="stats_row"><td>54105</td><td>1</td><td>54105</td></tr>
          <tr class="stats_row"><td>54112</td><td>1</td><td>54112</td></tr>
-         <tr class="stats_row"><td>65483</td><td>2</td><td>130966</td></tr>
-         <tr class="stats_row"><td>65536</td><td>998</td><td>65404928</td></tr>
+         <tr class="stats_row"><td>65483</td><td>7</td><td>458381</td></tr>
+         <tr class="stats_row"><td>65536</td><td>993</td><td>65077248</td></tr>
          <tr class="stats_total"><td>Total</td><td>2002</td><td>116596924</td></tr>
       </table>
       <h3>Octets Transmitted by Chop Size</h3>
@@ -1966,9 +1967,9 @@ Server: WSServer/2.0.0</pre>
          <pre class="wirelog_delay">002 WIRELOG DISABLED</pre>
          <pre class="wirelog_kill_after">003 CLOSE CONNECTION AFTER 480.000000 sec</pre>
          <pre class="wirelog_delay">004 WIRELOG ENABLED</pre>
-         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=4caac20e, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=09b32560, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               0x03e8</pre>
-         <pre class="wirelog_tx_octets">006 TX OCTETS: 88824caac20e4f42</pre>
+         <pre class="wirelog_tx_octets">006 TX OCTETS: 888209b325600a5b</pre>
          <pre class="wirelog_rx_octets">007 RX OCTETS: 880203e8</pre>
          <pre class="wirelog_rx_frame">008 RX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               0x03e8</pre>

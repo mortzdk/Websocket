@@ -94,31 +94,65 @@ Functions</h2></td></tr>
 <tr class="separator:aa6d08a0e66c7686eec43f8c1f5bd2b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6e6b9fedb2923f92061cd57d8f0e2a4"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#ac6e6b9fedb2923f92061cd57d8f0e2a4">WSS_session_destroy_lock</a> ()</td></tr>
 <tr class="separator:ac6e6b9fedb2923f92061cd57d8f0e2a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab490eb26bf00800ba25298082badbfb4"><td class="memItemLeft" align="right" valign="top">session_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#ab490eb26bf00800ba25298082badbfb4">WSS_session_add</a> (int fd, char *ip, int port)</td></tr>
-<tr class="separator:ab490eb26bf00800ba25298082badbfb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78626c450a6617355b5be885c2e43a1a"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a78626c450a6617355b5be885c2e43a1a">WSS_session_delete</a> (session_t *session)</td></tr>
-<tr class="separator:a78626c450a6617355b5be885c2e43a1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a807d1682c442cd87af892d5339e0a257"><td class="memItemLeft" align="right" valign="top">wss_session_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a807d1682c442cd87af892d5339e0a257">WSS_session_add</a> (int fd, char *ip, int port)</td></tr>
+<tr class="separator:a807d1682c442cd87af892d5339e0a257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7f15b5c70f814e1cf0d64504740d3af"><td class="memItemLeft" align="right" valign="top">static wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#ab7f15b5c70f814e1cf0d64504740d3af">session_delete</a> (wss_session_t *session)</td></tr>
+<tr class="separator:ab7f15b5c70f814e1cf0d64504740d3af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afac2fd38327a73cbb8f5b6c305271416"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#afac2fd38327a73cbb8f5b6c305271416">WSS_session_delete_no_lock</a> (wss_session_t *session)</td></tr>
+<tr class="separator:afac2fd38327a73cbb8f5b6c305271416"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b52a74cd4d04b8fdca29d8336ab9e64"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a1b52a74cd4d04b8fdca29d8336ab9e64">WSS_session_delete</a> (wss_session_t *session)</td></tr>
+<tr class="separator:a1b52a74cd4d04b8fdca29d8336ab9e64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38d1c0487df59319db201bf7f9f25cb8"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a38d1c0487df59319db201bf7f9f25cb8">WSS_session_delete_all</a> ()</td></tr>
 <tr class="separator:a38d1c0487df59319db201bf7f9f25cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a382cfee0cd7ef1c97ddf34e1feaac1a2"><td class="memItemLeft" align="right" valign="top">session_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a382cfee0cd7ef1c97ddf34e1feaac1a2">WSS_session_find</a> (int fd)</td></tr>
-<tr class="separator:a382cfee0cd7ef1c97ddf34e1feaac1a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae57117739a0f79ea4b384c8e6e8c1de3"><td class="memItemLeft" align="right" valign="top">wss_error_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#ae57117739a0f79ea4b384c8e6e8c1de3">WSS_session_all</a> (void(*callback)(wss_session_t *, void *), void *arg)</td></tr>
+<tr class="separator:ae57117739a0f79ea4b384c8e6e8c1de3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff2ca8a6e49794288553cb2c0b65dd16"><td class="memItemLeft" align="right" valign="top">wss_session_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">WSS_session_find</a> (int fd)</td></tr>
+<tr class="separator:aff2ca8a6e49794288553cb2c0b65dd16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a350de39d29313cf724ee7ffb2308e733"><td class="memItemLeft" align="right" valign="top">session_t *volatile&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a350de39d29313cf724ee7ffb2308e733">sessions</a> = NULL</td></tr>
-<tr class="separator:a350de39d29313cf724ee7ffb2308e733"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0abaf4b5d42c4e5d19190035fade3599"><td class="memItemLeft" align="right" valign="top">pthread_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a0abaf4b5d42c4e5d19190035fade3599">lock</a></td></tr>
-<tr class="separator:a0abaf4b5d42c4e5d19190035fade3599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12dc1dac9cebf09cbfe78e520a468ca9"><td class="memItemLeft" align="right" valign="top">wss_session_t *volatile&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#a12dc1dac9cebf09cbfe78e520a468ca9">sessions</a> = NULL</td></tr>
+<tr class="separator:a12dc1dac9cebf09cbfe78e520a468ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0246195b64447ad0ba3510f410604f4"><td class="memItemLeft" align="right" valign="top">pthread_rwlock_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="session_8c.html#aa0246195b64447ad0ba3510f410604f4">lock</a></td></tr>
+<tr class="separator:aa0246195b64447ad0ba3510f410604f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ab490eb26bf00800ba25298082badbfb4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab490eb26bf00800ba25298082badbfb4">&#9670;&nbsp;</a></span>WSS_session_add()</h2>
+<a id="ab7f15b5c70f814e1cf0d64504740d3af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7f15b5c70f814e1cf0d64504740d3af">&#9670;&nbsp;</a></span>session_delete()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static wss_error_t session_delete </td>
+          <td>(</td>
+          <td class="paramtype">wss_session_t *&#160;</td>
+          <td class="paramname"><em>session</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00129">129</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+
+</div>
+</div>
+<a id="a807d1682c442cd87af892d5339e0a257"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a807d1682c442cd87af892d5339e0a257">&#9670;&nbsp;</a></span>WSS_session_add()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">session_t* WSS_session_add </td>
+          <td class="memname">wss_session_t* WSS_session_add </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fd</em>, </td>
@@ -152,14 +186,53 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>[session_t *] "Returns session if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_session_t *] "Returns session if successful, otherwise NULL" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00069">69</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00070">70</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
-<a id="a78626c450a6617355b5be885c2e43a1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a78626c450a6617355b5be885c2e43a1a">&#9670;&nbsp;</a></span>WSS_session_delete()</h2>
+<a id="ae57117739a0f79ea4b384c8e6e8c1de3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae57117739a0f79ea4b384c8e6e8c1de3">&#9670;&nbsp;</a></span>WSS_session_all()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">wss_error_t WSS_session_all </td>
+          <td>(</td>
+          <td class="paramtype">void(*)(wss_session_t *, void *)&#160;</td>
+          <td class="paramname"><em>callback</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function that finds all sessions and calls callback for each of them. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">callback</td><td>[void (*callback)(wss_session_t *, void *)] "A callback to be called for each session" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00305">305</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+
+</div>
+</div>
+<a id="a1b52a74cd4d04b8fdca29d8336ab9e64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b52a74cd4d04b8fdca29d8336ab9e64">&#9670;&nbsp;</a></span>WSS_session_delete()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -167,7 +240,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">wss_error_t WSS_session_delete </td>
           <td>(</td>
-          <td class="paramtype">session_t *&#160;</td>
+          <td class="paramtype">wss_session_t *&#160;</td>
           <td class="paramname"><em>session</em></td><td>)</td>
           <td></td>
         </tr>
@@ -177,13 +250,13 @@ Variables</h2></td></tr>
 <p>Function that frees the allocated memory and removes the session from the hashtable. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">session</td><td>[session_t *] "The session to be deleted" </td></tr>
+    <tr><td class="paramname">session</td><td>[wss_session_t *] "The session to be deleted" </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00118">118</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00253">253</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
@@ -205,7 +278,37 @@ Variables</h2></td></tr>
 <p>Function that frees the allocated memory and deletes all sessions. </p>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00188">188</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00275">275</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+
+</div>
+</div>
+<a id="afac2fd38327a73cbb8f5b6c305271416"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afac2fd38327a73cbb8f5b6c305271416">&#9670;&nbsp;</a></span>WSS_session_delete_no_lock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">wss_error_t WSS_session_delete_no_lock </td>
+          <td>(</td>
+          <td class="paramtype">wss_session_t *&#160;</td>
+          <td class="paramname"><em>session</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function that frees the allocated memory and removes the session from the hashtable but without locking the hashtable. </p>
+<p>This should only be used in conjunction with the WSS_session_all call.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">session</td><td>[wss_session_t *] "The session to be deleted" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00236">236</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
@@ -224,21 +327,21 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Function that destroy a mutex lock. </p>
+<p>Function that destroy a rwlock lock. </p>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00052">52</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00053">53</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
-<a id="a382cfee0cd7ef1c97ddf34e1feaac1a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a382cfee0cd7ef1c97ddf34e1feaac1a2">&#9670;&nbsp;</a></span>WSS_session_find()</h2>
+<a id="aff2ca8a6e49794288553cb2c0b65dd16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff2ca8a6e49794288553cb2c0b65dd16">&#9670;&nbsp;</a></span>WSS_session_find()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">session_t* WSS_session_find </td>
+          <td class="memname">wss_session_t* WSS_session_find </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>fd</em></td><td>)</td>
@@ -254,9 +357,9 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>[session_t *] "Returns session if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[wss_session_t *] "Returns session if successful, otherwise NULL" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00255">255</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00333">333</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
@@ -275,47 +378,47 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Function that initialize a mutex lock. </p>
+<p>Function that initialize a rwlock lock. </p>
 <dl class="section return"><dt>Returns</dt><dd>[wss_error_t] "The error status" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00038">38</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00039">39</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a0abaf4b5d42c4e5d19190035fade3599"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0abaf4b5d42c4e5d19190035fade3599">&#9670;&nbsp;</a></span>lock</h2>
+<a id="aa0246195b64447ad0ba3510f410604f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0246195b64447ad0ba3510f410604f4">&#9670;&nbsp;</a></span>lock</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">pthread_mutex_t lock</td>
+          <td class="memname">pthread_rwlock_t lock</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>A lock that ensures the hash table is update atomically. </p>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00031">31</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00032">32</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
-<a id="a350de39d29313cf724ee7ffb2308e733"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a350de39d29313cf724ee7ffb2308e733">&#9670;&nbsp;</a></span>sessions</h2>
+<a id="a12dc1dac9cebf09cbfe78e520a468ca9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12dc1dac9cebf09cbfe78e520a468ca9">&#9670;&nbsp;</a></span>sessions</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">session_t* volatile sessions = NULL</td>
+          <td class="memname">wss_session_t* volatile sessions = NULL</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>A hashtable containing all active sessions. </p>
 
-<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00026">26</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="session_8c_source.html#l00027">27</a> of file <a class="el" href="session_8c_source.html">session.c</a>.</p>
 
 </div>
 </div>
