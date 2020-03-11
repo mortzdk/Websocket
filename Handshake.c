@@ -24,7 +24,7 @@ SOFTWARE.
 #include "Errors.h"
 #include "md5.h"
 #include "sha1.h"
-#include "base64.h"
+#include "b64.h"
 
 /**
  * Returns whether x is a integral multiple of y.
@@ -488,12 +488,7 @@ int parseHeaders(char *string, ws_client *n, int port){
 			memcpy(sha1Key+(4*i), (unsigned char *) &number, 4);
 		}
 
-		if (base64_encode_alloc((const char *) sha1Key, 20, &acceptKey) == 0) {
-			handshake_error("The input length was greater than the output length",
-					ERROR_BAD, n);
-			return -1;
-		}
-
+		acceptKey = b64_encode((const unsigned char *) sha1Key, 20);
 		if (acceptKey == NULL) {
 			handshake_error("Couldn't allocate memory.", ERROR_INTERNAL, n);
 			return -1;
