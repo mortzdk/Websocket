@@ -26,10 +26,12 @@ void __attribute__((visibility("default"))) setAllocators(void *(*f_malloc)(size
 /**
  * Event called when a new session has handshaked and hence connects to the WSS server.
  *
- * @param 	fd	[int]     "A filedescriptor of a connecting session"
- * @return 	    [void]
+ * @param 	fd	     [int]     "A filedescriptor of a connecting session"
+ * @param 	path     [char *]  "The connection path. This can hold HTTP parameters such as access_token, csrf_token etc. that can be used to authentication"
+ * @param 	cookies  [char *]  "The cookies received from the client. This can be used to do authentication."
+ * @return 	         [void]
  */
-void __attribute__((visibility("default"))) onConnect(int fd);
+void __attribute__((visibility("default"))) onConnect(int fd, char *path, char *cookies);
 
 /**
  * Event called when a session has received new data.

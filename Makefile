@@ -50,7 +50,8 @@ CFLAGS = $(EXEC) \
 		 -Wuninitialized \
 		 -DWSS_SERVER_VERSION=\"$(VER)\" \
 		 -D_DEFAULT_SOURCE \
-		 -DUSE_RPMALLOC
+		 -DUSE_RPMALLOC #\
+		 -DUSE_POLL
 
 CVER = -std=c11
 

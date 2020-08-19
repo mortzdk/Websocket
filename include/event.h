@@ -1,7 +1,7 @@
 #ifndef WSS_EVENT_H
 #define WSS_EVENT_H
 
-#if defined(__linux__)
+#if defined(__linux__) && !defined(USE_POLL)
 #define WSS_EPOLL 1
 #elif defined(__APPLE__)   || defined(__FreeBSD__) || defined(__NetBSD__) || \
       defined(__OpenBSD__) || defined(__bsdi__)    || defined(__DragonFly__)

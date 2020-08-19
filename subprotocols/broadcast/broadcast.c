@@ -83,10 +83,12 @@ inline static wss_client_t *WSS_client_find(int fd) {
 /**
  * Event called when a new client has handshaked and hence connects to the WSS server.
  *
- * @param 	fd	[int]     "A filedescriptor of a connecting client"
- * @return 	    [void]
+ * @param 	fd	     [int]     "A filedescriptor of a connecting client"
+ * @param 	path     [char *]  "The connection path. This can hold HTTP parameters such as access_token, csrf_token etc. that can be used to authentication"
+ * @param 	cookies  [char *]  "The cookies received from the client. This can be used to do authentication."
+ * @return 	         [void]
  */
-void onConnect(int fd) {
+void onConnect(int fd, char *path, char *cookies) {
     wss_client_t *client;
 
     if ( unlikely(NULL != (client = WSS_client_find(fd))) ) {

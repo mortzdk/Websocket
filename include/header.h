@@ -35,6 +35,7 @@ typedef struct {
     char *path;
     char *host;
     char *payload;
+    char *cookies;
     int ws_version;
     wss_type_t ws_type;
     wss_subprotocol_t *ws_protocol;

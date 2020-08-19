@@ -1019,7 +1019,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     }
 
     // Notify websocket protocol of the connection
-    header->ws_protocol->connect(session->fd);
+    header->ws_protocol->connect(session->fd, header->path, header->cookies);
 
     // Set session as fully handshaked
     session->handshaked = true;

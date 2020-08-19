@@ -201,6 +201,8 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
                 header->ws_origin = (strtok_r(NULL, "", &lineptr)+1);
             } else if ( strncasecmp("Connection", line, 10) == 0 ) {
                 header->ws_connection = (strtok_r(NULL, "", &lineptr)+1);
+            } else if ( strncasecmp("Cookie", line, 6) == 0 ) {
+                header->cookies = (strtok_r(NULL, "", &lineptr)+1);
             } else if ( strncasecmp("Sec-WebSocket-Protocol", line, 22) == 0 ) {
                 if (NULL == header->ws_protocol) {
                     sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));

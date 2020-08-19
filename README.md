@@ -22,6 +22,12 @@ TODO
 
 TODO
 
+### Client Authentication
+
+Notes: 
+Send query parameters using the path from the websocket connecting uri.
+The path and cookies are send through to the subprotocol in the `onConnect` call.
+
 # Documentation
 
 TODO
