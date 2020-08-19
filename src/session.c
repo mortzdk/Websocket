@@ -3,7 +3,7 @@
 #include <errno.h> 				/* errno */
 #include <stdlib.h>             /* atoi, malloc, free, realloc */
 #include <unistd.h>             /* close */
-#include <stdio.h>             /* close */
+#include <stdio.h>              /* close */
 
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_rwlock_init */
@@ -88,16 +88,35 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
         return NULL;
     }
 
-    if ( unlikely((err = pthread_mutex_init(&session->read_lock, NULL)) != 0) ) {
-        WSS_log_error("Unable to initialize session read lock: %s", strerror(err));
+    pthread_mutexattr_init(&session->lock_attr);
+    
+    if ( unlikely((err = pthread_mutexattr_settype(&session->lock_attr, PTHREAD_MUTEX_RECURSIVE)) != 0) ) {
+        WSS_log_error("Unable to initialize session locks attributes: %s", strerror(err));
+        WSS_free((void **) &session);
+    }
+
+    if ( unlikely((err = pthread_mutex_init(&session->lock, &session->lock_attr)) != 0) ) {
+        WSS_log_error("Unable to initialize session lock: %s", strerror(err));
+        pthread_mutexattr_destroy(&session->lock_attr);
         WSS_free((void **) &session);
         pthread_rwlock_unlock(&lock);
         return NULL;
     }
 
-    if ( unlikely((err = pthread_mutex_init(&session->write_lock, NULL)) != 0) ) {
-        WSS_log_error("Unable to initialize session write lock: %s", strerror(err));
-        pthread_mutex_destroy(&session->read_lock);
+    if ( unlikely((err = pthread_mutex_init(&session->lock_jobs, NULL)) != 0) ) {
+        WSS_log_error("Unable to initialize session job lock: %s", strerror(err));
+        pthread_mutex_destroy(&session->lock);
+        pthread_mutexattr_destroy(&session->lock_attr);
+        WSS_free((void **) &session);
+        pthread_rwlock_unlock(&lock);
+        return NULL;
+    }
+
+    if ( unlikely((err = pthread_mutex_init(&session->lock_disconnecting, NULL)) != 0) ) {
+        WSS_log_error("Unable to initialize session disconnecting lock: %s", strerror(err));
+        pthread_mutex_destroy(&session->lock);
+        pthread_mutex_destroy(&session->lock_jobs);
+        pthread_mutexattr_destroy(&session->lock_attr);
         WSS_free((void **) &session);
         pthread_rwlock_unlock(&lock);
         return NULL;
@@ -109,10 +128,12 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
 
     length = strlen(ip);
     if ( unlikely(NULL == (session->ip = (char *) WSS_malloc( (length+1)*sizeof(char)))) ) {
-        pthread_mutex_destroy(&session->read_lock);
-        pthread_mutex_destroy(&session->write_lock);
-        WSS_free((void **) &session);
         WSS_log_error("Unable to allocate memory for IP");
+        pthread_mutex_destroy(&session->lock);
+        pthread_mutex_destroy(&session->lock_jobs);
+        pthread_mutex_destroy(&session->lock_disconnecting);
+        pthread_mutexattr_destroy(&session->lock_attr);
+        WSS_free((void **) &session);
         pthread_rwlock_unlock(&lock);
         return NULL;
     }
@@ -131,11 +152,20 @@ static wss_error_t session_delete(wss_session_t *session) {
     size_t j;
 
     if ( likely(NULL != session) ) {
-        if ( unlikely((err = pthread_mutex_destroy(&session->read_lock)) != 0) ) {
+        pthread_mutex_unlock(&session->lock);
+        if ( unlikely((err = pthread_mutex_destroy(&session->lock)) != 0) ) {
             err = WSS_SESSION_LOCK_DESTROY_ERROR;
         }
 
-        if ( unlikely((err = pthread_mutex_destroy(&session->write_lock)) != 0) ) {
+        if ( unlikely((err = pthread_mutexattr_destroy(&session->lock_attr)) != 0) ) {
+            err = WSS_SESSION_LOCK_DESTROY_ERROR;
+        }
+
+        if ( unlikely((err = pthread_mutex_destroy(&session->lock_jobs)) != 0) ) {
+            err = WSS_SESSION_LOCK_DESTROY_ERROR;
+        }
+
+        if ( unlikely((err = pthread_mutex_destroy(&session->lock_disconnecting)) != 0) ) {
             err = WSS_SESSION_LOCK_DESTROY_ERROR;
         }
 
@@ -159,6 +189,9 @@ static wss_error_t session_delete(wss_session_t *session) {
             for (j = 0; j < session->header->ws_extensions_count; j++) {
                 session->header->ws_extensions[j]->ext->close(session->fd);
             }
+
+            session->header->ws_protocol->close(session->fd);
+
             WSS_free_header(session->header);
         }
 
@@ -297,12 +330,115 @@ wss_error_t WSS_session_delete_all() {
 }
 
 /**
+ * Function that increments the job counter atomically.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return  [wss_error_t] 	"The error status"
+ */
+wss_error_t WSS_session_jobs_inc(wss_session_t *session) {
+    wss_error_t err;
+
+    if ( unlikely((err = pthread_mutex_lock(&session->lock_jobs)) != 0) ) {
+        WSS_log_error("Unable to lock session jobs lock: %s", strerror(err));
+        return WSS_SESSION_LOCK_ERROR;
+    }
+    session->jobs++;
+
+    WSS_log_trace("session %d incremented to %d jobs", session->fd, session->jobs);
+
+    pthread_mutex_unlock(&session->lock_jobs);
+
+    return err;
+}
+
+/**
+ * Function that decrements the job counter atomically and signals the
+ * condition if no jobs are left.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return            [wss_error_t] 	 "The error status"
+ */
+wss_error_t WSS_session_jobs_dec(wss_session_t *session) {
+    wss_error_t err;
+
+    if ( unlikely((err = pthread_mutex_lock(&session->lock_jobs)) != 0) ) {
+        WSS_log_error("Unable to lock session jobs lock: %s", strerror(err));
+        return WSS_SESSION_LOCK_ERROR;
+    }
+    session->jobs--;
+
+    WSS_log_trace("session %d decremented to %d jobs", session->fd, session->jobs);
+
+    if (session->jobs == 0) {
+        pthread_cond_signal(&session->cond_jobs);
+    }
+
+    pthread_mutex_unlock(&session->lock_jobs);
+
+    return err;
+}
+
+/**
+ * Function that waits for all jobs to be done.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return            [wss_error_t]  	 "The error status"
+ */
+wss_error_t WSS_session_jobs_wait(wss_session_t *session) {
+    wss_error_t err;
+
+    if ( unlikely((err = pthread_mutex_lock(&session->lock_jobs)) != 0) ) {
+        WSS_log_error("Unable to lock session jobs lock: %s", strerror(err));
+        return WSS_SESSION_LOCK_ERROR;
+    }
+
+    WSS_log_trace("session %d waiting to close", session->fd);
+
+    // Wait for all jobs on session to be finished
+    while (session->jobs > 0) {
+        pthread_cond_wait(&session->cond_jobs, &session->lock_jobs);
+    }
+
+    pthread_mutex_unlock(&session->lock_jobs);
+
+    return err;
+}
+
+/**
+ * Function that determines atomically if session is already disconnecting.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @param   dc        [bool *]           "Whether session is already disconnecting or not"
+ *
+ * @return       [wss_error_t]  "The error status"
+ */
+wss_error_t WSS_session_is_disconnecting(wss_session_t *session, bool *dc) {
+    wss_error_t err;
+
+    *dc = true;
+
+    if ( unlikely((err = pthread_mutex_lock(&session->lock_disconnecting)) != 0) ) {
+        WSS_log_error("Unable to lock session disconnecting lock: %s", strerror(err));
+        return WSS_SESSION_LOCK_ERROR;
+    }
+
+    if (! session->disconnecting) {
+        *dc = false;
+        session->disconnecting = true;
+    }
+
+    pthread_mutex_unlock(&session->lock_disconnecting);
+
+    return err;
+}
+
+/**
  * Function that finds all sessions and calls callback for each of them.
  *
- * @param   callback       [void (*callback)(wss_session_t *, void *)]    "A callback to be called for each session"
- * @return                 [wss_error_t] 	                              "The error status"
+ * @param   callback       [void (*callback)(wss_session_t *)]    "A callback to be called for each session"
+ * @return                 [wss_error_t] 	                      "The error status"
  */
-wss_error_t WSS_session_all(void (*callback)(wss_session_t *, void *), void *arg) {
+wss_error_t WSS_session_all(void (*callback)(wss_session_t *)) {
     int err;
     wss_session_t *session, *tmp;
 
@@ -315,7 +451,7 @@ wss_error_t WSS_session_all(void (*callback)(wss_session_t *, void *), void *arg
 
     HASH_ITER(hh, sessions, session, tmp) {
         if ( likely(NULL != session) ) {
-            callback(session, arg);
+            callback(session);
         }
     }
 

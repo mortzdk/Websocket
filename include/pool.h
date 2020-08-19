@@ -57,8 +57,7 @@ typedef enum {
  * @param flags        Unused parameter.
  * @return a newly created thread pool or NULL
  */
-threadpool_t *threadpool_create(int thread_count, int queue_size,
-int thread_size, int flags);
+threadpool_t *threadpool_create(int thread_count, int queue_size, int thread_size, int flags);
 
 char *threadpool_strerror(int err);
 
@@ -72,8 +71,7 @@ char *threadpool_strerror(int err);
  * @return 0 if all goes well, negative values in case of error (@see
  * threadpool_error_t for codes).
  */
-int threadpool_add(threadpool_t *pool, void (*routine)(void *, int),
-                   void *arg, int flags);
+int threadpool_add(threadpool_t *pool, void (*routine)(void *), void *arg, int flags);
 
 /**
  * @function threadpool_destroy

@@ -14,20 +14,14 @@
 #endif
 
 #include "uthash.h"
+#include "subprotocol.h"
+#include "message.h"
 #include "config.h"
-
-/**
- * The subprotocol API calls
- */
-typedef void (*subInit)(char *config);
-typedef void (*subConnect)(int fd);
-typedef void (*subMessage)(int fd, char *message, size_t message_length, int **receivers, size_t *receiver_count);
-typedef void (*subWrite)(int fd, char *message, size_t message_length);
-typedef void (*subClose)(int fd);
 
 typedef struct {
     int *handle;
     char *name;
+    subAlloc alloc; 
     subInit init; 
     subConnect connect; 
     subMessage message;
@@ -67,6 +61,6 @@ void WSS_destroy_subprotocols();
 /**
  * Global hashtable of subprotocols
  */
-wss_subprotocol_t *subprotocols;
+extern wss_subprotocol_t *subprotocols;
 
 #endif

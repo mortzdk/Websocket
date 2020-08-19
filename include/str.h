@@ -17,9 +17,9 @@ char *bin2hex(const unsigned char *bin, size_t len);
  *
  * @param 	s	    [const unsigned char *]     "The binary value"
  * @param 	len     [size_t] 	                "The length of the binary value"
- * @return 	        [char *]                    "The hexidecimal representation of the binary value in a new memory block"
+ * @return 	        [char *]                    "The hexidecimal representation of the text string in a new memory block"
  */
-void print_string2hex(const unsigned char *s, size_t len);
+char *str2hex(const unsigned char *s, size_t len);
 
 /**
  * Function that looks for a value in a char * array.

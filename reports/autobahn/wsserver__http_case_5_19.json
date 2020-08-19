@@ -8,7 +8,7 @@
    "createWirelog": true,
    "description": "A fragmented text message is sent in multiple frames. After\n   sending the first 2 frames of the text message, a Ping is sent. Then we wait 1s,\n   then we send 2 more text fragments, another Ping and then the final text fragment.\n   Everything is legal.",
    "droppedByMe": false,
-   "duration": 1010,
+   "duration": 1008,
    "expectation": "The peer immediately answers the first Ping before\n   it has received the last text message fragment. The peer pong's back the Ping's\n   payload exactly, and echo's the payload of the fragmented message back to us.",
    "expected": {
       "OK": [
@@ -35,8 +35,8 @@
       "requireClean": true
    },
    "failedByMe": false,
-   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9010\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: tvg2a7jl9w2HkL9qEPX7Ow==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: OzHJCjTFwmcAeMR+4Zjb7G671Dw=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
+   "httpRequest": "GET / HTTP/1.1\r\nUser-Agent: AutobahnTestSuite/0.8.1-0.10.9\r\nHost: 127.0.0.1:9010\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\nPragma: no-cache\r\nCache-Control: no-cache\r\nSec-WebSocket-Key: 2PLMIBtzi8bivBtjQJudgg==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+   "httpResponse": "HTTP/1.1 101 Switching Protocols\r\nSec-Websocket-Accept: Ny+woXLvC34IQTstabzddw/v0nQ=\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nServer: WSServer/2.0.0\r\n\r\n",
    "id": "5.19",
    "isServer": false,
    "localCloseCode": 1000,
@@ -63,17 +63,16 @@
    "result": "Actual events match at least one expected.",
    "resultClose": "Connection was properly closed",
    "rxFrameStats": {
-      "0": 4,
       "1": 1,
       "8": 1,
       "10": 2
    },
    "rxOctetStats": {
       "4": 1,
-      "77": 1,
+      "69": 1,
       "153": 1
    },
-   "started": "2020-03-11T12:12:11.053Z",
+   "started": "2020-08-19T07:30:17.116Z",
    "trafficStats": null,
    "txFrameStats": {
       "0": 4,
@@ -104,7 +103,7 @@
          "RO",
          [
             153,
-            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a204f7a484a436a5446 ..."
+            "485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163636570743a204e792b776f584c76 ..."
          ]
       ],
       [
@@ -116,7 +115,7 @@
          1,
          false,
          0,
-         "cb274a04",
+         "1b408232",
          null,
          null,
          false
@@ -125,7 +124,7 @@
          "TO",
          [
             15,
-            "0189cb274a04ad552b63a6422470fa"
+            "01891b4082327d32e3557625ec462a"
          ],
          false
       ],
@@ -138,7 +137,7 @@
          0,
          false,
          0,
-         "cef08137",
+         "c1f5a6dc",
          null,
          null,
          false
@@ -147,7 +146,7 @@
          "TO",
          [
             15,
-            "0089cef08137a882e050a395ef43fc"
+            "0089c1f5a6dca787c7bbac90c8a8f3"
          ],
          false
       ],
@@ -160,7 +159,7 @@
          9,
          true,
          0,
-         "23aae0c9",
+         "35102f6d",
          null,
          null,
          false
@@ -169,7 +168,7 @@
          "TO",
          [
             15,
-            "898923aae0c953c58eae4ecfc0f802"
+            "898935102f6d457f410a58750f5c14"
          ],
          false
       ],
@@ -191,7 +190,7 @@
          0,
          false,
          0,
-         "eee10e09",
+         "29c30e06",
          null,
          null,
          false
@@ -200,7 +199,7 @@
          "TO",
          [
             15,
-            "0089eee10e0988936f6e8384607ddd"
+            "008929c30e064fb16f6144a660721a"
          ],
          false
       ],
@@ -213,7 +212,7 @@
          0,
          false,
          0,
-         "81682c9f",
+         "0d8f69f8",
          null,
          null,
          false
@@ -222,7 +221,7 @@
          "TO",
          [
             15,
-            "008981682c9fe71a4df8ec0d42ebb5"
+            "00890d8f69f86bfd089f60ea078c39"
          ],
          false
       ],
@@ -235,7 +234,7 @@
          9,
          true,
          0,
-         "11fee089",
+         "06d3179c",
          null,
          null,
          false
@@ -244,7 +243,7 @@
          "TO",
          [
             15,
-            "898911fee08961918eee7c9bc0bb30"
+            "898906d3179c76bc79fb6bb637ae27"
          ],
          false
       ],
@@ -257,7 +256,7 @@
          0,
          true,
          0,
-         "e822dbaa",
+         "d691412c",
          null,
          null,
          false
@@ -266,7 +265,7 @@
          "TO",
          [
             15,
-            "8089e822dbaa8e50bacd8547b5dedd"
+            "8089d691412cb0e3204bbbf42f58e3"
          ],
          false
       ],
@@ -277,8 +276,8 @@
       [
          "RO",
          [
-            77,
-            "8a09706f6e676d652031218a09706f6e676d652032210109667261676d656e74310009667261676d656e74320009667261676d656e74330009667261676d656e ..."
+            69,
+            "8a09706f6e676d652031218a09706f6e676d65203221812d667261676d656e7431667261676d656e7432667261676d656e7433667261676d656e743466726167 ..."
          ]
       ],
       [
@@ -308,58 +307,10 @@
       [
          "RF",
          [
-            9,
-            "fragment1"
+            45,
+            "fragment1fragment2fragment3fragment4fragment5"
          ],
          1,
-         false,
-         0,
-         false,
-         null
-      ],
-      [
-         "RF",
-         [
-            9,
-            "fragment2"
-         ],
-         0,
-         false,
-         0,
-         false,
-         null
-      ],
-      [
-         "RF",
-         [
-            9,
-            "fragment3"
-         ],
-         0,
-         false,
-         0,
-         false,
-         null
-      ],
-      [
-         "RF",
-         [
-            9,
-            "fragment4"
-         ],
-         0,
-         false,
-         0,
-         false,
-         null
-      ],
-      [
-         "RF",
-         [
-            9,
-            "fragment5"
-         ],
-         0,
          true,
          0,
          false,
@@ -374,7 +325,7 @@
          8,
          true,
          0,
-         "91af7a49",
+         "7402e895",
          null,
          null,
          false
@@ -383,7 +334,7 @@
          "TO",
          [
             8,
-            "888291af7a499247"
+            "88827402e89577ea"
          ],
          false
       ],

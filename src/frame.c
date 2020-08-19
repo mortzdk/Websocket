@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <math.h>
 
 #include "frame.h"
 #include "str.h"
@@ -85,24 +86,24 @@ static void unmask(wss_frame_t *frame) {
     uint64_t i = 0;
     __m512i masked_data;
     int mask = (frame->maskingKey[0] << 24) | (frame->maskingKey[1] << 16) | (frame->maskingKey[2] << 8) | frame->maskingKey[3]
-    __m512i maskingKey = _mm512_setr_epi8(
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask
-            );
+        __m512i maskingKey = _mm512_setr_epi8(
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask,
+                mask
+                );
 
     if ( frame->applicationDataLength > 64 ) {
         for (; likely(i <= frame->applicationDataLength - 64); i += 64) {
@@ -175,47 +176,47 @@ static void unmask(wss_frame_t *frame) {
         memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__SSE2__)
-   uint64_t i = 0;
-   __m128i masked_data;
-   __m128i maskingKey = _mm_setr_epi8(
-           frame->maskingKey[0],
-           frame->maskingKey[1],
-           frame->maskingKey[2],
-           frame->maskingKey[3],
-           frame->maskingKey[0],
-           frame->maskingKey[1],
-           frame->maskingKey[2],
-           frame->maskingKey[3],
-           frame->maskingKey[0],
-           frame->maskingKey[1],
-           frame->maskingKey[2],
-           frame->maskingKey[3],
-           frame->maskingKey[0],
-           frame->maskingKey[1],
-           frame->maskingKey[2],
-           frame->maskingKey[3]
-           );
+    uint64_t i = 0;
+    __m128i masked_data;
+    __m128i maskingKey = _mm_setr_epi8(
+            frame->maskingKey[0],
+            frame->maskingKey[1],
+            frame->maskingKey[2],
+            frame->maskingKey[3],
+            frame->maskingKey[0],
+            frame->maskingKey[1],
+            frame->maskingKey[2],
+            frame->maskingKey[3],
+            frame->maskingKey[0],
+            frame->maskingKey[1],
+            frame->maskingKey[2],
+            frame->maskingKey[3],
+            frame->maskingKey[0],
+            frame->maskingKey[1],
+            frame->maskingKey[2],
+            frame->maskingKey[3]
+            );
 
-   if ( frame->applicationDataLength > 16 ) {
-       for (; likely(i <= frame->applicationDataLength - 16); i += 16) {
-           masked_data = _mm_loadu_si128((const __m128i *)(applicationData+i));
-           _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
-       }
-   }
+    if ( frame->applicationDataLength > 16 ) {
+        for (; likely(i <= frame->applicationDataLength - 16); i += 16) {
+            masked_data = _mm_loadu_si128((const __m128i *)(applicationData+i));
+            _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
+        }
+    }
 
-   if ( likely(i < frame->applicationDataLength) ) {
-       char buffer[16];
-       memset(buffer, '\0', 16);
-       memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
-       masked_data = _mm_loadu_si128((const __m128i *)buffer);
-       _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));
-       memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
-   }
+    if ( likely(i < frame->applicationDataLength) ) {
+        char buffer[16];
+        memset(buffer, '\0', 16);
+        memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
+        masked_data = _mm_loadu_si128((const __m128i *)buffer);
+        _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));
+        memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
+    }
 #else
-   uint64_t i, j;
-   for (i = 0, j = 0; likely(i < frame->applicationDataLength); i++, j++){
-       applicationData[j] = applicationData[i] ^ frame->maskingKey[j % 4];
-   }
+    uint64_t i, j;
+    for (i = 0, j = 0; likely(i < frame->applicationDataLength); i++, j++){
+        applicationData[j] = applicationData[i] ^ frame->maskingKey[j % 4];
+    }
 #endif
 }
 
@@ -424,15 +425,96 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
 }
 
 /**
+ * Creates a series of frames from a message.
+ *
+ * @param   config          [wss_config_t *]   "The server configuration"
+ * @param   opcode          [wss_opcode_t]     "The opcode that the frames should be"
+ * @param   message         [char *]           "The message to be converted into frames"
+ * @param   message_length  [size_t]           "The length of the message"
+ * @param   fs              [wss_frame_t ***]  "The frames created from the message"
+ * @return 		            [size_t]           "The amount of frames created"
+ */
+size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs) {
+    size_t i, j;
+    wss_frame_t *frame;
+    size_t frames_count = MAX(1, (size_t)ceil((double)message_length/(double)config->size_frame));
+    wss_frame_t **frames;
+    wss_close_t code;
+    char *msg = message;
+
+    if ( unlikely(NULL == (*fs = WSS_malloc(frames_count*sizeof(wss_frame_t *)))) ) {
+        WSS_log_error("Unable to allocate closing frame");
+        fs = NULL;
+        return 0;
+    }
+
+    frames = *fs;
+
+    if (opcode == CLOSE_FRAME) {
+        if (message_length >= sizeof(uint16_t)) {
+            memcpy(&code, msg, sizeof(uint16_t));
+            code = ntohs(code);
+            msg = msg + sizeof(uint16_t);
+        } else if (message_length == 1) {
+            code = CLOSE_PROTOCOL;
+        } else {
+            code = CLOSE_NORMAL;
+        }
+
+        frame = WSS_closing_frame(code, msg);
+        frames[0] = frame;
+        return 1;
+    }
+
+    for (i = 0; i < frames_count; i++) {
+        // Always allocate one frame
+        if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
+            WSS_log_error("Unable to allocate frame");
+            for (j = 0; j < i; j++) {
+                WSS_free_frame(frames[j]);
+            }
+            WSS_free((void **)&frames);
+            fs = NULL;
+            return 0;
+        }
+
+        frame->fin = 0;
+        frame->opcode = opcode;
+        frame->mask = 0;
+
+        frame->applicationDataLength = MIN(message_length-(config->size_frame*i), config->size_frame);
+        if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {
+            WSS_log_error("Unable to allocate frame application data");
+            for (j = 0; j < i; j++) {
+                WSS_free_frame(frames[j]);
+            }
+            WSS_free((void **)&frame);
+            WSS_free((void **)&frames);
+            fs = NULL;
+            return 0;
+        }
+        memcpy(frame->payload, msg, frame->applicationDataLength);
+        frame->payloadLength += frame->extensionDataLength;
+        frame->payloadLength += frame->applicationDataLength;
+
+        frames[i] = frame;
+    }
+
+    frames[frames_count-1]->fin = 1;
+
+    return frames_count;
+}
+
+/**
  * Creates a closing frame given a reason for the closure.
  *
  * @param   reason   [wss_close_t]      "The reason for the closure"
  * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-wss_frame_t *WSS_closing_frame(wss_close_t reason) {
+wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message) {
     wss_frame_t *frame;
-    char *reason_str;
     uint16_t nbo_reason;
+    char *reason_str = message;
 
     WSS_log_trace("Creating closing frame");
 
@@ -445,56 +527,58 @@ wss_frame_t *WSS_closing_frame(wss_close_t reason) {
     frame->opcode = CLOSE_FRAME;
     frame->mask = 0;
 
-    switch (reason) {
-        case CLOSE_NORMAL:
-            reason_str = "Normal close";
-            break;
-        case CLOSE_SHUTDOWN:
-            reason_str = "Server is shutting down";
-            break;
-        case CLOSE_PROTOCOL:
-            reason_str = "Experienced a protocol error";
-            break;
-        case CLOSE_TYPE:
-            reason_str = "Unsupported data type";
-            break;
-        case NO_STATUS_CODE:
-            reason_str = "No status received";
-            break;
-        case ABNORMAL_CLOSE:
-            reason_str = "Abnormal closure";
-            break;
-        case CLOSE_UTF8:
-            reason_str = "Invalid frame payload data";
-            break;
-        case CLOSE_POLICY:
-            reason_str = "Policy Violation";
-            break;
-        case CLOSE_BIG:
-            reason_str = "Message is too big";
-            break;
-        case CLOSE_EXTENSION:
-            reason_str = "Mandatory extension";
-            break;
-        case CLOSE_UNEXPECTED:
-            reason_str = "Internal server error";
-            break;
-        case RESTARTING:
-            reason_str = "Server is restarting";
-            break;
-        case TRY_AGAIN:
-            reason_str = "Try again later";
-            break;
-        case INVALID_PROXY_RESPONSE:
-            reason_str = "The server was acting as a gateway or proxy and received an invalid response from the upstream server.";
-            break;
-        case FAILED_TLS_HANDSHAKE:
-            reason_str = "Failed TLS Handshake";
-            break;
-        default:
-            WSS_log_error("Unknown closing reason");
-            WSS_free((void **) frame);
-            return NULL;
+    if (NULL == reason_str) {
+        switch (reason) {
+            case CLOSE_NORMAL:
+                reason_str = "Normal close";
+                break;
+            case CLOSE_SHUTDOWN:
+                reason_str = "Server is shutting down";
+                break;
+            case CLOSE_PROTOCOL:
+                reason_str = "Experienced a protocol error";
+                break;
+            case CLOSE_TYPE:
+                reason_str = "Unsupported data type";
+                break;
+            case CLOSE_NO_STATUS_CODE:
+                reason_str = "No status received";
+                break;
+            case CLOSE_ABNORMAL:
+                reason_str = "Abnormal closure";
+                break;
+            case CLOSE_UTF8:
+                reason_str = "Invalid frame payload data";
+                break;
+            case CLOSE_POLICY:
+                reason_str = "Policy Violation";
+                break;
+            case CLOSE_BIG:
+                reason_str = "Message is too big";
+                break;
+            case CLOSE_EXTENSION:
+                reason_str = "Mandatory extension";
+                break;
+            case CLOSE_UNEXPECTED:
+                reason_str = "Internal server error";
+                break;
+            case CLOSE_RESTARTING:
+                reason_str = "Server is restarting";
+                break;
+            case CLOSE_TRY_AGAIN:
+                reason_str = "Try again later";
+                break;
+            case CLOSE_INVALID_PROXY_RESPONSE:
+                reason_str = "The server was acting as a gateway or proxy and received an invalid response from the upstream server.";
+                break;
+            case CLOSE_FAILED_TLS_HANDSHAKE:
+                reason_str = "Failed TLS Handshake";
+                break;
+            default:
+                WSS_log_error("Unknown closing reason");
+                WSS_free((void **) frame);
+                return NULL;
+        }
     }
     frame->applicationDataLength = strlen(reason_str)+sizeof(uint16_t);
     if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {

@@ -1,27 +1,8 @@
-/*-
+/*
  * Copyright (c) 2016-2017 Mindaugas Rasiukevicius <rmind at noxt eu>
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * Use is subject to license terms, as specified in the LICENSE file.
  */
 
 /*
@@ -72,7 +53,7 @@
  *	which could be observed by the consumer.  We set WRAP_LOCK_BIT in
  *	the 'seen' value before advancing the 'next' and clear this bit
  *	after the successful advancing; this ensures that only the stable
- *	'ready' is observed by the consumer.
+ *	'ready' observed by the consumer.
  */
 
 #include <stdio.h>
@@ -83,7 +64,6 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
-#include <sys/types.h>
 
 #include "ringbuf.h"
 #include "ringbuf_utils.h"
@@ -96,10 +76,20 @@
 #define	WRAP_INCR(x)	(((x) + 0x100000000UL) & WRAP_COUNTER)
 
 typedef uint64_t	ringbuf_off_t;
+typedef uint64_t	worker_off_t;
+typedef uint64_t	registered_t;
+
+enum
+{
+	not_registered,
+	being_registered,	/* Being registered in register_worker() */
+	perm_registered,	/* Registered in ringbuf_register() */
+	temp_registered		/* Registered in ringbuf_acquire() */
+};
 
 struct ringbuf_worker {
 	volatile ringbuf_off_t	seen_off;
-	int			registered;
+	registered_t		registered;
 };
 
 struct ringbuf {
@@ -114,9 +104,12 @@ struct ringbuf {
 	volatile ringbuf_off_t	next;
 	ringbuf_off_t		end;
 
+	/* The index of the first potentially free worker-record. */
+	worker_off_t		first_free_worker;
+
 	/* The following are updated by the consumer. */
 	ringbuf_off_t		written;
-	unsigned		nworkers;
+	unsigned		nworkers, ntempworkers;
 	ringbuf_worker_t	workers[];
 };
 
@@ -124,16 +117,17 @@ struct ringbuf {
  * ringbuf_setup: initialise a new ring buffer of a given length.
  */
 int
-ringbuf_setup(ringbuf_t *rbuf, unsigned nworkers, size_t length)
+ringbuf_setup(ringbuf_t *rbuf, unsigned nworkers, unsigned ntempworkers, size_t length)
 {
 	if (length >= RBUF_OFF_MASK) {
 		errno = EINVAL;
 		return -1;
 	}
-	memset(rbuf, 0, offsetof(ringbuf_t, workers[nworkers]));
+	memset(rbuf, 0, offsetof(ringbuf_t, workers[nworkers + ntempworkers]));
 	rbuf->space = length;
 	rbuf->end = RBUF_OFF_MAX;
 	rbuf->nworkers = nworkers;
+	rbuf->ntempworkers = ntempworkers;
 	return 0;
 }
 
@@ -141,13 +135,68 @@ ringbuf_setup(ringbuf_t *rbuf, unsigned nworkers, size_t length)
  * ringbuf_get_sizes: return the sizes of the ringbuf_t and ringbuf_worker_t.
  */
 void
-ringbuf_get_sizes(unsigned nworkers,
+ringbuf_get_sizes(unsigned nworkers, unsigned ntempworkers,
     size_t *ringbuf_size, size_t *ringbuf_worker_size)
 {
 	if (ringbuf_size)
-		*ringbuf_size = offsetof(ringbuf_t, workers[nworkers]);
+		*ringbuf_size = offsetof(ringbuf_t, workers[nworkers + ntempworkers]);
 	if (ringbuf_worker_size)
 		*ringbuf_worker_size = sizeof(ringbuf_worker_t);
+}
+
+/*
+ * register_worker: allocate a worker-record for a thread/process,
+ * and pass back the pointer to its local store.
+ * Returns NULL if none are available.
+ */
+static ringbuf_worker_t *
+register_worker(ringbuf_t *rbuf, unsigned registration_type)
+{
+	worker_off_t volatile *p_free_worker;
+	int acquired, state;
+	ringbuf_worker_t *w = NULL;
+
+	/* Try to find a worker-record that can be registered. */
+	p_free_worker = &rbuf->first_free_worker;
+	acquired = false;
+	while (!acquired) {
+		worker_off_t prev_free_worker, i;
+
+		/* Get the index of the first worker-record to try registering. */
+		prev_free_worker = *p_free_worker;
+
+		for (i = 0; !acquired && i < rbuf->ntempworkers; ++i) {
+			worker_off_t new_free_worker;
+
+			/* Prepare to acquire a worker-record index. */
+			new_free_worker = ((prev_free_worker & RBUF_OFF_MASK)
+				+ i) % rbuf->ntempworkers;
+
+			/* Try to acquire a worker-record. */
+			w = &rbuf->workers[new_free_worker + rbuf->nworkers];
+            state = not_registered;
+			if (!atomic_compare_exchange_weak(&w->registered, &state, being_registered))
+				continue;
+			acquired = true;
+			w->seen_off = RBUF_OFF_MAX;
+			atomic_thread_fence(memory_order_release);
+			w->registered = registration_type;
+
+			/* Advance the index if no one else has. */
+			new_free_worker |= WRAP_INCR(prev_free_worker);
+			atomic_compare_exchange_weak(p_free_worker, &prev_free_worker, new_free_worker);
+		}
+
+		/*
+		 * If no worker-record could be registered, and no one else was
+		 * trying to register at the same time, then stop searching.
+		 */
+		if (!acquired && (*p_free_worker) == prev_free_worker)
+			break;
+	}
+
+	/* Register this worker-record. */
+	return w;
 }
 
 /*
@@ -157,17 +206,20 @@ ringbuf_get_sizes(unsigned nworkers,
 ringbuf_worker_t *
 ringbuf_register(ringbuf_t *rbuf, unsigned i)
 {
+	ASSERT (i < rbuf->nworkers);
+
 	ringbuf_worker_t *w = &rbuf->workers[i];
 
 	w->seen_off = RBUF_OFF_MAX;
-	atomic_store_explicit(&w->registered, true, memory_order_release);
+	atomic_thread_fence(memory_order_release);
+	w->registered = perm_registered;
 	return w;
 }
 
 void
 ringbuf_unregister(ringbuf_t *rbuf, ringbuf_worker_t *w)
 {
-	w->registered = false;
+	w->registered = not_registered;
 	(void)rbuf;
 }
 
@@ -179,31 +231,13 @@ stable_nextoff(ringbuf_t *rbuf)
 {
 	unsigned count = SPINLOCK_BACKOFF_MIN;
 	ringbuf_off_t next;
-retry:
-	next = atomic_load_explicit(&rbuf->next, memory_order_acquire);
-	if (next & WRAP_LOCK_BIT) {
+
+	while ((next = rbuf->next) & WRAP_LOCK_BIT) {
 		SPINLOCK_BACKOFF(count);
-		goto retry;
 	}
+	atomic_thread_fence(memory_order_acquire);
 	ASSERT((next & RBUF_OFF_MASK) < rbuf->space);
 	return next;
-}
-
-/*
- * stable_seenoff: capture and return a stable value of the 'seen' offset.
- */
-static inline ringbuf_off_t
-stable_seenoff(ringbuf_worker_t *w)
-{
-	unsigned count = SPINLOCK_BACKOFF_MIN;
-	ringbuf_off_t seen_off;
-retry:
-	seen_off = atomic_load_explicit(&w->seen_off, memory_order_acquire);
-	if (seen_off & WRAP_LOCK_BIT) {
-		SPINLOCK_BACKOFF(count);
-		goto retry;
-	}
-	return seen_off;
 }
 
 /*
@@ -213,11 +247,22 @@ retry:
  * => On failure: returns -1.
  */
 ssize_t
-ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
+ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t **pw, size_t len)
 {
 	ringbuf_off_t seen, next, target;
+	ringbuf_worker_t *w;
 
 	ASSERT(len > 0 && len <= rbuf->space);
+
+	/* If necessary, acquire a worker-record. */
+	if (*pw == NULL) {
+		w = register_worker(rbuf, temp_registered);
+		if (w == NULL)
+			return -1;
+		*pw = w;
+	} else {
+		w = *pw;
+	}
 	ASSERT(w->seen_off == RBUF_OFF_MAX);
 
 	do {
@@ -235,8 +280,7 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
 		seen = stable_nextoff(rbuf);
 		next = seen & RBUF_OFF_MASK;
 		ASSERT(next < rbuf->space);
-		atomic_store_explicit(&w->seen_off, next | WRAP_LOCK_BIT,
-		    memory_order_relaxed);
+		w->seen_off = next | WRAP_LOCK_BIT;
 
 		/*
 		 * Compute the target offset.  Key invariant: we cannot
@@ -246,8 +290,12 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
 		written = rbuf->written;
 		if (__predict_false(next < written && target >= written)) {
 			/* The producer must wait. */
-			atomic_store_explicit(&w->seen_off,
-			    RBUF_OFF_MAX, memory_order_release);
+			w->seen_off = RBUF_OFF_MAX;
+			if (w->registered == temp_registered) {
+				*pw = NULL;
+				atomic_thread_fence(memory_order_release);
+				w->registered = not_registered;
+			}
 			return -1;
 		}
 
@@ -266,8 +314,12 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
 			 */
 			target = exceed ? (WRAP_LOCK_BIT | len) : 0;
 			if ((target & RBUF_OFF_MASK) >= written) {
-				atomic_store_explicit(&w->seen_off,
-				    RBUF_OFF_MAX, memory_order_release);
+				w->seen_off = RBUF_OFF_MAX;
+				if (w->registered == temp_registered) {
+					*pw = NULL;
+					atomic_thread_fence(memory_order_release);
+					w->registered = not_registered;
+				}
 				return -1;
 			}
 			/* Increment the wrap-around counter. */
@@ -281,11 +333,8 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
 	/*
 	 * Acquired the range.  Clear WRAP_LOCK_BIT in the 'seen' value
 	 * thus indicating that it is stable now.
-	 *
-	 * No need for memory_order_release, since CAS issued a fence.
 	 */
-	atomic_store_explicit(&w->seen_off, w->seen_off & ~WRAP_LOCK_BIT,
-	    memory_order_relaxed);
+	w->seen_off &= ~WRAP_LOCK_BIT;
 
 	/*
 	 * If we set the WRAP_LOCK_BIT in the 'next' (because we exceed
@@ -303,8 +352,8 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
 		 * Unlock: ensure the 'end' offset reaches global
 		 * visibility before the lock is released.
 		 */
-		atomic_store_explicit(&rbuf->next,
-		    (target & ~WRAP_LOCK_BIT), memory_order_release);
+		atomic_thread_fence(memory_order_release);
+		rbuf->next = (target & ~WRAP_LOCK_BIT);
 	}
 	ASSERT((target & RBUF_OFF_MASK) <= rbuf->space);
 	return (ssize_t)next;
@@ -315,12 +364,22 @@ ringbuf_acquire(ringbuf_t *rbuf, ringbuf_worker_t *w, size_t len)
  * and is ready to be consumed.
  */
 void
-ringbuf_produce(ringbuf_t *rbuf, ringbuf_worker_t *w)
+ringbuf_produce(ringbuf_t *rbuf, ringbuf_worker_t **pw)
 {
+	ringbuf_worker_t *w = *pw;
+
 	(void)rbuf;
-	ASSERT(w->registered);
+	ASSERT(w->registered != not_registered
+		&& w->registered != being_registered);
 	ASSERT(w->seen_off != RBUF_OFF_MAX);
-	atomic_store_explicit(&w->seen_off, RBUF_OFF_MAX, memory_order_release);
+	atomic_thread_fence(memory_order_release);
+	w->seen_off = RBUF_OFF_MAX;
+
+	/* Free any temporarily-allocated worker-record. */
+	if (w->registered == temp_registered) {
+		w->registered = not_registered;
+		*pw = NULL;
+	}
 }
 
 /*
@@ -331,6 +390,7 @@ ringbuf_consume(ringbuf_t *rbuf, size_t *offset)
 {
 	ringbuf_off_t written = rbuf->written, next, ready;
 	size_t towrite;
+	unsigned total_workers;
 retry:
 	/*
 	 * Get the stable 'next' offset.  Note: stable_nextoff() issued
@@ -353,19 +413,25 @@ retry:
 	 */
 	ready = RBUF_OFF_MAX;
 
-	for (unsigned i = 0; i < rbuf->nworkers; i++) {
+	total_workers = rbuf->nworkers + rbuf->ntempworkers;
+	for (unsigned i = 0; i < total_workers; i++) {
 		ringbuf_worker_t *w = &rbuf->workers[i];
+		unsigned count = SPINLOCK_BACKOFF_MIN;
 		ringbuf_off_t seen_off;
 
+		/* Skip if the worker has not registered. */
+		if (w->registered == not_registered
+				|| w->registered == being_registered) {
+			continue;
+		}
+
 		/*
-		 * Skip if the worker has not registered.
-		 *
 		 * Get a stable 'seen' value.  This is necessary since we
 		 * want to discard the stale 'seen' values.
 		 */
-		if (!atomic_load_explicit(&w->registered, memory_order_relaxed))
-			continue;
-		seen_off = stable_seenoff(w);
+		while ((seen_off = w->seen_off) & WRAP_LOCK_BIT) {
+			SPINLOCK_BACKOFF(count);
+		}
 
 		/*
 		 * Ignore the offsets after the possible wrap-around.
@@ -399,14 +465,10 @@ retry:
 			 */
 			if (rbuf->end != RBUF_OFF_MAX) {
 				rbuf->end = RBUF_OFF_MAX;
+				atomic_thread_fence(memory_order_release);
 			}
-
-			/*
-			 * Wrap-around the consumer and start from zero.
-			 */
-			written = 0;
-			atomic_store_explicit(&rbuf->written,
-			    written, memory_order_release);
+			/* Wrap-around the consumer and start from zero. */
+			rbuf->written = written = 0;
 			goto retry;
 		}
 

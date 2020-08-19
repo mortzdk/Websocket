@@ -3,7 +3,9 @@
 #include <libgen.h>
 
 #include "subprotocols.h"
+#include "subprotocol.h"
 #include "uthash.h"
+#include "message.h"
 #include "alloc.h"
 #include "log.h"
 #include "predict.h"
@@ -20,8 +22,9 @@ wss_subprotocol_t *subprotocols = NULL;
  * E.g.
  *
  * subprotocols/echo/echo.so 
+ * subprotocols/broadcast/broadcast.so 
  *
- * @param 	config	[config_t *config] 	"The configuration of the server"
+ * @param 	config	[config_t *] 	"The configuration of the server"
  * @return 	      	[void]
  */
 void WSS_load_subprotocols(wss_config_t *config)
@@ -30,11 +33,13 @@ void WSS_load_subprotocols(wss_config_t *config)
     char *name;
     int *handle;
     wss_subprotocol_t* proto;
-    int name_length = 0;
+    int name_length;
 
-    WSS_log_trace("Loading subprotocols");
+    WSS_log_trace("Loading %d subprotocols", config->subprotocols_length);
 
     for (i = 0; i < config->subprotocols_length; i++) {
+        name_length = 0;
+
         WSS_log_trace("Loading subprotocol %s", config->subprotocols[i]);
 
         if ( unlikely(NULL == (handle = dlopen(config->subprotocols[i], RTLD_LAZY))) ) {
@@ -48,6 +53,13 @@ void WSS_load_subprotocols(wss_config_t *config)
             return;
         }
         proto->handle = handle;
+
+        if ( unlikely((*(void**)(&proto->alloc) = dlsym(proto->handle, "setAllocators")) == NULL) ) {
+            WSS_log_error("Failed to find 'setAllocators' function: %s", dlerror());
+            dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
+        }
 
         if ( unlikely((*(void**)(&proto->init) = dlsym(proto->handle, "onInit")) == NULL) ) {
             WSS_log_error("Failed to find 'onInit' function: %s", dlerror());
@@ -100,9 +112,15 @@ void WSS_load_subprotocols(wss_config_t *config)
 
         HASH_ADD_KEYPTR(hh, subprotocols, proto->name, name_length, proto);
 
+        WSS_log_trace("Setting custom allocators for subprotocol %s", proto->name);
+
+        // Set custom allocators
+        proto->alloc(WSS_malloc, WSS_realloc2, WSS_free2);
+
         WSS_log_trace("Initializing subprotocol %s", proto->name);
 
-        proto->init(config->subprotocols_config[i]);
+        // Initialize subprotocol
+        proto->init(config->subprotocols_config[i], WSS_message_send);
 
         WSS_log_info("Successfully loaded %s extension", proto->name);
     }

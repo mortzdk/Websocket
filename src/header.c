@@ -9,8 +9,8 @@
 #include <ctype.h>              /* isspace */
 
 #include "header.h"
-#include "b64.h"
 #include "alloc.h"
+#include "b64.h"
 #include "httpstatuscodes.h"
 #include "session.h"
 #include "log.h"
@@ -545,9 +545,8 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 
     WSS_log_trace("Validating websocket key");
 
-    if ( unlikely(NULL == header->ws_key || 
-            NULL == (key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length)) ||
-            key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
+    key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length);
+    if ( unlikely(NULL == header->ws_key || NULL == key || key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
         WSS_log_trace("Invalid websocket key");
         WSS_free((void **) &key);
         return HttpStatus_UpgradeRequired;

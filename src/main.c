@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
     FILE *file;
     pthread_mutex_t log_lock;
 
+#ifdef USE_RPMALLOC
+    rpmalloc_initialize();
+#endif
+
     static struct option long_options[] = {
         {"help"   	    , no_argument,       0, 'h'},
         {"config"       , required_argument, 0, 'c'},
@@ -98,6 +102,9 @@ int main(int argc, char *argv[]) {
     if ( NULL == (file = fopen("log/WSServer.log", "a+")) ) {
         WSS_config_free(&config);
         fprintf(stderr, "%s\n", strerror(errno));
+#ifdef USE_RPMALLOC
+        rpmalloc_finalize();
+#endif
         return EXIT_FAILURE;
     }
 
@@ -111,6 +118,9 @@ int main(int argc, char *argv[]) {
         WSS_config_free(&config);
         WSS_log_error("Unable to initialize log lock: %s", strerror(err));
         fclose(file);
+#ifdef USE_RPMALLOC
+        rpmalloc_finalize();
+#endif
         return EXIT_FAILURE;
     }
 
@@ -131,6 +141,9 @@ int main(int argc, char *argv[]) {
                     }
 
                     fclose(file);
+#ifdef USE_RPMALLOC
+                    rpmalloc_finalize();
+#endif
                     return EXIT_FAILURE;
                 }
                 break;
@@ -140,9 +153,15 @@ int main(int argc, char *argv[]) {
                 if ( unlikely((err = pthread_mutex_destroy(&log_lock)) != 0) ) {
                     WSS_log_error("Unable to initialize log lock: %s", strerror(err));
                     fclose(file);
+#ifdef USE_RPMALLOC
+                    rpmalloc_finalize();
+#endif
                     return EXIT_FAILURE;
                 }
                 fclose(file);
+#ifdef USE_RPMALLOC
+                rpmalloc_finalize();
+#endif
                 return EXIT_SUCCESS;
             default:
                 wss_help(stderr);
@@ -151,6 +170,9 @@ int main(int argc, char *argv[]) {
                     WSS_log_error("Unable to initialize log lock: %s", strerror(err));
                 }
                 fclose(file);
+#ifdef USE_RPMALLOC
+                rpmalloc_finalize();
+#endif
                 return EXIT_FAILURE;
         }
     }
@@ -176,6 +198,10 @@ int main(int argc, char *argv[]) {
     }
 
     fclose(file);
+
+#ifdef USE_RPMALLOC
+    rpmalloc_finalize();
+#endif
 
     return res;
 }

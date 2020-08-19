@@ -20,19 +20,20 @@
 #include "error.h"
 #include "config.h"
 #include "subprotocols.h"
+#include "extensions.h"
 #include "predict.h"
-
-typedef struct {
-    wss_server_t *http;
-    wss_server_t *https;
-} wss_servers_t;
 
 /**
  * Global state of server
  */
 wss_server_state_t state;
 
-static inline void write_control_frame(wss_frame_t *frame, wss_session_t *session, wss_servers_t *servers) {
+/**
+ * Global servers available
+ */
+wss_servers_t servers;
+
+static inline void write_control_frame(wss_frame_t *frame, wss_session_t *session) {
     size_t j;
     char *message;
     size_t message_length;
@@ -44,12 +45,12 @@ static inline void write_control_frame(wss_frame_t *frame, wss_session_t *sessio
     for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
         session->header->ws_extensions[j]->ext->outframes(
                 fd,
-                (void **)&frame,
+                &frame,
                 1);
 
         session->header->ws_extensions[j]->ext->outframe(
                 fd,
-                (void *)frame);
+                frame);
     }
 
     if (0 == (message_length = WSS_stringify_frame(frame, &message))) {
@@ -90,36 +91,53 @@ static inline void write_control_frame(wss_frame_t *frame, wss_session_t *sessio
     WSS_free((void **) &message);
 }
 
-static void cleanup_session(wss_session_t *session, void *arg) {
+static void cleanup_session(wss_session_t *session) {
     wss_error_t err;
     wss_frame_t *frame;
     long unsigned int ms;
     struct timespec now;
     int fd = session->fd;
-    wss_servers_t *servers = (wss_servers_t *) arg;
+    wss_server_t *server = servers.http;
+    bool dc;
 
     if (! session->handshaked) {
         return;
     }
 
+#ifdef USE_OPENSSL
+    if (session->ssl && session->ssl_connected) {
+        server = servers.https;
+    }
+#endif
+
     clock_gettime(CLOCK_MONOTONIC, &now);
     ms = (((now.tv_sec - session->alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session->alive.tv_nsec/1000000);
 
     // Session timed out
-    if ( unlikely(servers->http->config->timeout_client >= 0 && ms >= (long unsigned int)servers->http->config->timeout_client) ) {
+    if ( unlikely(server->config->timeout_client >= 0 && ms >= (long unsigned int)server->config->timeout_client) ) {
+        WSS_session_is_disconnecting(session, &dc);
+        if (dc) {
+            return;
+        }
+
+        WSS_session_jobs_wait(session);
+
         WSS_log_info("Session %d has timedout", fd);
 
+        session->closing = true;
         session->state = CLOSING;
 
 #ifdef USE_OPENSSL
         if (! session->ssl_connected) {
 #endif
-            WSS_log_trace("User disconnected from ip: %s:%d using HTTP request", session->ip, session->port);
+            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTP request, due to timing out", session->fd, session->ip, session->port);
 #ifdef USE_OPENSSL
         } else {
-            WSS_log_trace("User disconnected from ip: %s:%d using HTTPS request", session->ip, session->port);
+            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTPS request, due to timing out", session->fd, session->ip, session->port);
         }
 #endif
+
+        WSS_log_trace("Informing subprotocol of client with file descriptor %d disconnecting", session->fd);
 
         if ( NULL != session->header && session->header->ws_protocol != NULL ) {
             WSS_log_trace("Informing subprotocol about session close");
@@ -128,47 +146,23 @@ static void cleanup_session(wss_session_t *session, void *arg) {
 
         WSS_log_trace("Removing poll filedescriptor from eventlist");
 
-#ifdef USE_OPENSSL
-        if (! session->ssl_connected) {
-#endif
-            WSS_poll_remove(servers->http, fd);
-#ifdef USE_OPENSSL
-        } else {
-            WSS_poll_remove(servers->https, fd);
-        }
-#endif
+        WSS_poll_remove(server, fd);
 
         WSS_log_trace("Sending close frame", fd);
 
-        frame = WSS_closing_frame(TRY_AGAIN);
+        frame = WSS_closing_frame(CLOSE_TRY_AGAIN, NULL);
 
-        write_control_frame(frame, session, servers);
+        write_control_frame(frame, session);
 
         WSS_log_trace("Deleting client session");
 
         if ( unlikely(WSS_SUCCESS != (err = WSS_session_delete_no_lock(session))) ) {
             switch (err) {
                 case WSS_SSL_SHUTDOWN_READ_ERROR:
-#ifdef USE_OPENSSL
-                    if (! session->ssl_connected) {
-#endif
-                        WSS_poll_set_read(servers->http, fd);
-#ifdef USE_OPENSSL
-                    } else {
-                        WSS_poll_set_read(servers->https, fd);
-                    }
-#endif
+                        WSS_poll_set_read(server, fd);
                     return;
                 case WSS_SSL_SHUTDOWN_WRITE_ERROR:
-#ifdef USE_OPENSSL
-                    if (! session->ssl_connected) {
-#endif
-                        WSS_poll_set_write(servers->http, fd);
-#ifdef USE_OPENSSL
-                    } else {
-                        WSS_poll_set_write(servers->https, fd);
-                    }
-#endif
+                        WSS_poll_set_write(server, fd);
                     return;
                 default:
                     break;
@@ -180,7 +174,7 @@ static void cleanup_session(wss_session_t *session, void *arg) {
         WSS_log_info("Client with session %d disconnected", fd);
 
     // Ping session to keep it alive
-    } else if (servers->http->config->timeout_pings > 0 ) {
+    } else if (server->config->timeout_pings > 0 ) {
         WSS_log_info("Pinging session %d", fd);
 
         frame = WSS_ping_frame();
@@ -197,7 +191,7 @@ static void cleanup_session(wss_session_t *session, void *arg) {
 
         memcpy(session->pong, frame->payload+frame->extensionDataLength, frame->applicationDataLength);
 
-        write_control_frame(frame, session, servers);
+        write_control_frame(frame, session);
     }
 }
 
@@ -232,34 +226,43 @@ void WSS_server_set_max_fd(wss_server_t *server, int fd) {
  * Cleanup client sessions, that is, closes connections to clients which is 
  * timedout based on the servers timeout_client setting.
  *
- * @param 	arg				[void *] 	"Holds a structure containing the running servers"
  * @return 	pthread_exit 	[void *] 	"0 if successfull and otherwise <0"
  */
-void *WSS_cleanup(void *arg) {
+void *WSS_cleanup() {
     int n;
     wss_error_t err;
     struct pollfd fds[1];
-    wss_servers_t *servers = (wss_servers_t *) arg;
-    long int timeout = servers->http->config->timeout_client;
+    wss_server_t *server = servers.http;
+    long int timeout = server->config->timeout_client;
+
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_initialize();
+#endif
 
     fds[0].fd = close_pipefd[0];
     fds[0].events = POLLIN | POLLPRI;
 
     WSS_log_info("Cleanup thread started with %ld", timeout);
 
-    if (timeout >= 0 && servers->http->config->timeout_pings > 0) {
-        timeout = timeout/servers->http->config->timeout_pings;
+    if (timeout >= 0 && server->config->timeout_pings > 0) {
+        timeout = timeout/server->config->timeout_pings;
         WSS_log_info("Cleanup thread will run every %ld milliseconds", timeout);
     }
 
     while ( likely(state.state == RUNNING) ) {
         n = poll(fds, 1, timeout);
         if ( unlikely(n < 0 && errno != EINTR) ) {
+#ifdef USE_RPMALLOC
+            rpmalloc_thread_finalize();
+#endif
             pthread_exit( ((void *) ((uintptr_t)WSS_CLEANUP_ERROR)) );
         } else if ( likely(n == 0) ) {
             WSS_log_info("Pings clients and cleanup timedout ones");
             
-            if ( unlikely(WSS_SUCCESS != (err = WSS_session_all(cleanup_session, servers))) ) {
+            if ( unlikely(WSS_SUCCESS != (err = WSS_session_all(cleanup_session))) ) {
+#ifdef USE_RPMALLOC
+                rpmalloc_thread_finalize();
+#endif
                 pthread_exit( ((void *) &err) );
             }
         }
@@ -267,6 +270,9 @@ void *WSS_cleanup(void *arg) {
 
     WSS_log_info("Cleanup thread shutting down");
 
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_finalize();
+#endif
     pthread_exit( ((void *) ((uintptr_t)WSS_SUCCESS)) );
 }
 
@@ -281,6 +287,10 @@ void *WSS_server_run(void *arg) {
     wss_error_t err;
     wss_server_t *server = (wss_server_t *) arg;
 
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_initialize();
+#endif
+
 #ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Running HTTPS server");
@@ -292,6 +302,9 @@ void *WSS_server_run(void *arg) {
 #endif
 
     if ( unlikely(WSS_SUCCESS != (err = WSS_poll_init(server))) ) {
+#ifdef USE_RPMALLOC
+        rpmalloc_thread_finalize();
+#endif
         pthread_exit( ((void *) err) );
     }
 
@@ -299,6 +312,9 @@ void *WSS_server_run(void *arg) {
     while ( likely(state.state == RUNNING) ) {
         err = WSS_poll_delegate(server);
         if ( unlikely(err != WSS_SUCCESS) ) {
+#ifdef USE_RPMALLOC
+            rpmalloc_thread_finalize();
+#endif
             pthread_exit( ((void *) err) );
         }
     }
@@ -313,6 +329,9 @@ void *WSS_server_run(void *arg) {
     }
 #endif
 
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_finalize();
+#endif
     pthread_exit( ((void *) ((uintptr_t)WSS_SUCCESS)) );
 }
 
@@ -389,7 +408,6 @@ int WSS_server_start(wss_config_t *config) {
     int err;
     struct rlimit limits;
     struct sigaction sa;
-    wss_servers_t servers;
     int ret = EXIT_SUCCESS;
     wss_server_t *http = NULL;
     pthread_t cleanup_thread_id;
@@ -523,6 +541,8 @@ int WSS_server_start(wss_config_t *config) {
 
         return EXIT_FAILURE;
     }
+    servers.http = http;
+    servers.https = NULL;
 
     if ( unlikely(0 != (err = pthread_mutex_init(&http->lock, NULL))) ) {
         WSS_server_free(http);
@@ -568,6 +588,8 @@ int WSS_server_start(wss_config_t *config) {
             return EXIT_FAILURE;
         }
 
+        servers.https = https;
+
         WSS_log_trace("Creating HTTPS Instance");
 
         https->config = config;
@@ -601,17 +623,8 @@ int WSS_server_start(wss_config_t *config) {
 #endif
 
     WSS_log_trace("Creating HTTP cleanup thread");
-
-    servers.http = http;
-    servers.https = NULL;
-
-#ifdef USE_OPENSSL
-        if (ssl) {
-            servers.https = https;
-        }
-#endif
     
-    if ( unlikely(pthread_create(&cleanup_thread_id, NULL, WSS_cleanup, (void *) &servers) != 0) ) {
+    if ( unlikely(pthread_create(&cleanup_thread_id, NULL, WSS_cleanup, NULL) != 0) ) {
 #ifdef USE_OPENSSL
         if (ssl) {
             WSS_server_free(https);

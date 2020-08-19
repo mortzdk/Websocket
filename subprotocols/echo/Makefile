@@ -52,6 +52,10 @@ CVER = -std=c99
 
 # Folders
 FOLDER = $(shell pwd)
+SUBPROTOCOLS_FOLDER = $(FOLDER)/../
+
+# Include folders
+INCLUDES = -I$(SUBPROTOCOLS_FOLDER)
 
 # Files
 SRC = $(shell find $(FOLRDER) -name '*.c' -type f;)
@@ -83,7 +87,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Creating Shared Object] ================ 
 	@echo
-	$(CC)  -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ)
+	$(CC) -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ) $(INCLUDES)
 	@echo
 	@echo ================ [$(NAME).so compiled succesfully] ================ 
 	@echo
@@ -93,7 +97,7 @@ $(NAME): $(SRC_OBJ)
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) $(CVER) -c $< -o $@
+	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(INCLUDES)
 	@echo
 	@echo OK [$<] - [$@]
 	@echo

@@ -12,6 +12,8 @@
 #include "log.h"
 #include "predict.h"
 
+json_settings settings; 
+
 static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
     int n;
     unsigned int i;
@@ -95,11 +97,10 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
     unsigned int i, j, length;
     char *name;
     json_value *value, *val, *temp;
-
-    json_settings settings = (json_settings){
-        .settings = json_enable_comments,
+    settings = (json_settings){
+        .settings  = json_enable_comments,
         .mem_alloc = WSS_config_alloc,
-        .mem_free = WSS_config_release
+        .mem_free  = WSS_config_release
     };
 
     config->length = strload(path, &config->string);
@@ -242,16 +243,17 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                             for (j = 0; likely(j < length); j++) {
                                 if ( likely(val->u.array.values[j]->type == json_object) ) {
-                                    if ( (temp = json_value_find(val, "file")) != NULL ) {
+                                    if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
                                         if ( temp->type == json_string ) {
                                             config->subprotocols[j] =
                                                 (char *) temp->u.string.ptr;
+                                            WSS_log_info("Found extension %s from configuration", config->subprotocols[j]);
                                         } else {
                                             config->subprotocols[j] = NULL;
                                         }
                                     }
 
-                                    if ( (temp = json_value_find(val, "config")) != NULL ) {
+                                    if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
                                         if ( temp->type == json_string ) {
                                             config->subprotocols_config[j] =
                                                 (char *) temp->u.string.ptr;
@@ -261,7 +263,9 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                     }
                                 }
                             }
+
                             config->subprotocols_length = length;
+                            WSS_log_info("Found %d subprotocols", length);
                         }
                     }
 
@@ -287,16 +291,17 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                             for (j = 0; likely(j < length); j++) {
                                 if ( likely(val->u.array.values[j]->type == json_object) ) {
-                                    if ( (temp = json_value_find(val, "file")) != NULL ) {
+                                    if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
                                         if ( likely(temp->type == json_string) ) {
                                             config->extensions[j] =
                                                 (char *) temp->u.string.ptr;
+                                            WSS_log_info("Found extension %s from configuration", config->extensions[j]);
                                         } else {
                                             config->extensions[j] = NULL;
                                         }
                                     }
 
-                                    if ( (temp = json_value_find(val, "config")) != NULL ) {
+                                    if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
                                         if ( likely(temp->type == json_string) ) {
                                             config->extensions_config[j] =
                                                 (char *) temp->u.string.ptr;
@@ -307,6 +312,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 }
                             }
                             config->extensions_length = length;
+                            WSS_log_info("Found %d extensions", length);
                         }
                     }
 
@@ -556,7 +562,7 @@ wss_error_t WSS_config_free(wss_config_t *config) {
         }
 
         if ( likely(NULL != config->data) ) {
-            json_value_free(config->data);
+            json_value_free_ex(&settings, config->data);
             config->data = NULL;
         }
 

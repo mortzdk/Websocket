@@ -30,11 +30,13 @@ void WSS_load_extensions(wss_config_t *config)
     char *name;
     int *handle;
     wss_extension_t* proto;
-    int name_length = 0;
+    int name_length;
 
     WSS_log_trace("Loading extensions");
 
     for (i = 0; i < config->extensions_length; i++) {
+        name_length = 0;
+
         WSS_log_trace("Loading extension %s", config->extensions[i]);
 
         if ( unlikely(NULL == (handle = dlopen(config->extensions[i], RTLD_LAZY))) ) {
@@ -48,6 +50,13 @@ void WSS_load_extensions(wss_config_t *config)
             return;
         }
         proto->handle = handle;
+
+        if ( unlikely((*(void**)(&proto->alloc) = dlsym(proto->handle, "setAllocators")) == NULL) ) {
+            WSS_log_error("Failed to find 'setAllocators' function: %s", dlerror());
+            dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
+        }
 
         if ( unlikely((*(void**)(&proto->init) = dlsym(proto->handle, "onInit")) == NULL) ) {
             WSS_log_error("Failed to find 'onInit' function: %s", dlerror());
@@ -120,6 +129,10 @@ void WSS_load_extensions(wss_config_t *config)
         memcpy(proto->name, name, name_length);
 
         HASH_ADD_KEYPTR(hh, extensions, proto->name, name_length, proto);
+
+        WSS_log_trace("Setting custom allocators for extension %s", proto->name);
+
+        proto->alloc(WSS_malloc, WSS_realloc2, WSS_free2);
 
         WSS_log_trace("Initializing extension %s", proto->name);
 

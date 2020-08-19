@@ -2,14 +2,44 @@
 
 #include "echo.h"
 
+typedef struct {
+    void *(*malloc)(size_t);
+    void *(*realloc)(void *, size_t);
+    void (*free)(void *);
+} allocators;
+
+allocators allocs = {
+    malloc,
+    realloc,
+    free
+};
+
+WSS_send send = NULL;
+
 /**
  * Event called when subprotocol is initialized.
  *
- * @param 	config	[char *]     "The configuration of the subprotocol"
- * @return 	        [void]
+ * @param 	config	    [char *]            "The configuration of the subprotocol"
+ * @param 	s	        [WSS_send]          "Function that send message to a single recipient"
+ * @return 	            [void]
  */
-void onInit(char *config) {
+void onInit(char *config, WSS_send s) {
+    send = s;
     return;
+}
+
+/**
+ * Sets the allocators to use instead of the default ones
+ *
+ * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
+ * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
+ * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @return 	            [void]
+ */
+void setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *)) {
+    allocs.malloc = f_malloc;
+    allocs.realloc = f_realloc;
+    allocs.free = f_free;
 }
 
 /**
@@ -28,17 +58,10 @@ void onConnect(int fd) {
  * @param 	fd	            [int]     "A filedescriptor of the session receiving the data"
  * @param 	message	        [char *]  "The message received"
  * @param 	message_length	[size_t]  "The length of the message"
- * @param 	receivers	    [int **]  "A pointer which should be filled with the filedescriptors of those who should receive this message"
- * @param 	receiver_count	[size_t]  "The amount of receivers"
  * @return 	                [void]
  */
-void onMessage(int fd, char *message, size_t message_length, int **receivers, size_t *receiver_count) {
-    if (NULL == (*receivers = calloc(1, sizeof(int)))) {
-        return;
-    }
-
-    *receivers[0] = fd;
-    *receiver_count = 1;
+void onMessage(int fd, wss_opcode_t opcode, char *message, size_t message_length) {
+    send(fd, opcode, message, message_length);
 }
 
 /**

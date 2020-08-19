@@ -38,16 +38,23 @@ char *bin2hex(const unsigned char *bin, size_t len)
  *
  * @param 	s	    [const unsigned char *]     "The binary value"
  * @param 	len     [size_t] 	                "The length of the binary value"
- * @return 	        [char *]                    "The hexidecimal representation of the binary value in a new memory block"
+ * @return 	        [char *]                    "The hexidecimal representation of the text string in a new memory block"
  */
-void print_string2hex(const unsigned char *s, size_t len)
+char *str2hex(const unsigned char *s, size_t len)
 {
-    size_t i;
-    for (i = 0; likely(i < len); i++) {
-        printf("0x%02x ", (short) s[i]);
+    char *out;
+    size_t i, offset = 0;
+
+    if ( unlikely(NULL == (out = (char *) WSS_malloc(len*5+1))) ) {
+        return NULL;
     }
-    printf("\n");
-    fflush(stdout);
+
+    for (i = 0; likely(i < len); i++) {
+        sprintf(out+offset, "0x%02x ", (short) s[i]);
+        offset += 5;
+    }
+
+    return out;
 }
 
 /**

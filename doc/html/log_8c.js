@@ -1,6 +1,5 @@
 var log_8c =
 [
-    [ "lock", "log_8c.html#a92d638030a86fd259063b074c20e74eb", null ],
     [ "log_log", "log_8c.html#ac008ecbde449b2dd1bc4f8671d9a0e07", null ],
     [ "log_set_fp", "log_8c.html#af0f33363d4098787cac5b47f0a6ad443", null ],
     [ "log_set_level", "log_8c.html#af2493e94f152a28b2ba4e3a2e2bba65d", null ],
@@ -12,11 +11,11 @@ var log_8c =
     [ "day", "log_8c.html#a4c11afc03fc3ee49bab660def6558f2a", null ],
     [ "fp", "log_8c.html#aa065f30aa9f5f9a42132c82c787ee70b", null ],
     [ "hour", "log_8c.html#a15df9ba285cfd842f284025f904edc9c", null ],
-    [ "L", "log_8c.html#a15ff4169dde7db80ab77ee460ffcc63d", null ],
+    [ "L", "log_8c.html#a4b6bb2cdbcb8c783619e595db7aad454", null ],
     [ "level", "log_8c.html#acf4d33ee4cff36f69b924471174dcb11", null ],
     [ "level_colors", "log_8c.html#a8a2ced25981b49f1555d16f390df6006", null ],
     [ "level_names", "log_8c.html#a6ee99f12766d97f932da55d2232f5cf5", null ],
-    [ "lock", "log_8c.html#a9b4d82bfadfae80fd7e08baefd26f006", null ],
+    [ "lock", "log_8c.html#a9863926e23e26ddb194b82b7fc50756a", null ],
     [ "minutes", "log_8c.html#ab693b677bdc9ded12b06daf49778101c", null ],
     [ "month", "log_8c.html#aedb06abe5aff12fa3e7e0e71a374edfb", null ],
     [ "quiet", "log_8c.html#a55602ca214fb365e8deef9a73c8442e7", null ],

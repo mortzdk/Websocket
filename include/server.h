@@ -4,9 +4,11 @@
 #include <signal.h>
 #include <sys/socket.h>         /* socket, setsockopt, inet_ntoa, accept, shutdown */
 #include <netinet/in.h>         /* sockaddr_in, inet_ntoa */
+
 #ifdef USE_OPENSSL
 #include <openssl/ssl.h>
 #endif
+
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_mutex_init */
 #include "pool.h"
@@ -60,6 +62,11 @@ typedef struct {
     pthread_mutex_t lock;
 } wss_server_state_t;
 
+typedef struct {
+    wss_server_t *http;
+    wss_server_t *https;
+} wss_servers_t;
+
 /**
  * Function that updates the state of the server.
  *
@@ -87,6 +94,8 @@ void *WSS_server_run(void *arg);
  */
 int WSS_server_start(wss_config_t *config);
 
-wss_server_state_t state;
+extern wss_server_state_t state;
+
+extern wss_servers_t servers;
 
 #endif

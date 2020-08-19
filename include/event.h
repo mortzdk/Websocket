@@ -10,6 +10,8 @@
 #define WSS_POLL 1
 #endif
 
+#include "server.h"
+#include "session.h"
 #include "error.h"
 
 /**
@@ -17,7 +19,8 @@
  */
 typedef struct {
     int fd;
-    void *server;
+    wss_server_t *server;
+    wss_session_state_t state;
 } wss_thread_args_t;
 
 /**
@@ -74,6 +77,6 @@ wss_error_t WSS_poll_delegate(void *server);
  */
 wss_error_t WSS_poll_close(void *server);
 
-int close_pipefd[2];
+extern int close_pipefd[2];
 
 #endif

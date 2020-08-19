@@ -1,6 +1,5 @@
 #include <stdlib.h>             /* atoi, malloc, free, realloc */
 #include <string.h>             /* strerror, memset, strncpy, memcpy, strlen */
-#include <malloc.h>             
 
 #include "alloc.h"
 #include "predict.h"
@@ -17,7 +16,11 @@ void *WSS_malloc(size_t size) {
         return NULL;
     }
 
+#ifdef USE_RPMALLOC
+	buffer = rpmalloc( size );
+#else
 	buffer = malloc( size );
+#endif
 
 	if ( unlikely(NULL == buffer) ) {
 		return NULL;
@@ -42,7 +45,11 @@ void *WSS_calloc(size_t memb, size_t size) {
         return NULL;
     }
 
+#ifdef USE_RPMALLOC
+	buffer = rpcalloc(memb, size);
+#else
 	buffer = calloc(memb, size);
+#endif
 
 	if ( unlikely(NULL == buffer) ) {
 		return NULL;
@@ -68,9 +75,17 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize) {
     }
     
     if ( unlikely(ptr == NULL) ) {
+#ifdef USE_RPMALLOC
+	    buffer = rprealloc(NULL, newSize);
+#else
 	    buffer = realloc(NULL, newSize);
+#endif
     } else {
+#ifdef USE_RPMALLOC
+	    buffer = rprealloc(*ptr, newSize);
+#else
 	    buffer = realloc(*ptr, newSize);
+#endif
     }
 
 	if ( unlikely(NULL == buffer) ) {
@@ -85,6 +100,17 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize) {
 	return buffer;
 }
 
+/**
+ * Function that re-allocates some memory.
+ *
+ * @param 	ptr		[void **] 	"The memory that needs to be rearranged"
+ * @param 	newSize	[size_t] 	"The size of the memory that should be allocated"
+ * @return 	buffer	[void *] 	"Returns pointer to allocated memory if successful, otherwise NULL"
+ */
+void *WSS_realloc2(void *ptr, size_t newSize) {
+    return WSS_realloc(&ptr, newSize, newSize);
+}
+
 #ifndef NDEBUG
 /**
  * Function that re-allocates some memory.
@@ -94,8 +120,22 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize) {
  */
 void WSS_free(void **ptr) {
     if (NULL != *ptr) {
+#ifdef USE_RPMALLOC
+        rpfree(*ptr);
+#else
         free(*ptr);
+#endif
         *ptr = NULL;
     }
 }
 #endif
+
+/**
+ * Function that re-allocates some memory.
+ *
+ * @param 	ptr		[void *] 	"The memory that needs to be freed"
+ * @return 		    [void]
+ */
+void WSS_free2(void *ptr) {
+    WSS_free(&ptr);
+}

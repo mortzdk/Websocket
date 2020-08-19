@@ -24,7 +24,14 @@
 #include "header.h"
 #include "ringbuf.h"
 #include "frame.h"
+#include "message.h"
 #include "error.h"
+
+typedef enum {
+    NONE,
+    READ,
+    WRITE,
+} wss_session_event_t;
 
 typedef enum {
     IDLE,
@@ -33,15 +40,6 @@ typedef enum {
     CLOSING,
     CONNECTING
 } wss_session_state_t;
-
-/**
- * Structure stored in ringbuffer
- */
-typedef struct {
-    size_t length;
-    char *msg;
-    bool framed;
-} wss_message_t;
 
 typedef struct {
     // The file descriptor of the session
@@ -58,12 +56,26 @@ typedef struct {
     // Whether session has been SSL handshaked
     bool ssl_connected;
 #endif
-    // Lock that ensures only one can read from the session at a time
-    pthread_mutex_t read_lock;
-    // Lock that ensures only one can write to the session at a time
-    pthread_mutex_t write_lock;
+    // Whether the session is closing
+    bool closing;
+    // Whether the session has begun disconnecting
+    bool disconnecting;
+    // Lock that ensures disconnecting check is done atomically
+    pthread_mutex_t lock_disconnecting;
+    // Lock that ensures only one thread can perform IO at a time
+    pthread_mutex_t lock;
+    // Attributes for the lock
+    pthread_mutexattr_t lock_attr;
+    // Jobs to be performed
+    int jobs;
+    // Lock that ensures jobs are incremented/decremented atomically
+    pthread_mutex_t lock_jobs;
+    // Conditional variable that ensures that close call is only performed when no other IO is waiting
+    pthread_cond_t cond_jobs;
     // Which state the session is currently in
     wss_session_state_t state;
+    // Which event the session should continue listening for
+    wss_session_event_t event;
     // The HTTP header of the session
     wss_header_t *header;
     // A ringbuffer containing references to the messages that the session shall receive
@@ -150,7 +162,7 @@ wss_error_t WSS_session_delete_all();
  * @param   callback       [void (*callback)(wss_session_t *, void *)]    "A callback to be called for each session"
  * @return                 [wss_error_t] 	                              "The error status"
  */
-wss_error_t WSS_session_all(void (*callback)(wss_session_t *, void *), void *arg);
+wss_error_t WSS_session_all(void (*callback)(wss_session_t *));
 
 /**
  * Function that finds a session using the filedescriptor of the session.
@@ -159,5 +171,40 @@ wss_error_t WSS_session_all(void (*callback)(wss_session_t *, void *), void *arg
  * @return 		[wss_session_t *] 	"Returns session if successful, otherwise NULL"
  */
 wss_session_t *WSS_session_find(int fd);
+
+/**
+ * Function that increments the job counter atomically.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return  [wss_error_t] 	"The error status"
+ */
+wss_error_t WSS_session_jobs_inc(wss_session_t *session);
+
+/**
+ * Function that decrements the job counter atomically and signals the
+ * condition if no jobs are left.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return            [wss_error_t] 	 "The error status"
+ */
+wss_error_t WSS_session_jobs_dec(wss_session_t *session);
+
+/**
+ * Function that waits for all jobs to be done.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @return            [wss_error_t]  	 "The error status"
+ */
+wss_error_t WSS_session_jobs_wait(wss_session_t *session);
+
+/**
+ * Function that determines atomically if session is already disconnecting.
+ *
+ * @param   session   [wss_session_t *]  "The session"
+ * @param   dc        [bool *]           "Whether session is already disconnecting or not"
+ *
+ * @return       [wss_error_t]  "The error status"
+ */
+wss_error_t WSS_session_is_disconnecting(wss_session_t *session, bool *dc);
 
 #endif

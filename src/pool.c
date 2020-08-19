@@ -38,11 +38,6 @@
 #include "pool.h"
 #include "alloc.h"
 
-typedef struct {
-    int id;
-    threadpool_t *pool;
-} threadpool_args_t;
-
 typedef enum {
     immediate_shutdown = 1,
     graceful_shutdown  = 2
@@ -57,7 +52,7 @@ typedef enum {
  */
 
 typedef struct {
-    void (*function)(void *, int);
+    void (*function)(void *);
     void *argument;
 } threadpool_task_t;
 
@@ -120,7 +115,6 @@ char *threadpool_strerror(int err) {
 
 threadpool_t *threadpool_create(int thread_count, int queue_size,
         int thread_size, int flags) {
-    threadpool_args_t *args[thread_count];
     threadpool_t *pool;
     int i;
 
@@ -154,13 +148,8 @@ threadpool_t *threadpool_create(int thread_count, int queue_size,
 
     /* Start worker threads */
     for (i = 0; i < thread_count; i++) {
-        if ((args[i] = (threadpool_args_t *)WSS_malloc(sizeof(threadpool_args_t))) == NULL) {
-            goto err;
-        }
-        args[i]->id = flags+i; 
-        args[i]->pool = pool; 
         if (pthread_create(&(pool->threads[i]), &pool->attr, threadpool_thread,
-                    (void*) args[i]) != 0) {
+                    (void*) pool) != 0) {
             threadpool_destroy(pool, 0);
             return NULL;
         }
@@ -177,7 +166,7 @@ err:
     return NULL;
 }
 
-int threadpool_add(threadpool_t *pool, void (*function)(void *, int),
+int threadpool_add(threadpool_t *pool, void (*function)(void *),
         void *argument, int flags){
     int err = 0;
     int next;
@@ -296,12 +285,12 @@ int threadpool_free(threadpool_t *pool) {
 
 
 static void *threadpool_thread(void *arguments) {
-    threadpool_args_t *args = (threadpool_args_t *) arguments;
-    threadpool_t *pool = (threadpool_t *)args->pool;
-    int id = args->id;
+    threadpool_t *pool = (threadpool_t *)arguments;
     threadpool_task_t task;
 
-    WSS_free((void **) &args);
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_initialize();
+#endif
 
     for (;;) {
         /* Lock must be taken to wait on conditional variable */
@@ -328,12 +317,17 @@ static void *threadpool_thread(void *arguments) {
         /* Unlock */
         pthread_mutex_unlock(&(pool->lock));
         /* Get to work */
-        (*(task.function))(task.argument, id);
+        (*(task.function))(task.argument);
     }
 
     pool->started--;
 
     pthread_mutex_unlock(&(pool->lock));
+
+#ifdef USE_RPMALLOC
+    rpmalloc_thread_finalize();
+#endif
+
     pthread_exit(NULL);
     return NULL;
 }

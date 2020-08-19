@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#include "rpmalloc.h"
+
 /**
  * Function that allocates memory.  *
  * @param 	size	[size_t] 	"The size of the memory that should be allocated"
@@ -33,13 +35,34 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize);
 /**
  * Function that re-allocates some memory.
  *
+ * @param 	ptr		[void **] 	"The memory that needs to be rearranged"
+ * @param 	newSize	[size_t] 	"The size of the memory that should be allocated"
+ * @return 	buffer	[void *] 	"Returns pointer to allocated memory if successful, otherwise NULL"
+ */
+void *WSS_realloc2(void *ptr, size_t newSize);
+
+/**
+ * Function that frees some memory.
+ *
  * @param 	ptr		[void **] 	"The memory that needs to be freed"
  * @return 		    [void]
  */
 #ifndef NDEBUG
 void WSS_free(void **ptr);
 #else
+#ifdef USE_RPMALLOC
+#define WSS_free(p) do { void ** __p = (p); rpfree(*(__p)); *(__p) = NULL; } while (0)
+#else
 #define WSS_free(p) do { void ** __p = (p); free(*(__p)); *(__p) = NULL; } while (0)
 #endif
+#endif
+
+/**
+ * Function that frees some memory.
+ *
+ * @param 	ptr		[void **] 	"The memory that needs to be freed"
+ * @return 		    [void]
+ */
+void WSS_free2(void *ptr);
 
 #endif

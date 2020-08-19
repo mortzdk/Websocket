@@ -10,7 +10,6 @@
 
 #define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)?)?$"
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 #define ASCII_WEBSOCKET_STRING "websocket"
 #define ASCII_CONNECTION_STRING "Upgrade"

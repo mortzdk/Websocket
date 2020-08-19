@@ -29,28 +29,12 @@
 
 #define MAX_CHUNK_SIZE UINT_MAX
 #define MIN_CHUNK_SIZE 1
-#define SERVER_MAX_MEM_LEVEL 9
+#define SERVER_MAX_MEM_LEVEL MAX_MEM_LEVEL
 #define SERVER_MIN_MEM_LEVEL 1
 #define SERVER_MAX_WINDOW_BITS 15
 #define SERVER_MIN_WINDOW_BITS 8
 #define CLIENT_MAX_WINDOW_BITS 15
 #define CLIENT_MIN_WINDOW_BITS 8 
-
-
-// Define a Websocket frame as exactly defined by the WSServer.
-typedef struct {
-    bool fin;
-    bool rsv1;
-    bool rsv2;
-    bool rsv3;
-    uint8_t opcode;
-    bool mask;
-    uint64_t payloadLength;
-    char maskingKey[4];
-    char *payload;
-    uint64_t extensionDataLength;
-    uint64_t applicationDataLength;
-} frame_t;
 
 // Parameters for PMCE
 typedef struct {
@@ -60,7 +44,6 @@ typedef struct {
     uint8_t client_max_window_bits;
 } param_t;
 
-
 // Compressor structure for session 
 typedef struct {
     int fd;
@@ -69,6 +52,22 @@ typedef struct {
     param_t params;
     UT_hash_handle hh;
 } wss_comp_t;
+
+// Structure containing allocators
+typedef struct {
+    void *(*malloc)(size_t);
+    void *(*realloc)(void *, size_t);
+    void (*free)(void *);
+} allocators;
+
+/**
+ * Global allocators
+ */
+allocators allocs = {
+    malloc,
+    realloc,
+    free
+};
 
 /**
  * A lock that ensures the hash table is used atomically
@@ -151,7 +150,7 @@ static void parse_param(const char *param, param_t *p) {
                 p->client_max_window_bits = default_client_window_bits;
             }
         } else if ( strncmp(EXT_SERVER_MAX_WINDOW_BITS, sep, strlen(EXT_SERVER_MAX_WINDOW_BITS)) == 0) {
-            j = strlen(EXT_CLIENT_MAX_WINDOW_BITS);
+            j = strlen(EXT_SERVER_MAX_WINDOW_BITS);
             while ( sep[j] != '=' ) {
                 j++;
             }
@@ -204,7 +203,7 @@ static char * negotiate(char *param, wss_comp_t *comp) {
     smwb_length = strlen(EXT_SERVER_MAX_WINDOW_BITS) + 1 + (log10(p->server_max_window_bits)+1);
     accepted_length += smwb_length;
 
-    if ( likely(NULL != (accepted = malloc((accepted_length+1)*sizeof(char)))) ) {
+    if ( likely(NULL != (accepted = allocs.malloc((accepted_length+1)*sizeof(char)))) ) {
         memset(accepted, '\0', accepted_length+1);
 
         if (p->server_no_context_takeover) {
@@ -232,21 +231,37 @@ static char * negotiate(char *param, wss_comp_t *comp) {
     return accepted;    
 }
 
+static void *zalloc(void *opaque, unsigned items, unsigned size) {
+    return allocs.malloc(size*items);
+}
+
+static void zfree(void *opaque, void *address) {
+    allocs.free(address);
+}
+
 static bool init_comp(wss_comp_t *comp) {
     /* allocate inflate state */
-    comp->decompressor.zalloc   = Z_NULL;
-    comp->decompressor.zfree    = Z_NULL;
+    comp->decompressor.zalloc   = zalloc;
+    comp->decompressor.zfree    = zfree;
     comp->decompressor.opaque   = Z_NULL;
     comp->decompressor.avail_in = 0;
     comp->decompressor.next_in  = Z_NULL;
 
-    if ( unlikely(Z_OK != inflateInit2(&comp->decompressor, -comp->params.client_max_window_bits)) ) {
-        return false;
+    if (comp->params.client_max_window_bits > 0) {
+        // If client_max_window_bits was negotiated
+        if ( unlikely(Z_OK != inflateInit2(&comp->decompressor, -comp->params.client_max_window_bits)) ) {
+            return false;
+        }
+    } else {
+        // If client_max_window_bits was not negotiated, the default is -15 = 32768 byte sliding window
+        if ( unlikely(Z_OK != inflateInit2(&comp->decompressor, -CLIENT_MAX_WINDOW_BITS)) ) {
+            return false;
+        }
     }
 
     /* allocate inflate state */
-    comp->compressor.zalloc = Z_NULL;
-    comp->compressor.zfree  = Z_NULL;
+    comp->compressor.zalloc = zalloc;
+    comp->compressor.zfree  = zfree;
     comp->compressor.opaque = Z_NULL;
 
     if ( unlikely(Z_OK != deflateInit2(&comp->compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) ) {
@@ -364,6 +379,30 @@ void onInit(char *config) {
     pthread_mutex_init(&lock, NULL);
 }
 
+/**
+ * Sets the allocators to use instead of the default ones
+ *
+ * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
+ * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
+ * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @return 	            [void]
+ */
+void setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *)) {
+    allocs.malloc = f_malloc;
+    allocs.realloc = f_realloc;
+    allocs.free = f_free;
+}
+
+/**
+ * Event called when parameters are available for the pcme i.e. when the
+ * connection is opened.
+ *
+ * @param 	fd	        [int]        "The filedescriptor of the session"
+ * @param 	param	    [char *]     "The parameters to the PCME"
+ * @param 	accepted	[char *]     "The accepted parameters to the PCME"
+ * @param 	valid	    [bool *]     "A pointer to a boolean, that should state whether the parameters are accepted"
+ * @return 	            [void]
+ */
 void onOpen(int fd, char *param, char **accepted, bool *valid) {
     int err, j;
     long int val;
@@ -382,7 +421,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
             return;
         }
 
-        if ( unlikely(NULL == (comp = malloc(sizeof(wss_comp_t)))) ) {
+        if ( unlikely(NULL == (comp = allocs.malloc(sizeof(wss_comp_t)))) ) {
             *valid = false;
             return;
         }
@@ -394,7 +433,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
         comp->params.server_no_context_takeover = default_server_no_context_takeover;
 
         if ( unlikely(! init_comp(comp)) ) {
-            free(comp);
+            allocs.free(comp);
             *valid = false;
             return;
         }
@@ -464,7 +503,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
         return;
     }
 
-    if ( unlikely(NULL == (comp = malloc(sizeof(wss_comp_t)))) ) {
+    if ( unlikely(NULL == (comp = allocs.malloc(sizeof(wss_comp_t)))) ) {
         *valid = false;
         return;
     }
@@ -478,24 +517,37 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
     *accepted = negotiate(param, comp);
 
     if ( unlikely(! init_comp(comp)) ) {
-        free(comp);
+        allocs.free(comp);
         *valid = false;
         return;
     }
 
     HASH_ADD_INT(compressors, fd, comp);
 
-    pthread_mutex_unlock(&lock);
-
     *valid = true;
 
+    pthread_mutex_unlock(&lock);
 }
 
-void inFrame(int fd, void *f) {
+/**
+ * Event called when a frame_t of data is received.
+ *
+ * @param 	fd	    [int]               "The filedescriptor of the session"
+ * @param 	frame	[wss_frame_t *]     "A websocket frame"
+ * @return 	        [void]
+ */
+void inFrame(int fd, wss_frame_t *frame) {
 }
 
-void inFrames(int fd, void **fs, size_t len) {
-    frame_t **frames = (frame_t **)fs;
+/**
+ * Event called when a full set of frames are received.
+ *
+ * @param 	fd	      [int]             "The filedescriptor of the session"
+ * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
+ * @param 	len	      [size_t]          "The amount of frames"
+ * @return 	          [void]
+ */
+void inFrames(int fd, wss_frame_t **frames, size_t len) {
     size_t j, size;
     char *message = NULL;
     size_t payload_length = 0;
@@ -546,8 +598,8 @@ void inFrames(int fd, void **fs, size_t len) {
     comp->compressor.avail_in = payload_length;
     comp->compressor.next_in = (unsigned char *)payload;
     do {
-        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) ) {
-            free(message);
+        if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) ) {
+            allocs.free(message);
             return; 
         }
         memset(message+message_length, '\0', default_chunk_size+1); 
@@ -560,7 +612,7 @@ void inFrames(int fd, void **fs, size_t len) {
             case Z_BUF_ERROR:
                 break;
             default:
-                free(message);
+                allocs.free(message);
                 return;
         }
         message_length += default_chunk_size - comp->decompressor.avail_out;
@@ -579,8 +631,8 @@ void inFrames(int fd, void **fs, size_t len) {
             size = message_length-current_length;
         }
 
-        if ( unlikely(NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) ) {
-            free(message);
+        if ( unlikely(NULL == (frames[j]->payload = allocs.realloc(frames[j]->payload, size))) ) {
+            allocs.free(message);
             return;
         }
         memcpy(frames[j]->payload, message+current_length, size);
@@ -590,14 +642,28 @@ void inFrames(int fd, void **fs, size_t len) {
         frames[j]->payloadLength = size;
     }
 
-    free(message);
+    allocs.free(message);
 }
 
-void outFrame(int fd, void *f) {
+/**
+ * Event called when a frame_t of data is about to be sent.
+ *
+ * @param 	fd	    [int]               "The filedescriptor of the session"
+ * @param 	frame	[wss_frame_t *]     "A websocket frame"
+ * @return 	        [void]
+ */
+void outFrame(int fd, wss_frame_t *frame) {
 }
 
-void outFrames(int fd, void **fs, size_t len) {
-    frame_t **frames = (frame_t **)fs;
+/**
+ * Event called when a full set of frames are about to be sent.
+ *
+ * @param 	fd	      [int]             "The filedescriptor of the session"
+ * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
+ * @param 	len	      [size_t]          "The amount of frames"
+ * @return 	          [void]
+ */
+void outFrames(int fd, wss_frame_t **frames, size_t len) {
     size_t j, size;
     char *message = NULL;
     size_t payload_length = 0;
@@ -644,8 +710,8 @@ void outFrames(int fd, void **fs, size_t len) {
     comp->compressor.next_in = (unsigned char *)payload;
 
     do {
-        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
-            free(message);
+        if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
+            allocs.free(message);
             return; 
         }
         memset(message+message_length, '\0', default_chunk_size+2); 
@@ -658,7 +724,7 @@ void outFrames(int fd, void **fs, size_t len) {
             case Z_BUF_ERROR:
                 break;
             default:
-                free(message);
+                allocs.free(message);
                 return;
         }
         message_length += default_chunk_size - comp->compressor.avail_out;
@@ -668,8 +734,8 @@ void outFrames(int fd, void **fs, size_t len) {
     if (comp->params.server_no_context_takeover) {
         flush_mask = Z_FULL_FLUSH;
 
-        if ( unlikely(NULL == (message = realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
-            free(message);
+        if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
+            allocs.free(message);
             return; 
         }
         memset(message+message_length, '\0', default_chunk_size+2); 
@@ -682,7 +748,7 @@ void outFrames(int fd, void **fs, size_t len) {
             case Z_BUF_ERROR:
                 break;
             default:
-                free(message);
+                allocs.free(message);
                 return;
         }
         message_length += default_chunk_size - comp->compressor.avail_out;
@@ -710,8 +776,8 @@ void outFrames(int fd, void **fs, size_t len) {
             size = message_length-current_length;
         }
 
-        if ( unlikely(NULL == (frames[j]->payload = realloc(frames[j]->payload, size))) ) {
-            free(message);
+        if ( unlikely(NULL == (frames[j]->payload = allocs.realloc(frames[j]->payload, size))) ) {
+            allocs.free(message);
             return;
         }
         memcpy(frames[j]->payload, message+current_length, size);
@@ -721,7 +787,7 @@ void outFrames(int fd, void **fs, size_t len) {
         frames[j]->payloadLength = size;
     }
 
-    free(message);
+    allocs.free(message);
 }
 
 
@@ -746,7 +812,7 @@ void onClose(int fd) {
         (void)inflateEnd(&comp->decompressor);
         (void)deflateEnd(&comp->compressor);
 
-        free(comp);
+        allocs.free(comp);
     }
 
     pthread_mutex_unlock(&lock);
@@ -773,7 +839,7 @@ void onDestroy() {
             (void)inflateEnd(&comp->decompressor);
             (void)deflateEnd(&comp->compressor);
 
-            free(comp);
+            allocs.free(comp);
         }
     }
 

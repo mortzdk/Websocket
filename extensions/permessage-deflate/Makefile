@@ -54,6 +54,10 @@ FLAGS_EXTRA = -lz
 
 # Folders
 FOLDER = $(shell pwd)
+EXTENSIONS_FOLDER = $(FOLDER)/../
+
+# Includes
+INCLUDES = -I$(EXTENSIONS_FOLDER)
 
 # Files
 SRC = $(shell find $(FOLDER) -name '*.c' -type f;)
@@ -85,7 +89,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Creating Shared Object] ================ 
 	@echo
-	$(CC) -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ) $(FLAGS_EXTRA)
+	$(CC) -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ) $(FLAGS_EXTRA) $(INCLUDES)
 	@echo
 	@echo ================ [$(NAME).so compiled succesfully] ================ 
 	@echo
@@ -95,7 +99,7 @@ $(NAME): $(SRC_OBJ)
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(FLAGS_EXTRA)
+	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(FLAGS_EXTRA) $(INCLUDES)
 	@echo
 	@echo OK [$<] - [$@]
 	@echo

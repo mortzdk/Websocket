@@ -108,9 +108,14 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     WSS_log_trace("When choosing a cipher, use the server's preferences instead of the client preferences.");
     SSL_CTX_set_mode(server->ssl_ctx, SSL_OP_CIPHER_SERVER_PREFERENCE);
 
-    WSS_log_trace("Disable use of session cache and resumption");
-    SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+    WSS_log_trace("Disable use of session and ticket cache and resumption");
     SSL_CTX_set_session_cache_mode(server->ssl_ctx, SSL_SESS_CACHE_OFF);
+    SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_TICKET);
+    if (! SSL_CTX_set_num_tickets(server->ssl_ctx, 0)) {
+        WSS_log_error("Failed to set number of ticket to zero");
+        return WSS_SSL_CTX_ERROR;
+    }
+    SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
 
     if ( NULL != server->config->ssl_cipher_list ) {
         WSS_log_trace("Setting cipher list");

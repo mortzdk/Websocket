@@ -14,6 +14,7 @@ PROFILE = -Og -g -DNDEBUG
 DEBUG = -Og -g
 RELEASE = -O3 -funroll-loops -DNDEBUG
 SPACE = -Os -DNDEBUG
+MODE = "release"
 EXEC = $(RELEASE)
 
 #Compiler options
@@ -48,9 +49,10 @@ CFLAGS = $(EXEC) \
 	     -Wsign-compare \
 		 -Wuninitialized \
 		 -DWSS_SERVER_VERSION=\"$(VER)\" \
-		 -D_DEFAULT_SOURCE
+		 -D_DEFAULT_SOURCE \
+		 -DUSE_RPMALLOC
 
-CVER = -std=c99
+CVER = -std=c11
 
 # Flags
 FLAGS_EXTRA = -pthread -lm -ldl
@@ -67,8 +69,11 @@ DOCS_FOLDER = $(ROOT)/docs
 TEST_FOLDER = $(ROOT)/test
 CONF_FOLDER = $(ROOT)/conf
 REPORTS_FOLDER = $(ROOT)/reports
+EXTENSIONS_FOLDER = $(ROOT)/extensions
+SUBPROTOCOLS_FOLDER = $(ROOT)/subprotocols
 
-INCLUDES = -I$(INCLUDE_FOLDER) -I$(SRC_FOLDER)
+# Include folders
+INCLUDES = -I$(INCLUDE_FOLDER) -I$(SRC_FOLDER) -I$(EXTENSIONS_FOLDER) -I$(SUBPROTOCOLS_FOLDER)
 
 # Files
 SRC = $(shell find $(SRC_FOLDER) -name '*.c' -type f;)
@@ -85,10 +90,10 @@ ifeq ($(.SHELLSTATUS), 0)
 	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
 endif
 
-.PHONY: valgrind cachegrind callgrind clean autobahn count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+.PHONY: valgrind cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
-all: bin build docs log $(NAME)
+all: bin build docs log subprotocols extensions $(NAME)
 
 build:
 	if [[ ! -e $(BUILD_FOLDER) ]]; then mkdir -p $(BUILD_FOLDER); fi
@@ -104,15 +109,20 @@ docs: $(SRC)
 
 release_mode:
 	$(eval EXEC = $(RELEASE))
+	$(eval MODE = "release")
+
 
 debug_mode:
 	$(eval EXEC = $(DEBUG))
+	$(eval MODE = "debug")
 
 profiling_mode:
 	$(eval EXEC = $(PROFILE))
+	$(eval MODE = "profiling")
 
 space_mode:
 	$(eval EXEC = $(SPACE))
+	$(eval MODE = "space")
 
 # Recompile when headers change
 -include $(DEPS)
@@ -157,6 +167,13 @@ ${TEST_NAMES}: debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
 		${FLAGS_EXTRA} -lgcov ${FLAGS_CRITERION} $(INCLUDES)
 	@echo
 	@echo ================ [$@ compiled succesfully] ================
+
+extensions:
+	cd $(EXTENSIONS_FOLDER)/permessage-deflate/ && make $(MODE)
+
+subprotocols:
+	cd $(SUBPROTOCOLS_FOLDER)/echo/ && make $(MODE)
+	cd $(SUBPROTOCOLS_FOLDER)/broadcast/ && make $(MODE)
 
 #make valgrind
 valgrind: clean debug_mode all
@@ -210,6 +227,22 @@ autobahn: release
     --name fuzzingclient \
     wsserver/autobahn
 	pkill $(NAME) || true
+
+#make autobahn
+autobahn_debug: debug
+	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
+	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
+	sleep 3
+	docker build -t wsserver/autobahn -f Dockerfile .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${REPORTS_FOLDER}:/reports \
+    -p 9001:9001 \
+    --name fuzzingclient \
+    wsserver/autobahn
+	pkill -SIGINT memcheck
 
 #make autobahn_call
 autobahn_call: profiling

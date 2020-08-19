@@ -13,26 +13,16 @@
 #endif
 #endif
 
+#include "extension.h"
 #include "uthash.h"
 #include "config.h"
 
 #include <stdbool.h>
 
-/**
- * The extension API calls
- */
-typedef void (*extInit)(char *config);
-typedef void (*extOpen)(int fd, char *param, char **accepted, bool *valid);
-typedef void (*extInFrame)(int fd, void *frame);
-typedef void (*extInFrames)(int fd, void **frames, size_t len);
-typedef void (*extOutFrame)(int fd, void *frame);
-typedef void (*extOutFrames)(int fd,void **frames, size_t len);
-typedef void (*extClose)(int fd);
-typedef void (*extDestroy)();
-
 typedef struct {
     int *handle;
     char *name;
+    extAlloc alloc; 
     extInit init; 
     extOpen open; 
     extInFrame inframe; 
@@ -81,6 +71,6 @@ void WSS_destroy_extensions();
 /**
  * Global hashtable of extensions
  */
-wss_extension_t *extensions;
+extern wss_extension_t *extensions;
 
 #endif

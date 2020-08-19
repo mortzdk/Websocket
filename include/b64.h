@@ -9,16 +9,18 @@
 
 #include <stdlib.h>
 
+#include "alloc.h"
+
 /**
  *  Memory allocation functions to use. You can define b64_malloc and
  * b64_realloc to custom functions if you want.
  */
 
 #ifndef b64_malloc
-#  define b64_malloc(ptr) malloc(ptr)
+#  define b64_malloc(size) WSS_malloc(size)
 #endif
 #ifndef b64_realloc
-#  define b64_realloc(ptr, size) realloc(ptr, size)
+#  define b64_realloc(ptr, size) WSS_realloc((void **)&ptr, size, size)
 #endif
 
 /**

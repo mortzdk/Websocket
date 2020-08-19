@@ -21,6 +21,10 @@
             {
                 "file" : "subprotocols/echo/echo.so",
                 "config" : ""
+            },
+            {
+                "file" : "subprotocols/broadcast/broadcast.so",
+                "config" : ""
             }
         ],
         // Extensions to load with the server
@@ -35,15 +39,15 @@
         // Timeouts
         "timeouts" : {
             // How long the eventpoll should wait for a timeout. -1 is infinitely
-            "poll"   : -1,
+            "poll"   : 10,
             // How long, before timeouting reading from a client. -1 is infinitely
-            "read"   : -1,
+            "read"   : 10,
             // How long, before timeouting writing to a client. -1 is infinitely
-            "write"  : -1,
+            "write"  : 10,
             // How long, since a client last was active before timing out. -1 is infinitely
-            "client" : -1,
+            "client" : 600,
             // How many pings should be sent during the client timeout period
-            "pings"  : 0
+            "pings"  : 1
         },
         // Ports to assign the ws and wss to
 		"port" : {
@@ -83,7 +87,7 @@
             // The root CA certiface 
             "ca_file" : "",
             // Path to folder where root CA certificates are placed
-            "ca_path" : "",
+            "ca_path" : "/usr/lib/ssl/certs/",
             // Where the dhparam file is located
             "dhparam" : "",
             // Allowed TLS 2.0 and below ciphers

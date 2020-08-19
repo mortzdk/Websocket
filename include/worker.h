@@ -14,6 +14,7 @@
 #endif
 
 #include "server.h"
+#include "session.h"
 #include "uthash.h"
 
 #define MAGIC_WEBSOCKET_KEY         "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -73,35 +74,47 @@ typedef struct {
  * Function that disconnects a session and freeing any allocated memory used by
  * the session.
  *
- * @param 	args	[void *] "Is a args_t structure holding server_t and filedescriptor"
+ * @param 	server	[wss_server_t *] 	"The server structure"
+ * @param 	session	[wss_session_t *] 	"The session structure"
  * @return          [void]
  */
-void WSS_disconnect(void *args, int id);
+//void WSS_disconnect(void *args);
 
 /**
  * Function that handles new connections. This function creates a new session and
  * associates the sessions filedescriptor to the epoll instance such that we can
  * start communicating with the session.
  *
- * @param 	arg     [void *] 		"Is in fact a server_t instance"
+ * @param 	server	[wss_server_t *] 	"The server structure"
+ * @param 	session	[wss_session_t *] 	"The session structure"
  * @return          [void]
  */
-void WSS_connect(void *arg, int id);
+//void WSS_connect(void *arg);
 
 /**
  * Function that reads information from a session.
  *
- * @param 	args	[void *] 	"Is a args_t structure holding server_t and filedescriptor"
+ * @param 	server	[wss_server_t *] 	"The server structure"
+ * @param 	session	[wss_session_t *] 	"The session structure"
  * @return          [void]
  */
-void WSS_read(void *args, int id);
+//void WSS_read(void *args);
 
 /**
- * Function that writes information to a session.
+ * Function that writes information to a session
  *
- * @param 	args	[void *] 	"Is a args_t structure holding server_t and filedescriptor"
+ * @param 	server	[wss_server_t *] 	"The server structure"
+ * @param 	session	[wss_session_t *] 	"The session structure"
  * @return          [void]
  */
-void WSS_write(void *args, int id);
+void WSS_write(wss_server_t *server, wss_session_t *session);
+
+/**
+ * Function that performs and distributes the IO work.
+ *
+ * @param 	args	[void *] 	"Is a args_t structure holding server_t, filedescriptor, and the state"
+ * @return          [void]
+ */
+void WSS_work(void *args);
 
 #endif
