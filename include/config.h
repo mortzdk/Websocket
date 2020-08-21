@@ -43,7 +43,7 @@ typedef struct {
     char *ssl_cipher_suites;
     char *ssl_dhparam;
     bool ssl_compression;
-    bool peer_cert;
+    bool ssl_peer_cert;
     char *favicon;
     char **subprotocols;
     unsigned int subprotocols_length;

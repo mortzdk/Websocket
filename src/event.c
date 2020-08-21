@@ -106,9 +106,9 @@ wss_error_t WSS_add_to_threadpool(wss_server_t *server, void (*func)(void *), vo
                 WSS_log_fatal("Locking in thread failed");
                 return WSS_THREADPOOL_LOCK_ERROR;
             case threadpool_queue_full:
-                // TODO: Currently we treat a full threadpool as an error, but we
-                // could try to handle this by dynamically increasing size of
-                // threadpool, and maybe reset thread count to that of the
+                // TODO: Currently we treat a full threadpool as an error, but
+                // we could try to handle this by dynamically increasing size
+                // of threadpool, and maybe reset thread count to that of the
                 // configuration when the hot load is over
                 WSS_log_error("Threadpool queue is full");
                 return WSS_THREADPOOL_FULL_ERROR;
@@ -139,12 +139,11 @@ static struct timespec timeout;
  * Function that creates poll instance and adding the filedescriptor of the
  * servers socket to it.
  *
- * @param 	s     	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_init(void *s) {
+wss_error_t WSS_poll_init(wss_server_t *server) {
     struct kevent event;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_info("Using KQUEUE");
 
@@ -255,14 +254,13 @@ wss_error_t WSS_poll_init(void *s) {
  * Function that rearms the poll instance for write events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]	"A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_write(void *s, int fd) {
+wss_error_t WSS_poll_set_write(wss_server_t *server, int fd) {
     int ret;
     struct kevent event;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Rearms session %d for write events on kqueue", fd);
 
@@ -286,14 +284,13 @@ wss_error_t WSS_poll_set_write(void *s, int fd) {
  * Function that rearms the poll instance for read events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
- * @param 	fd	        [int]	            "The clients file descriptor"
- * @return 			    [wss_error_t]       "The error status"
+ * @param 	server      [wss_server_t *server]   "A pointer to a server structure"
+ * @param 	fd	        [int]	                 "The clients file descriptor"
+ * @return 			    [wss_error_t]            "The error status"
  */
-wss_error_t WSS_poll_set_read(void *s, int fd) {
+wss_error_t WSS_poll_set_read(wss_server_t *server, int fd) {
     int ret;
     struct kevent event;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Rearms session %d for read events on kqueue", fd);
 
@@ -316,14 +313,13 @@ wss_error_t WSS_poll_set_read(void *s, int fd) {
 /**
  * Function removes the client filedescriptor from the poll instance 
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_remove(void *s, int fd) {
+wss_error_t WSS_poll_remove(wss_server_t *server, int fd) {
     int ret;
     struct kevent event;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Removes session %d from kqueue", fd);
 
@@ -355,13 +351,12 @@ wss_error_t WSS_poll_remove(void *s, int fd) {
 /**
  * Function that listens for new events on the servers file descriptor 
  *
- * @param 	s	        [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_delegate(void *s) {
+wss_error_t WSS_poll_delegate(wss_server_t *server) {
     int i, n, fd;
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
     struct kevent *events = (struct kevent *) server->events;
 
 #ifdef USE_OPENSSL
@@ -542,12 +537,11 @@ static inline wss_error_t WSS_poll_add(int poll_fd, int fd, uint32_t events) {
  * Function that creates poll instance and adding the filedescriptor of the
  * servers socket to it.
  *
- * @param 	s     	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_init(void *s) {
+wss_error_t WSS_poll_init(wss_server_t *server) {
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
     struct epoll_event event;
 
     memset(&event, 0, sizeof(event));
@@ -636,13 +630,12 @@ wss_error_t WSS_poll_init(void *s) {
  * Function that rearms the poll instance for write events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
- * @param 	fd	        [int]	            "The clients file descriptor"
- * @return 			    [wss_error_t]       "The error status"
+ * @param 	server      [wss_server_t *server]      "A pointer to a server structure"
+ * @param 	fd	        [int]	                    "The clients file descriptor"
+ * @return 			    [wss_error_t]               "The error status"
  */
-wss_error_t WSS_poll_set_write(void *s, int fd) {
+wss_error_t WSS_poll_set_write(wss_server_t *server, int fd) {
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Rearms session %d for write epoll events", fd);
 
@@ -659,13 +652,12 @@ wss_error_t WSS_poll_set_write(void *s, int fd) {
  * Function that rearms the poll instance for read events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_read(void *s, int fd) {
+wss_error_t WSS_poll_set_read(wss_server_t *server, int fd) {
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Rearms session %d for read epoll events", fd);
 
@@ -681,14 +673,13 @@ wss_error_t WSS_poll_set_read(void *s, int fd) {
 /**
  * Function removes the client filedescriptor from the poll instance 
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_remove(void *s, int fd) {
+wss_error_t WSS_poll_remove(wss_server_t *server, int fd) {
     struct epoll_event event;
     int ret;
-    wss_server_t *server = (wss_server_t *) s;
 
     WSS_log_trace("Removing session %d from epoll events", fd);
 
@@ -712,13 +703,12 @@ wss_error_t WSS_poll_remove(void *s, int fd) {
 /**
  * Function that listens for new events on the servers file descriptor 
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_delegate(void *s) {
+wss_error_t WSS_poll_delegate(wss_server_t *server) {
     int i, n;
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
     struct epoll_event *events = server->events;
 
 #ifdef USE_OPENSSL
@@ -861,10 +851,10 @@ static unsigned int MAXEVENTS;
  * Function that creates poll instance and adding the filedescriptor of the
  * servers socket to it.
  *
- * @param 	s	        [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_init(void *s) {
+wss_error_t WSS_poll_init(wss_server_t *server) {
     unsigned int i;
     wss_error_t err;
     struct rlimit limits;
@@ -947,12 +937,11 @@ wss_error_t WSS_poll_init(void *s) {
  * Function that rearms the poll instance for write events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_write(void *s, int fd) {
-    wss_server_t *server = (wss_server_t *) s;
+wss_error_t WSS_poll_set_write(wss_server_t *server, int fd) {
     struct pollfd *events = (struct pollfd *) server->events;
 
     if ( unlikely((unsigned int)fd >= MAXEVENTS) ) {
@@ -977,12 +966,11 @@ wss_error_t WSS_poll_set_write(void *s, int fd) {
  * Function that rearms the poll instance for read events with the clients
  * filedescriptor
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]    "A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_read(void *s, int fd) {
-    wss_server_t *server = (wss_server_t *) s;
+wss_error_t WSS_poll_set_read(wss_server_t *server, int fd) {
     struct pollfd *events = (struct pollfd *) server->events;
 
     if ( unlikely((unsigned int)fd >= MAXEVENTS) ) {
@@ -1006,12 +994,11 @@ wss_error_t WSS_poll_set_read(void *s, int fd) {
 /**
  * Function removes the client filedescriptor from the poll instance 
  *
- * @param 	s   	    [void *]	        "A pointer to a server structure"
+ * @param 	server      [wss_server_t *]	"A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_remove(void *s, int fd) {
-    wss_server_t *server = (wss_server_t *) s;
+wss_error_t WSS_poll_remove(wss_server_t *server, int fd) {
     struct pollfd *events = (struct pollfd *) server->events;
 
     if ( unlikely((unsigned int)fd >= MAXEVENTS) ) {
@@ -1033,15 +1020,14 @@ wss_error_t WSS_poll_remove(void *s, int fd) {
 /**
  * Function that listens for new events on the servers file descriptor 
  *
- * @param 	s     	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]    "A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_delegate(void *s) {
+wss_error_t WSS_poll_delegate(wss_server_t *server) {
     int n, i;
     int start = 0;
     int fd;
     wss_error_t err;
-    wss_server_t *server = (wss_server_t *) s;
     int end = server->max_fd;
     struct pollfd *events = (struct pollfd *) server->events;
 
@@ -1193,9 +1179,13 @@ wss_error_t WSS_poll_delegate(void *s) {
 }
 #endif
 
-wss_error_t WSS_poll_close(void *s) {
-    wss_server_t *server = (wss_server_t *) s;
-
+/**
+ * Function that cleanup poll function when closing
+ *
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
+ * @return 			    [wss_error_t]       "The error status"
+ */
+wss_error_t WSS_poll_close(wss_server_t *server) {
     if ( likely(server->rearm_pipefd[0] != -1) ) {
         close(server->rearm_pipefd[0]);
         server->rearm_pipefd[0] = -1;
@@ -1218,4 +1208,3 @@ wss_error_t WSS_poll_close(void *s) {
 
     return WSS_SUCCESS;
 }
-

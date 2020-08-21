@@ -239,7 +239,7 @@ static wss_message_t *favicon_response(wss_header_t *header, enum HttpStatus_Cod
     int icon = 0, line = 0, headers = 0;
 
     // Get GMT current time
-    strcpy(savedlocale, setlocale(LC_ALL, NULL));
+    strncpy(savedlocale, setlocale(LC_ALL, NULL), 255);
     setlocale(LC_ALL, "C");
     now = time(0);
     tm = *gmtime(&now);
@@ -393,7 +393,7 @@ static wss_message_t *http_response(wss_header_t *header, enum HttpStatus_Code c
     char savedlocale[256];
     char *version = "HTTP/1.1";
     const char *reason  = HttpStatus_reasonPhrase(code);
-    int body = 0, line = 0, headers = 0;
+    int body = 0, line = 0, headers = 0, support = 0;
 
     savedlocale[255] = '\0';
 
@@ -420,19 +420,25 @@ static wss_message_t *http_response(wss_header_t *header, enum HttpStatus_Code c
     body += strlen(reason)*sizeof(char);
     body += strlen(exp)*sizeof(char);
 
+    if (code == HttpStatus_NotImplemented) {
+        support = strlen(HTTP_WS_VERSION_HEADER)*sizeof(char)-6*sizeof(char);
+    }
     headers += strlen(HTTP_HTML_HEADERS)*sizeof(char)-6*sizeof(char);
     headers += strlen(WSS_SERVER_VERSION)*sizeof(char);
     headers += strlen(date)*sizeof(char);
     headers += (log10(body)+1)*sizeof(char);
 
-    length = line + headers + body + 1;
+    length = line + support + headers + body + 1;
     if ( unlikely(NULL == (message = (char *) WSS_malloc(length*sizeof(char)))) ) {
         return NULL;
     }
 
     sprintf(message, HTTP_STATUS_LINE, version, code, reason);
-    sprintf(message+line, HTTP_HTML_HEADERS, body, date, WSS_SERVER_VERSION);
-    sprintf(message+line+headers, HTTP_BODY, code, reason, reason, exp);
+    if (code == HttpStatus_NotImplemented) {
+        sprintf(message+support, HTTP_WS_VERSION_HEADER, RFC6455, HYBI10, HYBI07); 
+    }
+    sprintf(message+support+line, HTTP_HTML_HEADERS, body, date, WSS_SERVER_VERSION);
+    sprintf(message+support+line+headers, HTTP_BODY, code, reason, reason, exp);
 
     if ( unlikely(NULL == (msg = (wss_message_t *) WSS_malloc(sizeof(wss_message_t)))) ) {
         WSS_free((void **) &message);
@@ -919,7 +925,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     if ( (code = WSS_parse_header(session->fd, header, server->config)) != HttpStatus_OK ) {
         WSS_log_trace("Rejecting HTTP request due to header not being correct");
 
-        message = http_response(header, code, "Unable to parse header");
+        message = http_response(header, code, (char *)HttpStatus_reasonPhrase(code));
         WSS_free_header(header);
 
         if ( likely(NULL != message && WSS_SUCCESS == write_internal(session, message)) ) {
@@ -950,7 +956,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
 
             // Else notify client that favicon could not be found
             code = HttpStatus_NotFound;
-            message = http_response(header, code, "File not found");
+            message = http_response(header, code, (char *)HttpStatus_reasonPhrase(code));
             WSS_free_header(header);
 
             if ( likely(NULL != message && WSS_SUCCESS == write_internal(session, message)) ) {
@@ -984,7 +990,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
         case HttpStatus_NotFound:
             WSS_log_trace("Rejecting HTTP request as the page requested was not found.");
             message = http_response(header, code,
-                    "The page requested was not found.");
+                    (char *)HttpStatus_reasonPhrase(code));
             break;
         case HttpStatus_Forbidden:
             WSS_log_trace("Rejecting HTTP request as the origin is not allowed to establish a websocket connection.");
@@ -994,7 +1000,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
         default:
             WSS_log_trace("Rejecting HTTP request as server was unable to parse http header as websocket request");
             message = http_response(header, code,
-                    "Unable to parse http header as websocket request");
+                    (char *)HttpStatus_reasonPhrase(code));
             break;
     }
 
@@ -1210,6 +1216,13 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
         // Control frames cannot have a payload length larger than 125 bytes
         if ( unlikely(frame->opcode >= 0x8 && frame->opcode <= 0xA && frame->payloadLength > 125) ) {
             WSS_log_trace("Protocol Error: Control frames cannot have payload larger than 125 bytes");
+            WSS_free_frame(frame);
+            frame = WSS_closing_frame(CLOSE_PROTOCOL, NULL);
+        } else
+
+        // In HYBI10 specification the most significant bit must not be set
+        if ( unlikely((session->header->ws_type == HYBI10 || session->header->ws_type == HYBI07) && frame->payloadLength & ((uint64_t)1 << (sizeof(uint64_t)*8-1))) ) {
+            WSS_log_trace("Protocol Error: Frame payload length must not use MSB");
             WSS_free_frame(frame);
             frame = WSS_closing_frame(CLOSE_PROTOCOL, NULL);
         } else

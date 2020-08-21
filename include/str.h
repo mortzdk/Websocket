@@ -13,15 +13,6 @@
 char *bin2hex(const unsigned char *bin, size_t len);
 
 /**
- * Function that prints a string as hex to stdout.
- *
- * @param 	s	    [const unsigned char *]     "The binary value"
- * @param 	len     [size_t] 	                "The length of the binary value"
- * @return 	        [char *]                    "The hexidecimal representation of the text string in a new memory block"
- */
-char *str2hex(const unsigned char *s, size_t len);
-
-/**
  * Function that looks for a value in a char * array.
  *
  * A value is said to be found if the prefix of the needle is contained in the

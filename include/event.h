@@ -27,55 +27,55 @@ typedef struct {
  * Function that creates poll instance and adding the filedescriptor of the
  * servers socket to it.
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_init(void *server);
+wss_error_t WSS_poll_init(wss_server_t *server);
 
 /**
  * Function that rearms the poll instance for write events with the clients
  * filedescriptor
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_write(void *server, int fd);
+wss_error_t WSS_poll_set_write(wss_server_t *server, int fd);
 
 /**
  * Function that rearms the poll instance for read events with the clients
  * filedescriptor
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_set_read(void *server, int fd);
+wss_error_t WSS_poll_set_read(wss_server_t *server, int fd);
 
 /**
  * Function removes the client filedescriptor from the poll instance 
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @param 	fd	        [int]	            "The clients file descriptor"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_remove(void *server, int fd);
+wss_error_t WSS_poll_remove(wss_server_t *server, int fd);
 
 /**
  * Function that listens for new events on the servers file descriptor 
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_delegate(void *server);
+wss_error_t WSS_poll_delegate(wss_server_t *server);
 
 /**
  * Function that cleanup poll function when closing
  *
- * @param 	server	    [void *]	        "A pointer to a server structure"
+ * @param 	server	    [wss_server_t *]	"A pointer to a server structure"
  * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_poll_close(void *server);
+wss_error_t WSS_poll_close(wss_server_t *server);
 
 extern int close_pipefd[2];
 

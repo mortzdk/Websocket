@@ -88,18 +88,20 @@ Include dependency graph for alloc.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab3fc309856618b0d4fb62166200edb01"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#ab3fc309856618b0d4fb62166200edb01">WSS_copy</a> (void *ptr, size_t size)</td></tr>
+<tr class="separator:ab3fc309856618b0d4fb62166200edb01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aafc61d568f2f093f1f72238f51fbdba4"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a> (size_t size)</td></tr>
 <tr class="separator:aafc61d568f2f093f1f72238f51fbdba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b131587ca7ef3fc3e242720f404197f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#a4b131587ca7ef3fc3e242720f404197f">WSS_calloc</a> (size_t memb, size_t size)</td></tr>
 <tr class="separator:a4b131587ca7ef3fc3e242720f404197f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e256791db29407ee9b80ae3728307cd"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a> (void **ptr, size_t oldSize, size_t newSize)</td></tr>
 <tr class="separator:a6e256791db29407ee9b80ae3728307cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb401b1a3ce456d6562d511412ccf61a"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#aeb401b1a3ce456d6562d511412ccf61a">WSS_realloc2</a> (void *ptr, size_t newSize)</td></tr>
-<tr class="separator:aeb401b1a3ce456d6562d511412ccf61a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bd20cb7531b6391cd01365110e74f7f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#a2bd20cb7531b6391cd01365110e74f7f">WSS_realloc_normal</a> (void *ptr, size_t newSize)</td></tr>
+<tr class="separator:a2bd20cb7531b6391cd01365110e74f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5bbb4cc11f30e61eb1864814ffce480"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a> (void **ptr)</td></tr>
 <tr class="separator:af5bbb4cc11f30e61eb1864814ffce480"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a296507e7a16b9b6a1062263cde33c2f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#a296507e7a16b9b6a1062263cde33c2f2">WSS_free2</a> (void *ptr)</td></tr>
-<tr class="separator:a296507e7a16b9b6a1062263cde33c2f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06098e503f378ecb6ef7de31faa91f31"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="alloc_8c.html#a06098e503f378ecb6ef7de31faa91f31">WSS_free_normal</a> (void *ptr)</td></tr>
+<tr class="separator:a06098e503f378ecb6ef7de31faa91f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a4b131587ca7ef3fc3e242720f404197f"></a>
@@ -136,9 +138,49 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>buffer [void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00041">41</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00061">61</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+
+</div>
+</div>
+<a id="ab3fc309856618b0d4fb62166200edb01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3fc309856618b0d4fb62166200edb01">&#9670;&nbsp;</a></span>WSS_copy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* WSS_copy </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function that allocates memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ptr</td><td>[void *] "The memory that needs to be copies" </td></tr>
+    <tr><td class="paramname">void</td><td>[size_t] "The size of the memory that should be copied" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00013">13</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>
@@ -167,18 +209,18 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00121">121</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00144">144</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>
-<a id="a296507e7a16b9b6a1062263cde33c2f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a296507e7a16b9b6a1062263cde33c2f2">&#9670;&nbsp;</a></span>WSS_free2()</h2>
+<a id="a06098e503f378ecb6ef7de31faa91f31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06098e503f378ecb6ef7de31faa91f31">&#9670;&nbsp;</a></span>WSS_free_normal()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void WSS_free2 </td>
+          <td class="memname">void WSS_free_normal </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>ptr</em></td><td>)</td>
@@ -188,6 +230,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Function that re-allocates some memory. </p>
+<p>The interface is of this function is similar to the free(3) function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ptr</td><td>[void *] "The memory that needs to be freed" </td></tr>
@@ -196,7 +239,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00139">139</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00163">163</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>
@@ -224,11 +267,11 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>buffer [void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
 </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00012">12</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00032">32</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>
@@ -273,20 +316,20 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>buffer [void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00069">69</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00091">91</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>
-<a id="aeb401b1a3ce456d6562d511412ccf61a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb401b1a3ce456d6562d511412ccf61a">&#9670;&nbsp;</a></span>WSS_realloc2()</h2>
+<a id="a2bd20cb7531b6391cd01365110e74f7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bd20cb7531b6391cd01365110e74f7f">&#9670;&nbsp;</a></span>WSS_realloc_normal()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void* WSS_realloc2 </td>
+          <td class="memname">void* WSS_realloc_normal </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>ptr</em>, </td>
@@ -306,16 +349,17 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Function that re-allocates some memory. </p>
+<p>The interface is of this function is similar to the realloc(3) function.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ptr</td><td>[void **] "The memory that needs to be rearranged" </td></tr>
+    <tr><td class="paramname">ptr</td><td>[void *] "The memory that needs to be rearranged" </td></tr>
     <tr><td class="paramname">newSize</td><td>[size_t] "The size of the memory that should be allocated" </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>buffer [void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>[void *] "Returns pointer to allocated memory if successful, otherwise NULL" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00110">110</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="alloc_8c_source.html#l00133">133</a> of file <a class="el" href="alloc_8c_source.html">alloc.c</a>.</p>
 
 </div>
 </div>

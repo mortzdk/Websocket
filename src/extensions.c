@@ -132,7 +132,7 @@ void WSS_load_extensions(wss_config_t *config)
 
         WSS_log_trace("Setting custom allocators for extension %s", proto->name);
 
-        proto->alloc(WSS_malloc, WSS_realloc2, WSS_free2);
+        proto->alloc(WSS_malloc, WSS_realloc_normal, WSS_free_normal);
 
         WSS_log_trace("Initializing extension %s", proto->name);
 

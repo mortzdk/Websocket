@@ -19,6 +19,20 @@
 #include "sha1.h"
 #endif
 
+static void setup(void) {
+#ifdef USE_RPMALLOC
+    rpmalloc_initialize();
+#endif
+}
+
+static void teardown(void) {
+#ifdef USE_RPMALLOC
+    rpmalloc_finalize();
+#endif
+}
+
+TestSuite(bin2hex, .init = setup, .fini = teardown);
+
 Test(bin2hex, zero_length) {
     char *string = "";
     char *str = bin2hex((const char unsigned *) string, 0);
@@ -37,10 +51,9 @@ Test(bin2hex, simple_string) {
     str = bin2hex(string, strlen((char *)string));
 
     cr_assert(str != NULL);
-
     cr_assert(strncmp(str, "3132333435", 10) == 0); 
 
-    WSS_free((void**)&str);
+    WSS_free((void **)&str);
     WSS_free((void **) &string);
 }
 
@@ -74,6 +87,8 @@ Test(bin2hex, sha1_string) {
     WSS_free((void **) &str);
     WSS_free((void **) &string);
 }
+
+TestSuite(strinarray, .init = setup, .fini = teardown);
 
 Test(strinarray, test_zero_length) {
     int i;
@@ -152,6 +167,8 @@ Test(strinarray, test_string_in_array) {
     WSS_free((void **)&array);
 }
 
+TestSuite(strload, .init = setup, .fini = teardown);
+
 Test(strload, none_existing_file) {
     int n;
     char *content;
@@ -170,4 +187,6 @@ Test(strload, load_txt_file) {
 
     cr_assert(n == 34);
     cr_assert(strncmp(content, "This is a file, used for testing.\n", n) == 0);
+
+    WSS_free((void **)&content);
 }

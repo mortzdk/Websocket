@@ -397,7 +397,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                             // Getting whether peer certificate is required
                             temp = json_value_find(val, "peer_cert");
                             if ( temp != NULL && likely(temp->type == json_boolean) ) {
-                                config->peer_cert = temp->u.boolean;
+                                config->ssl_peer_cert = temp->u.boolean;
                             }
 
                             // Getting diffie helman parameters to use

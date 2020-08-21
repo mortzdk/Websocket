@@ -35,6 +35,7 @@
                                     "Date: %s\r\n"\
                                     "Server: WSServer/%s\r\n"\
                                     "\r\n"
+#define HTTP_WS_VERSION_HEADER      "Sec-WebSocket-Version: %d, %d, %d\r\n"
 #define HTTP_UPGRADE_HEADERS        "Content-Type: text/plain\r\n"\
                                     "Content-Length: %d\r\n"\
                                     "Connection: Upgrade\r\n"\

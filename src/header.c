@@ -19,6 +19,23 @@
 #include "extensions.h"
 #include "predict.h"
 
+static char *str2hex(const unsigned char *s, size_t len)
+{
+    char *out;
+    size_t i, offset = 0;
+
+    if ( unlikely(NULL == (out = (char *) WSS_malloc(len*5+1))) ) {
+        return NULL;
+    }
+
+    for (i = 0; likely(i < len); i++) {
+        sprintf(out+offset, "0x%02x ", (short) s[i]);
+        offset += 5;
+    }
+
+    return out;
+}
+
 /**
  * Acceptable HTTP methods
  */
@@ -108,17 +125,33 @@ static inline void header_set_version(wss_header_t *header, char *v) {
  */
 enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config) {
     bool valid, in_use;
-    size_t i;
+    size_t i, line_length;
     char *tokenptr, *lineptr, *sepptr, *paramptr, *temp, *line, *sep, *accepted;
-    unsigned int header_size = 0;
-    char *token = strtok_r(header->content, "\r\n", &tokenptr);
+    char *token, *name; 
     wss_subprotocol_t *proto;
     wss_extension_t *ext;
+    char *extensions = NULL;
+    unsigned int header_size = 0;
+    size_t extensions_length = 0;
 
     WSS_log_trace("Parsing HTTP header");
 
-    if ( unlikely(NULL == token) ) {
+    if ( unlikely(NULL == header->content) ) {
         WSS_log_trace("No header content");
+        return HttpStatus_BadRequest;
+    }
+
+    token = strtok_r(header->content, "\r", &tokenptr);
+
+    if ( likely(tokenptr[0] == '\n') ) {
+        tokenptr++;
+    } else if ( unlikely(tokenptr[0] != '\0') ) {
+        WSS_log_trace("Line shall always end with newline character");
+        return HttpStatus_BadRequest;
+    }
+
+    if ( unlikely(NULL == token) ) {
+        WSS_log_trace("No first line of header");
         return HttpStatus_BadRequest;
     }
 
@@ -153,7 +186,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
             strncasecmp("http://", header->path, sizeof(char)*7) != 0 &&
             strncasecmp("https://", header->path, sizeof(char)*8) != 0) ) {
         WSS_log_trace("The request URI is not absolute URI nor relative path.");
-        return HttpStatus_NotFound;
+        return HttpStatus_BadRequest;
     }
 
     /**
@@ -170,7 +203,28 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         return HttpStatus_HTTPVersionNotSupported;
     }
 
-    token = strtok_r(NULL, "\r\n", &tokenptr);
+    // We've reached the payload
+    if ( unlikely(strlen(token) >= 2 && tokenptr[0] == '\r' && tokenptr[1] == '\n') ) {
+        tokenptr += 2;
+
+        if ( unlikely(strlen(tokenptr) > config->size_payload) ) {
+            WSS_log_trace("Payload size received is too large.");
+            return HttpStatus_PayloadTooLarge;
+        }
+
+        header->payload = tokenptr;
+        token = NULL;
+    } else {
+        token = strtok_r(NULL, "\r", &tokenptr);
+
+        if ( likely(tokenptr[0] == '\n') ) {
+            tokenptr++;
+        } else if ( unlikely(tokenptr[0] != '\0') ) {
+            WSS_log_trace("Line shall always end with newline character");
+            return HttpStatus_BadRequest;
+        }
+    }
+
     while ( likely(NULL != token) ) {
         header_size += strlen(token);
 
@@ -180,9 +234,11 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         }
 
         line = strtok_r(token, ":", &lineptr);
+        line_length = strlen(line);
 
         if ( likely(line != NULL) ) {
-            if ( strncasecmp("Sec-WebSocket-Version", line, 21) == 0 ) {
+            if ( line_length == strlen(SEC_WEBSOCKET_VERSION) && 
+                strncasecmp(SEC_WEBSOCKET_VERSION, line, line_length) == 0 ) {
                 // The |Sec-WebSocket-Version| header field MUST NOT appear more than once in an HTTP request.
                 if ( unlikely(header->ws_version != 0) ) {
                     WSS_log_trace("Sec-WebSocket-Version must only appear once in header");
@@ -195,15 +251,20 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
 
                     sep = trim(strtok_r(NULL, ",", &sepptr));
                 }
-            } else if ( strncasecmp("Upgrade", line, 7) == 0) {
+            } else if ( line_length == strlen(UPGRADE_STRING) &&
+                        strncasecmp(UPGRADE_STRING, line, line_length) == 0 ) {
                 header->ws_upgrade = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("Origin", line, 6) == 0 ) {
+            } else if ( line_length == strlen(ORIGIN_STRING) &&
+                        strncasecmp(ORIGIN_STRING, line, line_length) == 0 ) {
                 header->ws_origin = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("Connection", line, 10) == 0 ) {
+            } else if ( line_length == strlen(CONNECTION_STRING) &&
+                        strncasecmp(CONNECTION_STRING, line, line_length) == 0 ) {
                 header->ws_connection = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("Cookie", line, 6) == 0 ) {
+            } else if ( line_length == strlen(COOKIE_STRING) &&
+                        strncasecmp(COOKIE_STRING, line, line_length) == 0 ) {
                 header->cookies = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("Sec-WebSocket-Protocol", line, 22) == 0 ) {
+            } else if ( line_length == strlen(SEC_WEBSOCKET_PROTOCOL) &&
+                        strncasecmp(SEC_WEBSOCKET_PROTOCOL, line, line_length) == 0 ) {
                 if (NULL == header->ws_protocol) {
                     sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
                     if (NULL != sep && NULL != (proto = WSS_find_subprotocol(sep))) {
@@ -217,55 +278,34 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
                         }
                     }
                 }
-            } else if (strncasecmp("Sec-WebSocket-Origin", line, 20) == 0) {
+            } else if ( line_length == strlen(SEC_WEBSOCKET_ORIGIN) &&
+                        strncasecmp(SEC_WEBSOCKET_ORIGIN, line, line_length) == 0 ) {
                 header->ws_origin = (strtok_r(NULL, "", &lineptr)+1);
-            } else if (strncasecmp("Sec-WebSocket-Key", line, 17) == 0) {
+            } else if ( line_length == strlen(SEC_WEBSOCKET_KEY) &&
+                        strncasecmp(SEC_WEBSOCKET_KEY, line, line_length) == 0 ) {
                 //The |Sec-WebSocket-Key| header field MUST NOT appear more than once in an HTTP request.
                 if ( unlikely(header->ws_key != NULL) ) {
                     WSS_log_trace("Sec-WebSocket-Key must only appear once in header");
                     return HttpStatus_BadRequest;
                 }
                 header->ws_key = (strtok_r(NULL, "", &lineptr)+1);
-            } else if (strncasecmp("Sec-WebSocket-Extensions", line, 24) == 0 ) {
-                sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
-                while(NULL != sep) {
-                    in_use = false;
-                    sep = trim(strtok_r(sep, ";", &paramptr));
-
-                    if (NULL != (ext = WSS_find_extension(sep))) {
-                        for (i = 0; i < header->ws_extensions_count; i++) {
-                            if ( unlikely(header->ws_extensions[i]->ext == ext) ) {
-                                in_use = true; 
-                                break;
-                            }
-                        }
-
-                        if ( likely(! in_use) ) {
-                            ext->open(fd, trim(paramptr), &accepted, &valid); 
-                            if ( likely(valid) ) {
-                                if ( unlikely(NULL == (header->ws_extensions = WSS_realloc((void **) &header->ws_extensions, header->ws_extensions_count*sizeof(wss_ext_t *), (header->ws_extensions_count+1)*sizeof(wss_ext_t *)))) ) {
-                                    WSS_log_error("Unable to allocate space for extension");
-                                    return HttpStatus_InternalServerError;
-                                }
-
-                                if ( unlikely(NULL == (header->ws_extensions[header->ws_extensions_count] = WSS_malloc(sizeof(wss_ext_t))))) {
-                                    WSS_log_error("Unable to allocate space for extension structure");
-                                    return HttpStatus_InternalServerError;
-                                }
-                                header->ws_extensions[header->ws_extensions_count]->ext = ext;
-                                header->ws_extensions[header->ws_extensions_count]->name = sep;
-                                header->ws_extensions[header->ws_extensions_count]->accepted = accepted;
-                                header->ws_extensions_count += 1;
-                            }
-                        }
-                    }
-
-                    sep = trim(strtok_r(NULL, ",", &sepptr));
+            } else if ( line_length == strlen(SEC_WEBSOCKET_EXTENSIONS) &&
+                        strncasecmp(SEC_WEBSOCKET_EXTENSIONS, line, line_length) == 0 ) {
+                line = trim(strtok_r(NULL, "", &lineptr));
+                line_length = strlen(line);
+                if ( NULL == (extensions = WSS_realloc((void **)&extensions, extensions_length, (extensions_length+line_length+1)*sizeof(char))) ) {
+                    WSS_log_error("Unable to allocate space for extensions string");
+                    return HttpStatus_InternalServerError;
                 }
-            } else if ( strncasecmp("Host", line, 4) == 0 ) {
+
+                memcpy(extensions+extensions_length, line, line_length);
+                extensions_length += line_length;
+            } else if ( line_length == strlen(HOST_STRING) &&
+                        strncasecmp(HOST_STRING, line, line_length) == 0 ) {
                 header->host = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("WebSocket-Protocol", line, 18) == 0 ) {
-                header->ws_type = HIXIE;
+            } else if ( line_length == strlen(WEBSOCKET_PROTOCOL_STRING) &&
+                        strncasecmp(WEBSOCKET_PROTOCOL_STRING, line, line_length) == 0 ) {
+                header->ws_type = HIXIE75;
                 if (NULL == header->ws_protocol) {
                     sep = trim(strtok_r(strtok_r(NULL, "", &lineptr), ",", &sepptr));
                     if (NULL != sep && NULL != (proto = WSS_find_subprotocol(sep))) {
@@ -279,38 +319,89 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
                         }
                     }
                 }
-            } else if ( strncasecmp("Sec-WebSocket-Key1", line, 18) == 0 ) {
-                header->ws_type = HYBI;
+            } else if ( line_length == strlen(SEC_WEBSOCKET_KEY1) &&
+                        strncasecmp(SEC_WEBSOCKET_KEY1, line, line_length) == 0 ) {
+                header->ws_type = HIXIE76;
                 header->ws_key1 = (strtok_r(NULL, "", &lineptr)+1);
-            } else if ( strncasecmp("Sec-WebSocket-Key2", line, 18) == 0 ) {
-                header->ws_type = HYBI;
+            } else if ( line_length == strlen(SEC_WEBSOCKET_KEY2) &&
+                        strncasecmp(SEC_WEBSOCKET_KEY2, line, line_length) == 0 ) {
+                header->ws_type = HIXIE76;
                 header->ws_key2 = (strtok_r(NULL, "", &lineptr)+1);
             }
         }
 
-        tokenptr++;
         // We've reached the payload
         if ( unlikely(strlen(tokenptr) >= 2 && tokenptr[0] == '\r' && tokenptr[1] == '\n') ) {
-            temp = strtok_r(NULL, "\r\n", &tokenptr);
+            tokenptr += 2;
 
             if ( unlikely(strlen(tokenptr) > config->size_payload) ) {
                 WSS_log_trace("Payload size received is too large.");
                 return HttpStatus_PayloadTooLarge;
             }
 
-            tokenptr++;
             header->payload = tokenptr;
             temp = NULL;
         } else {
-            temp = strtok_r(NULL, "\r\n", &tokenptr);
+            temp = strtok_r(NULL, "\r", &tokenptr);
+
+            if ( likely(tokenptr[0] == '\n') ) {
+                tokenptr++;
+            } else if ( unlikely(tokenptr[0] != '\0') ) {
+                WSS_log_trace("Line shall always end with newline character");
+                return HttpStatus_BadRequest;
+            }
         }
 
-        if ( unlikely(temp == NULL && header->ws_type == HYBI) ) {
-            header->ws_type = HYBI;
-            header->ws_key3 = token;
+        if ( unlikely(temp == NULL && header->ws_type == HIXIE76) ) {
+            header->ws_type = HIXIE76;
+            header->ws_key3 = header->payload;
         }
 
         token = temp;
+    }
+
+    if ( NULL != extensions ) {
+        sep = trim(strtok_r(extensions, ",", &sepptr));
+        while(NULL != sep) {
+            in_use = false;
+            sep = trim(strtok_r(sep, ";", &paramptr));
+
+            if ( NULL == (name = WSS_copy(sep, strlen(sep)+1)) ) {
+                WSS_log_error("Unable to allocate space for extension structure");
+                return HttpStatus_InternalServerError;
+            }
+
+            if (NULL != (ext = WSS_find_extension(name))) {
+                for (i = 0; i < header->ws_extensions_count; i++) {
+                    if ( unlikely(header->ws_extensions[i]->ext == ext) ) {
+                        in_use = true; 
+                        break;
+                    }
+                }
+
+                if ( likely(! in_use) ) {
+                    ext->open(fd, trim(paramptr), &accepted, &valid); 
+                    if ( likely(valid) ) {
+                        if ( unlikely(NULL == (header->ws_extensions = WSS_realloc((void **) &header->ws_extensions, header->ws_extensions_count*sizeof(wss_ext_t *), (header->ws_extensions_count+1)*sizeof(wss_ext_t *)))) ) {
+                            WSS_log_error("Unable to allocate space for extension");
+                            return HttpStatus_InternalServerError;
+                        }
+
+                        if ( unlikely(NULL == (header->ws_extensions[header->ws_extensions_count] = WSS_malloc(sizeof(wss_ext_t))))) {
+                            WSS_log_error("Unable to allocate space for extension structure");
+                            return HttpStatus_InternalServerError;
+                        }
+                        header->ws_extensions[header->ws_extensions_count]->ext = ext;
+                        header->ws_extensions[header->ws_extensions_count]->name = name;
+                        header->ws_extensions[header->ws_extensions_count]->accepted = accepted;
+                        header->ws_extensions_count += 1;
+                    }
+                }
+            }
+
+            sep = trim(strtok_r(NULL, ",", &sepptr));
+        }
+        WSS_free((void **)&extensions);
     }
 
     if ( unlikely(header->ws_type == UNKNOWN
@@ -321,13 +412,13 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
             && header->ws_key == NULL
             && header->ws_upgrade != NULL
             && header->ws_connection != NULL
-            && strlen(header->ws_upgrade) == strlen(ASCII_WEBSOCKET_STRING)
-            && strncasecmp(ASCII_WEBSOCKET_STRING, header->ws_upgrade, strlen(ASCII_WEBSOCKET_STRING)) == 0
-            && strlen(header->ws_connection) == strlen(ASCII_CONNECTION_STRING)
-            && strncasecmp(ASCII_CONNECTION_STRING, header->ws_connection, strlen(ASCII_CONNECTION_STRING)) == 0
+            && strlen(header->ws_upgrade) == strlen(WEBSOCKET_STRING)
+            && strncasecmp(WEBSOCKET_STRING, header->ws_upgrade, strlen(WEBSOCKET_STRING)) == 0
+            && strlen(header->ws_connection) == strlen(UPGRADE_STRING)
+            && strncasecmp(UPGRADE_STRING, header->ws_connection, strlen(UPGRADE_STRING)) == 0
             && header->host != NULL
             && header->ws_origin != NULL) ) {
-        header->ws_type = HIXIE;
+        header->ws_type = HIXIE75;
     }
 
     return HttpStatus_OK;
@@ -373,11 +464,12 @@ static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
         return NULL;
     }
 
-    request_uri_length += strlen(REQUEST_URI)*sizeof(char)-10*sizeof(char);
+    request_uri_length += strlen(REQUEST_URI)*sizeof(char)-12*sizeof(char);
     request_uri_length += ssl*sizeof(char);
     request_uri_length += (log10(port)+1)*sizeof(char);
     request_uri_length += sum_host_length*sizeof(char);
     request_uri_length += sum_path_length*sizeof(char);
+    request_uri_length += sum_query_length*sizeof(char);
     request_uri_length += sum_query_length*sizeof(char);
     request_uri = (char *) WSS_malloc(request_uri_length+1*sizeof(char));
 
@@ -427,7 +519,7 @@ static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
         kw += strlen(config->queries[k]);
     }
 
-    sprintf(request_uri, REQUEST_URI, s, host, port, path, query);
+    sprintf(request_uri, REQUEST_URI, s, host, port, path, query, query);
 
     if ( likely(strlen(host) > 0) ) {
         WSS_free((void **) &host);
@@ -513,15 +605,15 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 
     WSS_log_trace("Validating upgrade header");
 
-    if ( unlikely(NULL == header->ws_upgrade || strlen(header->ws_upgrade) < strlen(ASCII_WEBSOCKET_STRING) ||
-            strncasecmp(ASCII_WEBSOCKET_STRING, header->ws_upgrade, strlen(ASCII_WEBSOCKET_STRING)) != 0) ) {
+    if ( unlikely(NULL == header->ws_upgrade || strlen(header->ws_upgrade) < strlen(WEBSOCKET_STRING) ||
+            strncasecmp(WEBSOCKET_STRING, header->ws_upgrade, strlen(WEBSOCKET_STRING)) != 0) || (header->ws_type <= HIXIE76 && strncasecmp(WEBSOCKET_UPPERCASE_STRING, header->ws_upgrade, strlen(WEBSOCKET_UPPERCASE_STRING)) != 0) ) {
         WSS_log_trace("Invalid upgrade header value");
         return HttpStatus_UpgradeRequired;
     }
 
     WSS_log_trace("Validating connection header");
 
-    if ( unlikely(NULL == header->ws_connection || strlen(header->ws_connection) < strlen(ASCII_CONNECTION_STRING)) ) {
+    if ( unlikely(NULL == header->ws_connection || strlen(header->ws_connection) < strlen(UPGRADE_STRING)) ) {
         WSS_log_trace("Invalid connection header value");
         return HttpStatus_UpgradeRequired;
     }
@@ -533,7 +625,7 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
     }
 
     do {
-        if ( likely(strncasecmp(ASCII_CONNECTION_STRING, sep, strlen(ASCII_CONNECTION_STRING)) == 0) ) {
+        if ( likely(strncasecmp(UPGRADE_STRING, sep, strlen(UPGRADE_STRING)) == 0) ) {
             break;
         }
 
@@ -542,23 +634,6 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 
     if ( unlikely(sep == NULL) ) {
         WSS_log_trace("Invalid connection header value");
-        return HttpStatus_UpgradeRequired;
-    }
-
-    WSS_log_trace("Validating websocket key");
-
-    key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length);
-    if ( unlikely(NULL == header->ws_key || NULL == key || key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
-        WSS_log_trace("Invalid websocket key");
-        WSS_free((void **) &key);
-        return HttpStatus_UpgradeRequired;
-    }
-    WSS_free((void **) &key);
-
-    WSS_log_trace("Validating websocket version");
-     
-    if ( unlikely(header->ws_type != RFC6455) ) {
-        WSS_log_trace("Invalid websocket version");
         return HttpStatus_UpgradeRequired;
     }
 
@@ -571,6 +646,34 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
             return HttpStatus_Forbidden;
         }
     }
+
+    WSS_log_trace("Validating websocket version");
+     
+    switch (header->ws_type) {
+        case RFC6455:
+        case HYBI10:
+        case HYBI07:
+            break;
+        default:
+        WSS_log_trace("Invalid websocket version");
+        return HttpStatus_NotImplemented;
+    }
+
+    WSS_log_trace("Validating websocket key");
+
+    if ( unlikely(NULL == header->ws_key) ) {
+        WSS_log_trace("Invalid websocket key");
+        WSS_free((void **) &key);
+        return HttpStatus_UpgradeRequired;
+    }
+
+    key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length);
+    if ( unlikely(NULL == key || key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
+        WSS_log_trace("Invalid websocket key");
+        WSS_free((void **) &key);
+        return HttpStatus_UpgradeRequired;
+    }
+    WSS_free((void **) &key);
 
     WSS_log_trace("Accepted handshake, switching protocol");
 
@@ -586,10 +689,21 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 void WSS_free_header(wss_header_t *header) {
     size_t i;
     for (i = 0; i < header->ws_extensions_count; i++) {
-        WSS_free((void **) &header->ws_extensions[i]->accepted);
-        WSS_free((void **) &header->ws_extensions[i]);
-        WSS_free((void **) &header->ws_extensions);
+        if ( likely(NULL != header->ws_extensions[i]) ) {
+            if ( likely(NULL != header->ws_extensions[i]->accepted) ) {
+                WSS_free((void **) &header->ws_extensions[i]->accepted);
+            }
+            if ( likely(NULL != header->ws_extensions[i]->name) ) {
+                WSS_free((void **) &header->ws_extensions[i]->name);
+            }
+            WSS_free((void **) &header->ws_extensions[i]);
+        }
     }
-    WSS_free((void **) &header->content);
+    WSS_free((void **) &header->ws_extensions);
+
+    if ( likely(NULL != header->content) ) {
+        WSS_free((void **) &header->content);
+    }
+
     WSS_free((void **) &header);
 }

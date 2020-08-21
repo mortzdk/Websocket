@@ -85,7 +85,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_ECDH_USE);
     SSL_CTX_set_ecdh_auto(server->ssl_ctx, 1);
 
-    if (! server->config->peer_cert) {
+    if (! server->config->ssl_peer_cert) {
         SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_NONE, 0);
     } else {
         SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_PEER|SSL_VERIFY_FAIL_IF_NO_PEER_CERT, 0);

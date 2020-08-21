@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     config.ssl_cipher_list      = NULL;
     config.ssl_cipher_suites    = NULL;
     config.ssl_compression      = true;
-    config.peer_cert            = true;
+    config.ssl_peer_cert        = true;
 
     if ( NULL == (file = fopen("log/WSServer.log", "a+")) ) {
         WSS_config_free(&config);

@@ -1,6 +1,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <libgen.h>
+#include <unistd.h>
 
 #include "subprotocols.h"
 #include "subprotocol.h"
@@ -34,7 +35,6 @@ void WSS_load_subprotocols(wss_config_t *config)
     int *handle;
     wss_subprotocol_t* proto;
     int name_length;
-
     WSS_log_trace("Loading %d subprotocols", config->subprotocols_length);
 
     for (i = 0; i < config->subprotocols_length; i++) {
@@ -115,7 +115,7 @@ void WSS_load_subprotocols(wss_config_t *config)
         WSS_log_trace("Setting custom allocators for subprotocol %s", proto->name);
 
         // Set custom allocators
-        proto->alloc(WSS_malloc, WSS_realloc2, WSS_free2);
+        proto->alloc(WSS_malloc, WSS_realloc_normal, WSS_free_normal);
 
         WSS_log_trace("Initializing subprotocol %s", proto->name);
 

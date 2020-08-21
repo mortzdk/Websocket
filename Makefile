@@ -53,11 +53,13 @@ CFLAGS = $(EXEC) \
 		 -DUSE_RPMALLOC #\
 		 -DUSE_POLL
 
+TESTFLAGS =
+
 CVER = -std=c11
 
 # Flags
 FLAGS_EXTRA = -pthread -lm -ldl
-FLAGS_CRITERION = -lcriterion
+FLAGS_CRITERION = -lcriterion -lgcov
 
 # Folders
 ROOT = $(shell pwd)
@@ -133,7 +135,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Linking] ================ 
 	@echo
-	$(CC) $(CFLAGS) $(CVER) -o $(BIN_FOLDER)/$@ $(filter-out $(filter-out $(BUILD_FOLDER)/$@.o, $(addsuffix .o, $(addprefix $(BUILD_FOLDER)/, $(NAME)))), $^) $(FLAGS_EXTRA) $(INCLUDES)
+	$(CC) $(CFLAGS) ${TESTFLAGS} $(CVER) -o $(BIN_FOLDER)/$@ $(filter-out $(filter-out $(BUILD_FOLDER)/$@.o, $(addsuffix .o, $(addprefix $(BUILD_FOLDER)/, $(NAME)))), $^) $(FLAGS_EXTRA) $(INCLUDES)
 	@echo
 	@echo ================ [$(NAME) compiled succesfully] ================ 
 	@echo
@@ -143,7 +145,7 @@ $(BUILD_FOLDER)/%.o: $(SRC_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) ${TESTFLAGS} $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -153,19 +155,19 @@ $(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) --coverage $(CFLAGS) $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) --coverage $(CFLAGS) ${TESTFLAGS} $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
 
 # Link test objects
-${TEST_NAMES}: debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
+${TEST_NAMES}: clean debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
 	@echo
 	@echo ================ [Linking Tests] ================
 	@echo
-	$(CC) ${CFLAGS} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
+	$(CC) ${CFLAGS} ${TESTFLAGS} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
 		$(filter-out $(addsuffix .o, $(addprefix ${BUILD_FOLDER}/, main)), $(filter-out ${BUILD_FOLDER}/test_%.o, $(ALL_OBJ)))\
-		${FLAGS_EXTRA} -lgcov ${FLAGS_CRITERION} $(INCLUDES)
+		${FLAGS_EXTRA} ${FLAGS_CRITERION} $(INCLUDES)
 	@echo
 	@echo ================ [$@ compiled succesfully] ================
 
@@ -275,13 +277,23 @@ autobahn_cache: profiling
     wsserver/autobahn
 	pkill -SIGINT memcheck
 
+criterion:
+	$(eval TESTFLAGS = -fprofile-arcs -ftest-coverage)
+	rm -rf $(REPORTS_FOLDER)/criterion
+	mkdir -p $(REPORTS_FOLDER)/criterion
+
+
 #make test
-test: $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}}
+test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}} 
+	mkdir -p $(REPORTS_FOLDER)/gcov
+	gcovr --object-directory $(BUILD_FOLDER) -r . --html --html-details --html-title $(NAME) -o $(REPORTS_FOLDER)/gcov/index.html
+
 
 #make run_test_* 
 ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
 	@echo ================ [Running test ${patsubst run_%,%,$@}] ================
 	@echo
+	mkdir -p $(REPORTS_FOLDER)/criterion/
 	${BIN_FOLDER}/${patsubst run_%,%,$@} --verbose
 
 #make release

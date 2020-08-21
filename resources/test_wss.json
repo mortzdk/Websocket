@@ -7,32 +7,67 @@
 		"localhost",
 		"127.0.0.1"
 	],
+    "paths" : [
+        "test/path",
+        "another/test/path"
+    ],
+    "queries" : [
+        "csrf_token=[^&]*",
+        "access_token=[^&]*"
+    ],
 	"setup" : {
+        "subprotocols" : [
+            {
+                "file" : "subprotocols/echo/echo.so",
+                "config" : ""
+            },
+            {
+                "file" : "subprotocols/broadcast/broadcast.so",
+                "config" : ""
+            }
+        ],
+        "extensions" : [
+            {
+                "file" : "extensions/permessage-deflate/permessage-deflate.so",
+                "config" : "server_max_window_bits=10;client_max_window_bits=10;memory_level=8"
+            }
+        ],
+        "log_level": 7,
         "favicon" : "favicon.ico",
-        "timeout" : 1000,
+        "timeouts" : {
+            "poll"   : 10,
+            "read"   : 10,
+            "write"  : 10,
+            "client" : 600,
+            "pings"  : 1
+        },
 		"port" : {
 			"http" : 9010,
 			"https" : 9011
 		},
 		"size" : {
-			"payload" : 16777215,
-			"header" : 8192,
-			"uri" : 8192,
+			"payload" : 1024,
+			"header" : 1024,
+			"uri" : 128,
 			"buffer" : 25600,
 			"thread" : 524288,
-			"queue" : 1024,
-            "ringbuffer" : 128
+            "ringbuffer" : 128,
+            "frame" : 16777215,
+            "fragmented" : 1048576
 		},
 		"pool" : {
-			"size" : 8192,
-			"queues" : 32,
 			"workers" : 4
 		},
         "ssl" : {
             "key" : "key.pem",
             "cert" : "cert.pem",
             "ca_file" : "root.pem",
-            "ca_path" : ""
+            "ca_path" : "/usr/lib/ssl/certs/",
+            "dhparam" : "dhparam.pem",
+            "cipher_list" : "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256",
+            "cipher_suites": "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256",
+            "compression" : false,
+            "peer_cert" : false
         }
 	}
 }

@@ -8,17 +8,30 @@
 #include "subprotocols.h"
 #include "extensions.h"
 
-#define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)?)?$"
+#define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)(&(%s))*)?$"
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-#define ASCII_WEBSOCKET_STRING "websocket"
-#define ASCII_CONNECTION_STRING "Upgrade"
+#define WEBSOCKET_STRING "websocket"
+#define WEBSOCKET_UPPERCASE_STRING "WebSocket"
+#define WEBSOCKET_PROTOCOL_STRING "WebSocket-Protocol"
+#define UPGRADE_STRING "Upgrade"
+#define ORIGIN_STRING "Origin"
+#define CONNECTION_STRING "Connection"
+#define COOKIE_STRING "Cookie"
+#define HOST_STRING "Host"
 #define SEC_WEBSOCKET_KEY_LENGTH 16
+#define SEC_WEBSOCKET_VERSION "Sec-WebSocket-Version"
+#define SEC_WEBSOCKET_PROTOCOL "Sec-WebSocket-Protocol"
+#define SEC_WEBSOCKET_KEY "Sec-WebSocket-Key"
+#define SEC_WEBSOCKET_KEY1 "Sec-WebSocket-Key1"
+#define SEC_WEBSOCKET_KEY2 "Sec-WebSocket-Key2"
+#define SEC_WEBSOCKET_ORIGIN "Sec-WebSocket-Origin"
+#define SEC_WEBSOCKET_EXTENSIONS "Sec-WebSocket-Extensions"
 
 typedef enum {
     UNKNOWN  = 0,
-    HIXIE    = 1,
-    HYBI     = 2,
+    HIXIE75  = 1,
+    HIXIE76  = 2,
     HYBI04   = 4,
     HYBI05   = 5,
     HYBI06   = 6,
