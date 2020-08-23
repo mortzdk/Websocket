@@ -35,6 +35,11 @@ void WSS_load_subprotocols(wss_config_t *config)
     int *handle;
     wss_subprotocol_t* proto;
     int name_length;
+
+    if ( unlikely(NULL == config) ) {
+        return;
+    }
+
     WSS_log_trace("Loading %d subprotocols", config->subprotocols_length);
 
     for (i = 0; i < config->subprotocols_length; i++) {
@@ -96,6 +101,13 @@ void WSS_load_subprotocols(wss_config_t *config)
             continue;
         }
 
+        if ( unlikely((*(void**)(&proto->destroy) = dlsym(proto->handle, "onDestroy")) == NULL) ) {
+            WSS_log_error("Failed to find 'onDestroy' function: %s", dlerror());
+            dlclose(proto->handle);
+            WSS_free((void **) &proto);
+            continue;
+        }
+
         name = basename(config->subprotocols[i]);
         for (j = 0; name[j] != '.' && name[j] != '\0'; j++) {
             name_length++;
@@ -135,6 +147,10 @@ void WSS_load_subprotocols(wss_config_t *config)
 wss_subprotocol_t *WSS_find_subprotocol(char *name) {
     wss_subprotocol_t *proto;
 
+    if ( unlikely(NULL == name) ) {
+        return NULL;
+    }
+
     HASH_FIND_STR(subprotocols, name, proto);
 
     return proto;
@@ -150,6 +166,7 @@ void WSS_destroy_subprotocols() {
 
     HASH_ITER(hh, subprotocols, proto, tmp) {
         HASH_DEL(subprotocols, proto);
+        proto->destroy();
         dlclose(proto->handle);
         WSS_free((void **) &proto->name);
         WSS_free((void **) &proto);

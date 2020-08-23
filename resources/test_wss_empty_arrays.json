@@ -1,0 +1,53 @@
+{
+	"hosts" : [
+	],
+	"origins" : [
+	],
+    "paths" : [
+    ],
+    "queries" : [
+    ],
+	"setup" : {
+        "subprotocols" : [
+        ],
+        "extensions" : [
+        ],
+        "log_level": 7,
+        "favicon" : "favicon.ico",
+        "timeouts" : {
+            "poll"   : -5,
+            "read"   : -4,
+            "write"  : -3,
+            "client" : -2,
+            "pings"  : 0
+        },
+		"port" : {
+			"http" : 9010,
+			"https" : 9011
+		},
+		"size" : {
+			"payload" : 1024,
+			"header" : 1024,
+			"uri" : 128,
+			"buffer" : 25600,
+			"thread" : 524288,
+            "ringbuffer" : 128,
+            "frame" : 16777215,
+            "fragmented" : 1048576
+		},
+		"pool" : {
+			"workers" : 4
+		},
+        "ssl" : {
+            "key" : "key.pem",
+            "cert" : "cert.pem",
+            "ca_file" : "root.pem",
+            "ca_path" : "/usr/lib/ssl/certs/",
+            "dhparam" : "dhparam.pem",
+            "cipher_list" : "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256",
+            "cipher_suites": "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256",
+            "compression" : false,
+            "peer_cert" : false
+        }
+	}
+}

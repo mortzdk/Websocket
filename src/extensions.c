@@ -32,6 +32,10 @@ void WSS_load_extensions(wss_config_t *config)
     wss_extension_t* proto;
     int name_length;
 
+    if ( unlikely(NULL == config) ) {
+        return;
+    }
+
     WSS_log_trace("Loading extensions");
 
     for (i = 0; i < config->extensions_length; i++) {
@@ -150,6 +154,10 @@ void WSS_load_extensions(wss_config_t *config)
  */
 wss_extension_t *WSS_find_extension(char *name) {
     wss_extension_t *proto;
+
+    if ( unlikely(NULL == name) ) {
+        return NULL;
+    }
 
     HASH_FIND_STR(extensions, name, proto);
 

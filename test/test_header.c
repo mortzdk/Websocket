@@ -10,12 +10,14 @@
 #include "extensions.h"
 #include "error.h"
 
+#define HEADER_CARRIAGE_RETURN "\r"
 #define HEADER_BAD_NEWLINE "\r\a\r\a"
 #define HEADER_BAD_NEWLINE_PAYLOAD "GET / HTTP/1.1\r\n"\
                                    "test: test\r\a\r\n"
 #define HEADER_BAD_NEWLINE_PAYLOAD_MULTIPLE_HEADERS "GET / HTTP/1.1\r\n"\
                                    "test: test\r\n"\
                                    "test2: test2\r\a\r\n"
+#define HEADER_NO_BODY_NEWLINE "GET / HTTP/1.1\r\n"
 #define HEADER_NEWLINE "\r\n\r\n"
 #define HEADER_SPACE_NEWLINE " \r\n\r\n"
 #define HEADER_INVALID_HTTP_PATH "GET * HTTP/1.1\r\n\r\n"
@@ -172,6 +174,30 @@ Test(WSS_parse_header, no_header_content_data) {
     WSS_free_header(header);
 }
 
+Test(WSS_parse_header, bad_carriage_return) {
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
+    wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
+    size_t l = strlen(HEADER_CARRIAGE_RETURN);
+    char *h = WSS_malloc(l*sizeof(char)+1);
+    enum HttpStatus_Code code;
+    int fd = -1;
+
+    sprintf(h, "%s", HEADER_CARRIAGE_RETURN);
+
+    cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
+
+    header->content = h;
+    header->length = l;
+
+    code = WSS_parse_header(fd, header, conf);
+
+    cr_assert(code == HttpStatus_BadRequest);
+    
+    WSS_config_free(conf);
+    WSS_free((void**) &conf);
+    WSS_free_header(header);
+}
+
 Test(WSS_parse_header, bad_newline) {
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
@@ -287,6 +313,31 @@ Test(WSS_parse_header, space_and_newline) {
 
     cr_assert(code == HttpStatus_BadRequest);
     
+    WSS_config_free(conf);
+    WSS_free((void**) &conf);
+    WSS_free_header(header);
+}
+
+Test(WSS_parse_header, no_body_newline) {
+    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
+    wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
+    size_t l = strlen(HEADER_NO_BODY_NEWLINE);
+    char *h = WSS_malloc(l*sizeof(char)+1);
+    enum HttpStatus_Code code;
+    int fd = -1;
+
+    cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
+
+    sprintf(h, "%s", HEADER_NO_BODY_NEWLINE);
+
+    header->content = h;
+    header->length = l;
+
+    code = WSS_parse_header(fd, header, conf);
+    
+    cr_log_info("Code: %d", code);
+    cr_assert(code == HttpStatus_BadRequest);
+
     WSS_config_free(conf);
     WSS_free((void**) &conf);
     WSS_free_header(header);

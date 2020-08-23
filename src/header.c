@@ -124,7 +124,7 @@ static inline void header_set_version(wss_header_t *header, char *v) {
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
 enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config) {
-    bool valid, in_use;
+    bool valid, in_use, double_clrf = false;
     size_t i, line_length;
     char *tokenptr, *lineptr, *sepptr, *paramptr, *temp, *line, *sep, *accepted;
     char *token, *name; 
@@ -212,6 +212,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
             return HttpStatus_PayloadTooLarge;
         }
 
+        double_clrf = true;
         header->payload = tokenptr;
         token = NULL;
     } else {
@@ -339,6 +340,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
                 return HttpStatus_PayloadTooLarge;
             }
 
+            double_clrf = true;
             header->payload = tokenptr;
             temp = NULL;
         } else {
@@ -358,6 +360,11 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         }
 
         token = temp;
+    }
+
+    if ( !double_clrf ) {
+        WSS_log_trace("Double CLRF required to distinguish between header and body");
+        return HttpStatus_BadRequest;
     }
 
     if ( NULL != extensions ) {
@@ -690,20 +697,12 @@ void WSS_free_header(wss_header_t *header) {
     size_t i;
     for (i = 0; i < header->ws_extensions_count; i++) {
         if ( likely(NULL != header->ws_extensions[i]) ) {
-            if ( likely(NULL != header->ws_extensions[i]->accepted) ) {
-                WSS_free((void **) &header->ws_extensions[i]->accepted);
-            }
-            if ( likely(NULL != header->ws_extensions[i]->name) ) {
-                WSS_free((void **) &header->ws_extensions[i]->name);
-            }
+            WSS_free((void **) &header->ws_extensions[i]->accepted);
+            WSS_free((void **) &header->ws_extensions[i]->name);
             WSS_free((void **) &header->ws_extensions[i]);
         }
     }
     WSS_free((void **) &header->ws_extensions);
-
-    if ( likely(NULL != header->content) ) {
-        WSS_free((void **) &header->content);
-    }
-
+    WSS_free((void **) &header->content);
     WSS_free((void **) &header);
 }

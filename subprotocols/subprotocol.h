@@ -33,6 +33,7 @@ typedef void (*subConnect)(int fd, char *path, char *cookies);
 typedef void (*subMessage)(int fd, wss_opcode_t opcode, char *message, size_t message_length);
 typedef void (*subWrite)(int fd, char *message, size_t message_length);
 typedef void (*subClose)(int fd);
+typedef void (*subDestroy)();
 
 #ifdef __cplusplus
 }

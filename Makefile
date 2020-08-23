@@ -53,13 +53,12 @@ CFLAGS = $(EXEC) \
 		 -DUSE_RPMALLOC #\
 		 -DUSE_POLL
 
-TESTFLAGS =
-
 CVER = -std=c11
 
 # Flags
 FLAGS_EXTRA = -pthread -lm -ldl
-FLAGS_CRITERION = -lcriterion -lgcov
+FLAGS_TEST = -lgcov
+FLAGS_COVERAGE =
 
 # Folders
 ROOT = $(shell pwd)
@@ -72,6 +71,7 @@ DOCS_FOLDER = $(ROOT)/docs
 TEST_FOLDER = $(ROOT)/test
 CONF_FOLDER = $(ROOT)/conf
 REPORTS_FOLDER = $(ROOT)/reports
+RESOURCES_FOLDER = $(ROOT)/resources
 EXTENSIONS_FOLDER = $(ROOT)/extensions
 SUBPROTOCOLS_FOLDER = $(ROOT)/subprotocols
 
@@ -91,6 +91,11 @@ $(shell pkg-config --exists openssl)
 ifeq ($(.SHELLSTATUS), 0)
 	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
 	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
+endif
+
+$(shell pkg-config --exists criterion)
+ifeq ($(.SHELLSTATUS), 0)
+	FLAGS_TEST += $(shell pkg-config --libs criterion)
 endif
 
 .PHONY: valgrind cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
@@ -135,7 +140,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Linking] ================ 
 	@echo
-	$(CC) $(CFLAGS) ${TESTFLAGS} $(CVER) -o $(BIN_FOLDER)/$@ $(filter-out $(filter-out $(BUILD_FOLDER)/$@.o, $(addsuffix .o, $(addprefix $(BUILD_FOLDER)/, $(NAME)))), $^) $(FLAGS_EXTRA) $(INCLUDES)
+	$(CC) $(CFLAGS) ${FLAGS_COVERAGE} $(CVER) -o $(BIN_FOLDER)/$@ $(filter-out $(filter-out $(BUILD_FOLDER)/$@.o, $(addsuffix .o, $(addprefix $(BUILD_FOLDER)/, $(NAME)))), $^) $(FLAGS_EXTRA) $(INCLUDES)
 	@echo
 	@echo ================ [$(NAME) compiled succesfully] ================ 
 	@echo
@@ -145,7 +150,7 @@ $(BUILD_FOLDER)/%.o: $(SRC_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) ${TESTFLAGS} $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) ${FLAGS_COVERAGE} $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -155,7 +160,7 @@ $(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) --coverage $(CFLAGS) ${TESTFLAGS} $(CVER) $(INCLUDES) -c $< -o $@
+	$(CC) --coverage $(CFLAGS) ${FLAGS_COVERAGE} $(CVER) $(INCLUDES) -c $< -o $@
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -165,9 +170,9 @@ ${TEST_NAMES}: clean debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
 	@echo
 	@echo ================ [Linking Tests] ================
 	@echo
-	$(CC) ${CFLAGS} ${TESTFLAGS} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
+	$(CC) ${CFLAGS} ${FLAGS_COVERAGE} ${CVER} -o ${BIN_FOLDER}/$@ ${BUILD_FOLDER}/$@.o\
 		$(filter-out $(addsuffix .o, $(addprefix ${BUILD_FOLDER}/, main)), $(filter-out ${BUILD_FOLDER}/test_%.o, $(ALL_OBJ)))\
-		${FLAGS_EXTRA} ${FLAGS_CRITERION} $(INCLUDES)
+		${FLAGS_EXTRA} ${FLAGS_TEST} $(INCLUDES)
 	@echo
 	@echo ================ [$@ compiled succesfully] ================
 
@@ -250,7 +255,7 @@ autobahn_debug: debug
 #make autobahn_call
 autobahn_call: profiling
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
-	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
@@ -265,7 +270,7 @@ autobahn_call: profiling
 #make autobahn_cache
 autobahn_cache: profiling
 	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
-	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
@@ -278,7 +283,7 @@ autobahn_cache: profiling
 	pkill -SIGINT memcheck
 
 criterion:
-	$(eval TESTFLAGS = -fprofile-arcs -ftest-coverage)
+	$(eval FLAGS_COVERAGE = -fprofile-arcs -ftest-coverage)
 	rm -rf $(REPORTS_FOLDER)/criterion
 	mkdir -p $(REPORTS_FOLDER)/criterion
 

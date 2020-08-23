@@ -27,6 +27,7 @@ typedef struct {
     subMessage message;
     subWrite write; 
     subClose close;
+    subDestroy destroy;
     UT_hash_handle hh;
 } wss_subprotocol_t;
 

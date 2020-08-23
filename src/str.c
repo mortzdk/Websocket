@@ -61,7 +61,7 @@ int strinarray(const char *needle, const char **haystack, size_t size) {
     unsigned long length = strlen(needle);
 
     for (i = 0; likely(i < (int) size); i++) {
-        if (length == strlen(haystack[i]) && strncmp(needle, haystack[i], length) == 0) {
+        if (NULL != haystack[i] && length == strlen(haystack[i]) && strncmp(needle, haystack[i], length) == 0) {
             return 0;
         }
     }

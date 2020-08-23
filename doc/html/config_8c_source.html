@@ -576,65 +576,69 @@ $(document).ready(function(){initNavTree('config_8c_source.html',''); initResiza
 <div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;        }</div>
 <div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;    }</div>
 <div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160; </div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;    <span class="keywordflow">if</span> ( likely(config-&gt;port_http &gt; 0 || config-&gt;port_https &gt; 0) ) {</div>
-<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="config_8c.html#a9ba017c0c98328a303f601623aa877be">config_add_port_to_hosts</a>(config);</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;    <span class="keywordflow">if</span> ( config-&gt;timeout_poll &lt; 0 ) {</div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;        config-&gt;timeout_poll = -1;</div>
 <div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;    }</div>
 <div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160; </div>
-<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;    <span class="keywordflow">if</span> (config-&gt;timeout_poll &lt; 0) {</div>
-<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;        config-&gt;timeout_poll = -1;</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;    <span class="keywordflow">if</span> ( config-&gt;timeout_read &lt; 0 ) {</div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;        config-&gt;timeout_read = -1;</div>
 <div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;    }</div>
 <div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160; </div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;    <span class="keywordflow">if</span> (config-&gt;timeout_read &lt; 0) {</div>
-<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;        config-&gt;timeout_read = -1;</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;    <span class="keywordflow">if</span> ( config-&gt;timeout_write &lt; 0 ) {</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;        config-&gt;timeout_write = -1;</div>
 <div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;    }</div>
 <div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160; </div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;    <span class="keywordflow">if</span> (config-&gt;timeout_write &lt; 0) {</div>
-<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;        config-&gt;timeout_write = -1;</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;    <span class="keywordflow">if</span> ( config-&gt;timeout_client &lt; 0 ) {</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;        config-&gt;timeout_client = -1;</div>
 <div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;    }</div>
 <div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160; </div>
-<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;    <span class="keywordflow">if</span> (config-&gt;timeout_client &lt; 0) {</div>
-<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;        config-&gt;timeout_client = -1;</div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;    <span class="keywordflow">if</span> ( unlikely(config-&gt;port_http == 0 &amp;&amp; config-&gt;port_https == 0) ) {</div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;        <span class="keywordflow">return</span> WSS_CONFIG_NO_PORT_ERROR;</div>
 <div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;    }</div>
 <div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160; </div>
-<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;    <span class="keywordflow">return</span> WSS_SUCCESS;</div>
-<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;}</div>
-<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160; </div>
-<div class="line"><a name="l00548"></a><span class="lineno"><a class="line" href="config_8c.html#a4908844773596b194edb0e76a464b366">  548</a></span>&#160;wss_error_t <a class="code" href="config_8c.html#a4908844773596b194edb0e76a464b366">WSS_config_free</a>(wss_config_t *config) {</div>
-<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> amount = 1;</div>
-<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160; </div>
-<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;    <span class="keywordflow">if</span> ( likely(NULL != config) ) {</div>
-<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;        <span class="keywordflow">if</span> ( likely(config-&gt;port_http &gt; 0) ) {</div>
-<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;            amount++;</div>
-<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;        }</div>
-<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160; </div>
-<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;        <span class="keywordflow">if</span> ( likely(config-&gt;port_https &gt; 0) ) {</div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;    <span class="keywordflow">if</span> ( likely(config-&gt;hosts_length &gt; 0) ) {</div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="config_8c.html#a9ba017c0c98328a303f601623aa877be">config_add_port_to_hosts</a>(config);</div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;    }</div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160; </div>
+<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;    <span class="keywordflow">return</span> WSS_SUCCESS;</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;}</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160; </div>
+<div class="line"><a name="l00552"></a><span class="lineno"><a class="line" href="config_8c.html#a4908844773596b194edb0e76a464b366">  552</a></span>&#160;wss_error_t <a class="code" href="config_8c.html#a4908844773596b194edb0e76a464b366">WSS_config_free</a>(wss_config_t *config) {</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> amount = 1;</div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160; </div>
+<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;    <span class="keywordflow">if</span> ( likely(NULL != config) ) {</div>
+<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;        <span class="keywordflow">if</span> ( likely(config-&gt;port_http &gt; 0) ) {</div>
 <div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;            amount++;</div>
 <div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160;        }</div>
 <div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160; </div>
-<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;        <span class="keywordflow">if</span> ( likely(amount &gt; 1) ) {</div>
-<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;config-&gt;hosts[(config-&gt;hosts_length/amount)*(amount-1)]);</div>
+<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;        <span class="keywordflow">if</span> ( likely(config-&gt;port_https &gt; 0) ) {</div>
+<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;            amount++;</div>
 <div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;        }</div>
 <div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160; </div>
-<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;        <span class="keywordflow">if</span> ( likely(NULL != config-&gt;data) ) {</div>
-<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;            json_value_free_ex(&amp;<a class="code" href="config_8c.html#a66e10467bb88deba9278212bbc59aebe">settings</a>, config-&gt;data);</div>
-<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;            config-&gt;data = NULL;</div>
-<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;        }</div>
-<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160; </div>
-<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;string);</div>
-<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;hosts);</div>
-<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;origins);</div>
-<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;queries);</div>
-<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;extensions);</div>
-<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;subprotocols);</div>
-<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;extensions_config);</div>
-<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;subprotocols_config);</div>
-<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;    }</div>
-<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160; </div>
-<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;    <span class="keywordflow">return</span> WSS_SUCCESS;</div>
-<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;}</div>
+<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;        <span class="keywordflow">if</span> ( likely(amount &gt; 1) ) {</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;config-&gt;hosts[(config-&gt;hosts_length/amount)*(amount-1)]);</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;        }</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160; </div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;        <span class="keywordflow">if</span> ( likely(NULL != config-&gt;data) ) {</div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;            json_value_free_ex(&amp;<a class="code" href="config_8c.html#a66e10467bb88deba9278212bbc59aebe">settings</a>, config-&gt;data);</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;            config-&gt;data = NULL;</div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;        }</div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160; </div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;string);</div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;hosts);</div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;origins);</div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;queries);</div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;extensions);</div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;subprotocols);</div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;extensions_config);</div>
+<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;config-&gt;subprotocols_config);</div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;    }</div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160; </div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;    <span class="keywordflow">return</span> WSS_SUCCESS;</div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
-<div class="ttc" id="aconfig_8c_html_a4908844773596b194edb0e76a464b366"><div class="ttname"><a href="config_8c.html#a4908844773596b194edb0e76a464b366">WSS_config_free</a></div><div class="ttdeci">wss_error_t WSS_config_free(wss_config_t *config)</div><div class="ttdoc">Frees allocated memory from configuration.</div><div class="ttdef"><b>Definition:</b> <a href="config_8c_source.html#l00548">config.c:548</a></div></div>
+<div class="ttc" id="aconfig_8c_html_a4908844773596b194edb0e76a464b366"><div class="ttname"><a href="config_8c.html#a4908844773596b194edb0e76a464b366">WSS_config_free</a></div><div class="ttdeci">wss_error_t WSS_config_free(wss_config_t *config)</div><div class="ttdoc">Frees allocated memory from configuration.</div><div class="ttdef"><b>Definition:</b> <a href="config_8c_source.html#l00552">config.c:552</a></div></div>
 <div class="ttc" id="aalloc_8c_html_a6e256791db29407ee9b80ae3728307cd"><div class="ttname"><a href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a></div><div class="ttdeci">void * WSS_realloc(void **ptr, size_t oldSize, size_t newSize)</div><div class="ttdoc">Function that re-allocates some memory.</div><div class="ttdef"><b>Definition:</b> <a href="alloc_8c_source.html#l00091">alloc.c:91</a></div></div>
 <div class="ttc" id="astr_8c_html_a5aed38de74552b1372053356cf20d337"><div class="ttname"><a href="str_8c.html#a5aed38de74552b1372053356cf20d337">strload</a></div><div class="ttdeci">size_t strload(char *path, char **str)</div><div class="ttdoc">Function that loads the content of a file into memory.</div><div class="ttdef"><b>Definition:</b> <a href="str_8c_source.html#l00079">str.c:79</a></div></div>
 <div class="ttc" id="aconfig_8c_html_ac4d877b8ae95256d9f6ef94f52c00317"><div class="ttname"><a href="config_8c.html#ac4d877b8ae95256d9f6ef94f52c00317">WSS_config_load</a></div><div class="ttdeci">wss_error_t WSS_config_load(wss_config_t *config, char *path)</div><div class="ttdoc">Loads configuration from JSON file.</div><div class="ttdef"><b>Definition:</b> <a href="config_8c_source.html#l00095">config.c:95</a></div></div>

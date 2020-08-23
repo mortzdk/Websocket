@@ -37,6 +37,8 @@ static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
 
     if ( unlikely(NULL == (config->hosts = (char **)WSS_realloc(
                     (void **)&config->hosts, hosts_length*sizeof(char *), hosts_length*(ports+1)*sizeof(char *)))) ) {
+        WSS_log_error("Unable to allocate new hosts");
+        WSS_config_free(config);
         return WSS_MEMORY_ERROR;
     }
     config->hosts_length = hosts_length*(ports+1);
@@ -46,12 +48,16 @@ static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
     }
 
     if ( unlikely(NULL == (extra = WSS_malloc((hosts_length*digits + hosts_length*ports*2 + size*ports)*sizeof(char)))) ) {
+        WSS_log_error("Unable to allocate extra");
+        WSS_config_free(config);
         return WSS_MEMORY_ERROR;
     }
 
     if ( likely(config->port_http > 0) ) {
         for (i = 0; likely(i < hosts_length); i++) {
             if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%d", config->hosts[i], config->port_http))) ) {
+                WSS_log_error("Unable to perform sprintf");
+                WSS_config_free(config);
                 return WSS_PRINTF_ERROR;
             }
             config->hosts[hosts_length*ports+i] = extra+cur;
@@ -63,6 +69,8 @@ static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
     if ( likely(config->port_https > 0) ) {
         for (i = 0; likely(i < hosts_length); i++) {
             if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%d", config->hosts[i], config->port_https))) ) {
+                WSS_log_error("Unable to perform sprintf");
+                WSS_config_free(config);
                 return WSS_PRINTF_ERROR;
             }
             config->hosts[hosts_length*ports+i] = extra+cur;
@@ -106,6 +114,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
     config->length = strload(path, &config->string);
     if ( unlikely(NULL == config->string) ) {
         WSS_log_error("Unable to load JSON file: %s", error);
+        WSS_config_free(config);
         return WSS_CONFIG_LOAD_ERROR;
     }
 
@@ -113,6 +122,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
     if ( unlikely(config->data == 0) ) {
         WSS_log_error("Unable to parse JSON config: %s", error);
+        WSS_config_free(config);
         return WSS_CONFIG_JSON_PARSE_ERROR;
     } else {
         if ( likely(config->data->type == json_object) ) {
@@ -132,6 +142,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                         if ( unlikely(NULL == (config->hosts = WSS_calloc(length, sizeof(char *)))) ) {
                             WSS_log_error("Unable to calloc hosts");
+                            WSS_config_free(config);
                             return WSS_MEMORY_ERROR;
                         }
 
@@ -140,7 +151,9 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 config->hosts[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
                             } else {
-                                config->hosts[j] = NULL;
+                                WSS_log_error("Invalid host");
+                                WSS_config_free(config);
+                                return WSS_CONFIG_INVALID_HOST;
                             }
                         }
                         config->hosts_length = length;
@@ -157,6 +170,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                         if ( unlikely(NULL == (config->origins = WSS_calloc(length, sizeof(char *)))) ) {
                             WSS_log_error("Unable to calloc origins");
+                            WSS_config_free(config);
                             return WSS_MEMORY_ERROR;
                         }
 
@@ -165,7 +179,9 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 config->origins[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
                             } else {
-                                config->origins[j] = NULL;
+                                WSS_log_error("Invalid origin");
+                                WSS_config_free(config);
+                                return WSS_CONFIG_INVALID_ORIGIN;
                             }
                         }
                         config->origins_length = length;
@@ -182,6 +198,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                         if ( unlikely(NULL == (config->paths = WSS_calloc(length, sizeof(char *)))) ) {
                             WSS_log_error("Unable to calloc paths");
+                            WSS_config_free(config);
                             return WSS_MEMORY_ERROR;
                         }
 
@@ -190,7 +207,9 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 config->paths[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
                             } else {
-                                config->paths[j] = NULL;
+                                WSS_log_error("Invalid path");
+                                WSS_config_free(config);
+                                return WSS_CONFIG_INVALID_PATH;
                             }
                         }
                         config->paths_length = length;
@@ -207,6 +226,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
 
                         if ( unlikely(NULL == (config->queries = WSS_calloc(length, sizeof(char *)))) ) {
                             WSS_log_error("Unable to calloc queries");
+                            WSS_config_free(config);
                             return WSS_MEMORY_ERROR;
                         }
 
@@ -215,7 +235,9 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 config->queries[j] =
                                     (char *) value->u.array.values[j]->u.string.ptr;
                             } else {
-                                config->queries[j] = NULL;
+                                WSS_log_error("Invalid query");
+                                WSS_config_free(config);
+                                return WSS_CONFIG_INVALID_QUERY;
                             }
                         }
                         config->queries_length = length;
@@ -225,43 +247,49 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                         if ( val->type == json_array) {
                             length = val->u.array.length;
 
-                            if (length == 0) {
-                                config->subprotocols_length = length;
-                                config->subprotocols = NULL;
-                                continue;
-                            }
+                            if (length > 0) {
+                                if ( unlikely(NULL == (config->subprotocols = WSS_calloc(length, sizeof(char *)))) ) {
+                                    WSS_log_error("Unable to calloc subprotocols");
+                                    WSS_config_free(config);
+                                    return WSS_MEMORY_ERROR;
+                                }
 
-                            if ( unlikely(NULL == (config->subprotocols = WSS_calloc(length, sizeof(char *)))) ) {
-                                WSS_log_error("Unable to calloc subprotocols");
-                                return WSS_MEMORY_ERROR;
-                            }
+                                if ( unlikely(NULL == (config->subprotocols_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                    WSS_log_error("Unable to calloc subprotocols configuration");
+                                    WSS_config_free(config);
+                                    return WSS_MEMORY_ERROR;
+                                }
 
-                            if ( unlikely(NULL == (config->subprotocols_config = WSS_calloc(length, sizeof(char *)))) ) {
-                                WSS_log_error("Unable to calloc subprotocols configuration");
-                                return WSS_MEMORY_ERROR;
-                            }
-
-                            for (j = 0; likely(j < length); j++) {
-                                if ( likely(val->u.array.values[j]->type == json_object) ) {
-                                    if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
-                                        if ( temp->type == json_string ) {
-                                            config->subprotocols[j] =
-                                                (char *) temp->u.string.ptr;
-                                            WSS_log_info("Found extension %s from configuration", config->subprotocols[j]);
-                                        } else {
-                                            config->subprotocols[j] = NULL;
+                                for (j = 0; likely(j < length); j++) {
+                                    if ( likely(val->u.array.values[j]->type == json_object) ) {
+                                        if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
+                                            if ( temp->type == json_string ) {
+                                                config->subprotocols[j] =
+                                                    (char *) temp->u.string.ptr;
+                                                WSS_log_info("Found extension %s from configuration", config->subprotocols[j]);
+                                            } else {
+                                                WSS_log_error("Invalid subprotocol");
+                                                WSS_config_free(config);
+                                                return WSS_CONFIG_INVALID_SUBPROTOCOL;
+                                            }
                                         }
-                                    }
 
-                                    if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
-                                        if ( temp->type == json_string ) {
-                                            config->subprotocols_config[j] =
-                                                (char *) temp->u.string.ptr;
-                                        } else {
-                                            config->subprotocols_config[j] = NULL;
+                                        if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
+                                            if ( temp->type == json_string ) {
+                                                config->subprotocols_config[j] =
+                                                    (char *) temp->u.string.ptr;
+                                            } else {
+                                                config->subprotocols_config[j] = NULL;
+                                            }
                                         }
+                                    } else {
+                                        WSS_log_error("Invalid subprotocol");
+                                        WSS_config_free(config);
+                                        return WSS_CONFIG_INVALID_SUBPROTOCOL;
                                     }
                                 }
+                            } else {
+                                config->subprotocols = NULL;
                             }
 
                             config->subprotocols_length = length;
@@ -273,44 +301,51 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                         if ( likely(val->type == json_array) ) {
                             length = val->u.array.length;
 
-                            if (length == 0) {
-                                config->extensions_length = length;
-                                config->extensions = NULL;
-                                continue;
-                            }
+                            if (length > 0) {
+                                if ( unlikely(NULL == (config->extensions = WSS_calloc(length, sizeof(char *)))) ) {
+                                    WSS_log_error("Unable to calloc extensions");
+                                    WSS_config_free(config);
+                                    return WSS_MEMORY_ERROR;
+                                }
 
-                            if ( unlikely(NULL == (config->extensions = WSS_calloc(length, sizeof(char *)))) ) {
-                                WSS_log_error("Unable to calloc extensions");
-                                return WSS_MEMORY_ERROR;
-                            }
+                                if ( unlikely(NULL == (config->extensions_config = WSS_calloc(length, sizeof(char *)))) ) {
+                                    WSS_log_error("Unable to calloc extensions configuration");
+                                    WSS_config_free(config);
+                                    return WSS_MEMORY_ERROR;
+                                }
 
-                            if ( unlikely(NULL == (config->extensions_config = WSS_calloc(length, sizeof(char *)))) ) {
-                                WSS_log_error("Unable to calloc extensions configuration");
-                                return WSS_MEMORY_ERROR;
-                            }
-
-                            for (j = 0; likely(j < length); j++) {
-                                if ( likely(val->u.array.values[j]->type == json_object) ) {
-                                    if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
-                                        if ( likely(temp->type == json_string) ) {
-                                            config->extensions[j] =
-                                                (char *) temp->u.string.ptr;
-                                            WSS_log_info("Found extension %s from configuration", config->extensions[j]);
-                                        } else {
-                                            config->extensions[j] = NULL;
+                                for (j = 0; likely(j < length); j++) {
+                                    if ( likely(val->u.array.values[j]->type == json_object) ) {
+                                        if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
+                                            if ( likely(temp->type == json_string) ) {
+                                                config->extensions[j] =
+                                                    (char *) temp->u.string.ptr;
+                                                WSS_log_info("Found extension %s from configuration", config->extensions[j]);
+                                            } else {
+                                                WSS_log_error("Invalid extension");
+                                                WSS_config_free(config);
+                                                return WSS_CONFIG_INVALID_EXTENSION;
+                                            }
                                         }
-                                    }
 
-                                    if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
-                                        if ( likely(temp->type == json_string) ) {
-                                            config->extensions_config[j] =
-                                                (char *) temp->u.string.ptr;
-                                        } else {
-                                            config->extensions_config[j] = NULL;
+                                        if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
+                                            if ( likely(temp->type == json_string) ) {
+                                                config->extensions_config[j] =
+                                                    (char *) temp->u.string.ptr;
+                                            } else {
+                                                config->extensions_config[j] = NULL;
+                                            }
                                         }
+                                    } else {
+                                        WSS_log_error("Invalid extension");
+                                        WSS_config_free(config);
+                                        return WSS_CONFIG_INVALID_EXTENSION;
                                     }
                                 }
+                            } else {
+                                config->extensions = NULL;
                             }
+
                             config->extensions_length = length;
                             WSS_log_info("Found %d extensions", length);
                         }
@@ -512,30 +547,37 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
             }
         } else {
             WSS_log_error("Root level of configuration is expected to be a JSON Object.");
+            WSS_config_free(config);
             return WSS_CONFIG_JSON_ROOT_ERROR;
         }
     }
 
-    if ( likely(config->port_http > 0 || config->port_https > 0) ) {
-        return config_add_port_to_hosts(config);
-    }
-
-    if (config->timeout_poll < 0) {
+    if ( config->timeout_poll < 0 ) {
         config->timeout_poll = -1;
     }
 
-    if (config->timeout_read < 0) {
+    if ( config->timeout_read < 0 ) {
         config->timeout_read = -1;
     }
 
-    if (config->timeout_write < 0) {
+    if ( config->timeout_write < 0 ) {
         config->timeout_write = -1;
     }
 
-    if (config->timeout_client < 0) {
+    if ( config->timeout_client < 0 ) {
         config->timeout_client = -1;
     }
 
+    if ( unlikely(config->port_http == 0 && config->port_https == 0) ) {
+        WSS_log_error("No port chosen");
+        WSS_config_free(config);
+        return WSS_CONFIG_NO_PORT_ERROR;
+    }
+
+    if ( likely(config->hosts_length > 0) ) {
+        return config_add_port_to_hosts(config);
+    }
+    
     return WSS_SUCCESS;
 }
 
@@ -558,7 +600,9 @@ wss_error_t WSS_config_free(wss_config_t *config) {
         }
 
         if ( likely(amount > 1) ) {
-            WSS_free((void **)&config->hosts[(config->hosts_length/amount)*(amount-1)]);
+            if ( NULL != config->hosts ) {
+                WSS_free((void **)&config->hosts[(config->hosts_length/amount)*(amount-1)]);
+            }
         }
 
         if ( likely(NULL != config->data) ) {
