@@ -22,10 +22,16 @@
  * @return 			[wss_error_t]   "The error status"
  */
 wss_error_t WSS_socket_create(wss_server_t *server) {
+    if ( unlikely(NULL == server) ) {
+        WSS_log_fatal("No server structure given");
+        return WSS_SOCKET_CREATE_ERROR;
+    }
+
     if ( unlikely((server->fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) ) {
         WSS_log_fatal("Unable to create server filedescriptor: %s", strerror(errno));
         return WSS_SOCKET_CREATE_ERROR;
     }
+
     return WSS_SUCCESS;
 }
 
@@ -45,19 +51,30 @@ wss_error_t WSS_socket_reuse(int fd) {
 }
 
 /**
- * Function that binds the socket to a specific port and chooses IPV4.
+ * Function that binds the socket to a specific port and chooses IPV6.
  *
  * @param 	server	[server_t *]	"The server instance"
  * @return 			[wss_error_t]   "The error status"
  */
 wss_error_t WSS_socket_bind(wss_server_t *server) {
+    if ( unlikely(NULL == server) ) {
+        WSS_log_fatal("No server structure given");
+        return WSS_SOCKET_BIND_ERROR;
+    }
+
+    if ( unlikely(server->port < 0 || server->port > 65535) ) {
+        WSS_log_fatal("Server port must be within range [0, 65535]");
+        server->fd = -1;
+        return WSS_SOCKET_BIND_ERROR;
+    }
+
     /**
      * Setting values of our server structure
      */
     memset((char *) &server->info, '\0', sizeof(server->info));
     server->info.sin6_family = AF_INET6;
-    server->info.sin6_port = htons(server->port);
-    server->info.sin6_addr = in6addr_any;
+    server->info.sin6_port   = htons(server->port);
+    server->info.sin6_addr   = in6addr_any;
 
     /**
      * Binding address.
@@ -119,6 +136,16 @@ wss_error_t WSS_socket_listen(int fd) {
  * @return 			[wss_error_t]       "The error status"
  */
 wss_error_t WSS_socket_threadpool(wss_server_t *server) {
+    if ( unlikely(NULL == server) ) {
+        WSS_log_fatal("No server structure given");
+        return WSS_THREADPOOL_CREATE_ERROR;
+    }
+
+    if ( unlikely(NULL == server->config) ) {
+        WSS_log_fatal("No server config structure");
+        return WSS_THREADPOOL_CREATE_ERROR;
+    }
+
     /**
      * Creating threadpool
      */
