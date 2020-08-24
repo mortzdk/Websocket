@@ -255,7 +255,7 @@ Test(WSS_config_load, valid_config) {
     cr_expect(conf->size_buffer == 25600); 
     cr_expect(conf->size_header == 1024); 
     cr_expect(conf->size_thread == 524288); 
-    cr_expect(conf->size_frame == 16777215); 
+    cr_expect(conf->size_frame == 128); 
     cr_expect(conf->size_payload == 1024); 
     cr_expect(conf->max_frames == 1048576); 
 

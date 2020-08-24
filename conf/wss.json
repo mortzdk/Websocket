@@ -4,10 +4,10 @@
 		"localhost",
 		"127.0.0.1"
 	],
-    // Allowed paths
+    // Allowed paths (POSIX Extended Regular Expressions syntax can be used)
     "paths" : [
     ],
-    // Allowed queries
+    // Allowed queries (POSIX Extended Regular Expressions syntax can be used)
     "queries" : [
     ],
     // Allowed origins
@@ -36,16 +36,16 @@
         ],
         // A favicon to present to webserver request
         "favicon" : "resources/favicon.ico",
-        // Timeouts
+        // Timeouts in milliseconds (ms)
         "timeouts" : {
             // How long the eventpoll should wait for a timeout. -1 is infinitely
-            "poll"   : 10,
+            "poll"   : 100,
             // How long, before timeouting reading from a client. -1 is infinitely
-            "read"   : 10,
+            "read"   : 10000,
             // How long, before timeouting writing to a client. -1 is infinitely
-            "write"  : 10,
+            "write"  : 10000,
             // How long, since a client last was active before timing out. -1 is infinitely
-            "client" : 600,
+            "client" : 60000,
             // How many pings should be sent during the client timeout period
             "pings"  : 1
         },

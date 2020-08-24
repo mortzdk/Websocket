@@ -62,11 +62,11 @@ static char *random_bytes(int length) {
  * @param   value  [uint64_t]   "A 64 bit unsigned integer"
  * @return 		   [uint64_t]   "The 64 bit unsigned integer in network byte order"
  */
-static inline uint64_t ntohl64(uint64_t value) {
+static inline uint64_t htonl64(uint64_t value) {
 	static const int num = 42;
 
 	/**
-	 * If these check is true, the system is using the little endian
+	 * If this check is true, the system is using the little endian
 	 * convention. Else the system is using the big endian convention, which
 	 * means that we do not have to represent our integers in another way.
 	 */
@@ -75,6 +75,28 @@ static inline uint64_t ntohl64(uint64_t value) {
 		const uint32_t low = (uint32_t)(value & 0xFFFFFFFF);
 
 		return (((uint64_t)(htonl(low))) << 32) | htonl(high);
+	} else {
+		return value;
+	}
+}
+
+/**
+ * Converts the unsigned 16 bit integer from host byte order to network byte
+ * order.
+ *
+ * @param   value  [uint64_t]   "A 16 bit unsigned integer"
+ * @return 		   [uint64_t]   "The 16 bit unsigned integer in network byte order"
+ */
+static inline uint64_t htons16(uint64_t value) {
+	static const int num = 42;
+
+	/**
+	 * If this check is true, the system is using the little endian
+	 * convention. Else the system is using the big endian convention, which
+	 * means that we do not have to represent our integers in another way.
+	 */
+	if (*(char *)&num == 42) {
+        return ntohs(value);
 	} else {
 		return value;
 	}
@@ -233,12 +255,17 @@ static void unmask(wss_frame_t *frame) {
 wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
     wss_frame_t *frame;
 
-    WSS_log_trace("Parsing frame starting from offset %lu", *offset);
+    if ( unlikely(NULL == payload) ) {
+        WSS_log_error("Payload cannot be NULL");
+        return NULL;
+    }
 
     if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
         WSS_log_error("Unable to allocate frame");
         return NULL;
     }
+
+    WSS_log_trace("Parsing frame starting from offset %lu", *offset);
 
     frame->mask = false;
     frame->payloadLength = 0;
@@ -250,6 +277,7 @@ wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
     frame->rsv2   = 0x20 & payload[*offset];
     frame->rsv3   = 0x10 & payload[*offset];
     frame->opcode = 0x0F & payload[*offset];
+
     *offset += 1;
 
     if ( likely(*offset < length) ) {
@@ -262,14 +290,14 @@ wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
         case 126:
             if ( likely(*offset+sizeof(uint16_t) <= length) ) {
                 memcpy(&frame->payloadLength, payload+*offset, sizeof(uint16_t));
-                frame->payloadLength = ntohs(frame->payloadLength);
+                frame->payloadLength = htons16(frame->payloadLength);
             }
             *offset += sizeof(uint16_t);
             break;
         case 127:
             if ( likely(*offset+sizeof(uint64_t) <= length) ) {
                 memcpy(&frame->payloadLength, payload+*offset, sizeof(uint64_t));
-                frame->payloadLength = ntohl64(frame->payloadLength);
+                frame->payloadLength = htonl64(frame->payloadLength);
             }
             *offset += sizeof(uint64_t);
             break;
@@ -314,13 +342,18 @@ size_t WSS_stringify_frame(wss_frame_t *frame, char **message) {
     size_t len = 2;
     char *mes;
 
+    if ( unlikely(NULL == frame) ) {
+        *message = NULL;
+        return 0;
+    }
+
     WSS_log_trace("Creating byte message from frame");
 
     if ( likely(frame->payloadLength > 125) ) {
         if ( likely(frame->payloadLength <= 65535) ) {
-            len += 2;
+            len += sizeof(uint16_t);
         } else {
-            len += 8;
+            len += sizeof(uint64_t);
         }
     }
 
@@ -340,11 +373,11 @@ size_t WSS_stringify_frame(wss_frame_t *frame, char **message) {
         mes[offset] |= 0x40;
     }
 
-    if (frame->rsv2) {
+    if ( unlikely(frame->rsv2) ) {
         mes[offset] |= 0x20;
     }
 
-    if (frame->rsv3) {
+    if ( unlikely(frame->rsv3) ) {
         mes[offset] |= 0x10;
     }
 
@@ -355,18 +388,18 @@ size_t WSS_stringify_frame(wss_frame_t *frame, char **message) {
     } else if ( likely(frame->payloadLength <= 65535) ) {
         uint16_t plen;
         mes[offset++] = 126;
-        plen = htons(frame->payloadLength);
+        plen = htons16(frame->payloadLength);
         memcpy(mes+offset, &plen, sizeof(plen));
         offset += sizeof(plen);
     } else {
         uint64_t plen;
         mes[offset++] = 127;
-        plen = ntohl64(frame->payloadLength);
+        plen = htonl64(frame->payloadLength);
         memcpy(mes+offset, &plen, sizeof(plen));
         offset += sizeof(plen);
     }
 
-    if (frame->extensionDataLength > 0) {
+    if ( unlikely(frame->extensionDataLength > 0) ) {
         memcpy(mes+offset, frame->payload, frame->extensionDataLength);
         offset += frame->extensionDataLength;
     }
@@ -403,18 +436,23 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
         // If we receive less than two bytes, we did not receive a valid frame
         if ( unlikely(n < 2) ) {
             WSS_log_error("Received invalid frame");
+            *message = NULL;
+            WSS_free((void **)&f);
+            WSS_free((void **)&msg);
             return 0;
         }
 
         if ( unlikely(NULL == (msg = WSS_realloc((void **) &msg, 
                         message_length*sizeof(char), (message_length+n+1)*sizeof(char)))) ) {
             WSS_log_error("Unable to allocate message string");
+            *message = NULL;
+            WSS_free((void **)&f);
+            WSS_free((void **)&msg);
             return 0;
         }
 
         memcpy(msg+message_length, f, n);
         message_length += n;
-
 
         WSS_free((void **) &f);
     }
@@ -435,28 +473,41 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
  * @return 		            [size_t]           "The amount of frames created"
  */
 size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs) {
-    size_t i, j;
+    size_t i, j, offset = 0;
     wss_frame_t *frame;
-    size_t frames_count = MAX(1, (size_t)ceil((double)message_length/(double)config->size_frame));
+    size_t frames_count;
     wss_frame_t **frames;
     wss_close_t code;
     char *msg = message;
 
+    if ( unlikely(NULL == config) ) {
+        *fs = NULL;
+        return 0;
+    }
+
+    if ( unlikely(NULL == message && message_length != 0) ) {
+        *fs = NULL;
+        return 0;
+    }
+
+    frames_count = MAX(1, (size_t)ceil((double)message_length/(double)config->size_frame));
+
     if ( unlikely(NULL == (*fs = WSS_malloc(frames_count*sizeof(wss_frame_t *)))) ) {
         WSS_log_error("Unable to allocate closing frame");
-        fs = NULL;
+        *fs = NULL;
         return 0;
     }
 
     frames = *fs;
 
     if (opcode == CLOSE_FRAME) {
-        if (message_length >= sizeof(uint16_t)) {
+        if ( likely(message_length >= sizeof(uint16_t)) ) {
             memcpy(&code, msg, sizeof(uint16_t));
             code = ntohs(code);
             msg = msg + sizeof(uint16_t);
-        } else if (message_length == 1) {
+        } else if ( unlikely(message_length == 1) ) {
             code = CLOSE_PROTOCOL;
+            msg = msg + 1;
         } else {
             code = CLOSE_NORMAL;
         }
@@ -474,7 +525,7 @@ size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *messag
                 WSS_free_frame(frames[j]);
             }
             WSS_free((void **)&frames);
-            fs = NULL;
+            *fs = NULL;
             return 0;
         }
 
@@ -490,12 +541,13 @@ size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *messag
             }
             WSS_free((void **)&frame);
             WSS_free((void **)&frames);
-            fs = NULL;
+            *fs = NULL;
             return 0;
         }
-        memcpy(frame->payload, msg, frame->applicationDataLength);
+        memcpy(frame->payload, msg+offset, frame->applicationDataLength);
         frame->payloadLength += frame->extensionDataLength;
         frame->payloadLength += frame->applicationDataLength;
+        offset += frame->payloadLength;
 
         frames[i] = frame;
     }
@@ -576,17 +628,17 @@ wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message) {
                 break;
             default:
                 WSS_log_error("Unknown closing reason");
-                WSS_free((void **) frame);
+                WSS_free_frame(frame);
                 return NULL;
         }
     }
     frame->applicationDataLength = strlen(reason_str)+sizeof(uint16_t);
     if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {
         WSS_log_error("Unable to allocate closing frame application data");
-        WSS_free((void **) frame);
+        WSS_free_frame(frame);
         return NULL;
     }
-    nbo_reason = htons(reason);
+    nbo_reason = htons16(reason);
     memcpy(frame->payload, &nbo_reason, sizeof(uint16_t));
     memcpy(frame->payload+sizeof(uint16_t), reason_str, strlen(reason_str));
 
@@ -618,7 +670,7 @@ wss_frame_t *WSS_ping_frame() {
     frame->applicationDataLength = 120;
     if ( unlikely(NULL == (frame->payload = random_bytes(frame->applicationDataLength))) ) {
         WSS_log_error("Unable to allocate ping frame application data");
-        WSS_free((void **) frame);
+        WSS_free_frame(frame);
         return NULL;
     }
 
@@ -636,6 +688,10 @@ wss_frame_t *WSS_ping_frame() {
  */
 wss_frame_t *WSS_pong_frame(wss_frame_t *ping) {
     WSS_log_trace("Converting ping frame to pong frame");
+    
+    if ( NULL == ping ) {
+        return NULL;
+    }
 
     ping->fin = 1;
     ping->rsv1 = 0;
@@ -656,6 +712,8 @@ wss_frame_t *WSS_pong_frame(wss_frame_t *ping) {
  * @return 		     [void]         
  */
 void WSS_free_frame(wss_frame_t *frame) {
-    WSS_free((void **) &frame->payload);
+    if ( likely(NULL != frame) ) {
+        WSS_free((void **) &frame->payload);
+    }
     WSS_free((void **) &frame);
 }

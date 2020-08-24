@@ -7,6 +7,8 @@
 	 - hixie-75?
  2. Performance Improvements
      - Realloc the double size of the current
+     - Refactor wss_frame_t structure away, that is use the frames as byte
+       strings instead.
      - Callgrind
      - Cachegrind
  3. Automatical Documentation Creation

@@ -27,7 +27,7 @@
 #endif
 
 #ifndef WSS_SERVER_VERSION
-#define WSS_SERVER_VERSION "2.0.0"
+#define WSS_SERVER_VERSION "v2.0.0"
 #endif
 
 #include "uthash.h"

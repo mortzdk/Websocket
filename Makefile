@@ -7,7 +7,7 @@ NAME = WSServer
 CC = gcc
 
 #Version
-VER = $(shell git describe --abbrev=0 --tags && echo $? || echo "2.0.0")
+VER = $(shell git describe --abbrev=0 --tags)
 
 #Debug or Release
 PROFILE = -Og -g -DNDEBUG
@@ -101,7 +101,7 @@ endif
 .PHONY: valgrind cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
-all: bin build docs log subprotocols extensions $(NAME)
+all: clean bin build docs log subprotocols extensions $(NAME)
 
 build:
 	if [[ ! -e $(BUILD_FOLDER) ]]; then mkdir -p $(BUILD_FOLDER); fi
@@ -184,7 +184,7 @@ subprotocols:
 	cd $(SUBPROTOCOLS_FOLDER)/broadcast/ && make $(MODE)
 
 #make valgrind
-valgrind: clean debug_mode all
+valgrind: debug_mode all
 	@echo
 	@echo ================ [Executing $(NAME) using Valgrind] ================
 	@echo
@@ -192,14 +192,14 @@ valgrind: clean debug_mode all
 	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json
 
 #make cachegrind
-cachegrind: clean profiling_mode all
+cachegrind: profiling_mode all
 	@echo
 	@echo ================ [Executing $(NAME) using Cachegrind] ================
 	@echo
 	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/wss.json
 
 #make callgrind
-callgrind: clean profiling_mode all
+callgrind: profiling_mode all
 	@echo
 	@echo ================ [Executing $(NAME) using Callgrind] ================
 	@echo
@@ -302,13 +302,13 @@ ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
 	${BIN_FOLDER}/${patsubst run_%,%,$@} --verbose
 
 #make release
-release: clean release_mode all
+release: release_mode all
 
 #make debug
-debug: clean debug_mode all
+debug: debug_mode all
 
 #make profiling
-profiling: clean profiling_mode all
+profiling: profiling_mode all
 
 #make space
-space: clean space_mode all
+space: space_mode all

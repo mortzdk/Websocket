@@ -115,7 +115,7 @@ $(document).ready(function(){initNavTree('frame_8c_source.html',''); initResizab
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordflow">return</span> res;</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;}</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">   65</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> uint64_t <a class="code" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a>(uint64_t value) {</div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="frame_8c.html#aed141735b291915e132f69db9eb88916">   65</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> uint64_t <a class="code" href="frame_8c.html#aed141735b291915e132f69db9eb88916">htonl64</a>(uint64_t value) {</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> num = 42;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordflow">if</span> (*(<span class="keywordtype">char</span> *)&amp;num == 42) {</div>
@@ -128,542 +128,585 @@ $(document).ready(function(){initNavTree('frame_8c_source.html',''); initResizab
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    }</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;}</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">   83</a></span>&#160;<span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a>(wss_frame_t *frame) {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordtype">char</span> *applicationData = frame-&gt;payload+frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#if defined(__AVX512F__)</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    uint64_t i = 0;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    __m512i masked_data;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keywordtype">int</span> mask = (frame-&gt;maskingKey[0] &lt;&lt; 24) | (frame-&gt;maskingKey[1] &lt;&lt; 16) | (frame-&gt;maskingKey[2] &lt;&lt; 8) | frame-&gt;maskingKey[3]</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        __m512i maskingKey = _mm512_setr_epi8(</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                mask,</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                mask,</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                mask,</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                mask,</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                mask,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                mask,</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                mask,</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                mask,</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                mask,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                mask,</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                mask,</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                mask,</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                mask,</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                mask,</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                mask,</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                mask</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                );</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 64 ) {</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 64); i += 64) {</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            masked_data = _mm512_loadu_si512((<span class="keyword">const</span> __m512i *)(applicationData+i));</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            _mm512_storeu_si512((__m512i *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        }</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="comment">// last part</span></div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordtype">char</span> buffer[64];</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 64);</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)buffer);</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    }</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="preprocessor">#elif defined(__AVX2__) &amp;&amp; defined(__AVX__)</span></div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    uint64_t i = 0;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    __m256i masked_data;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    __m256i maskingKey = _mm256_setr_epi8(</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            frame-&gt;maskingKey[3]</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                );</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 32 ) {</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 32); i += 32) {</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;            masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)(applicationData+i));</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;            _mm256_storeu_si256((__m256i *)(applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        }</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    }</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="comment">// last part</span></div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        <span class="keywordtype">char</span> buffer[32];</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 32);</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)buffer);</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    }</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="preprocessor">#elif defined(__SSE2__)</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    uint64_t i = 0;</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    __m128i masked_data;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    __m128i maskingKey = _mm_setr_epi8(</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;            frame-&gt;maskingKey[3],</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;            frame-&gt;maskingKey[0],</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            frame-&gt;maskingKey[1],</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;            frame-&gt;maskingKey[2],</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;            frame-&gt;maskingKey[3]</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            );</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160; </div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 16 ) {</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 16); i += 16) {</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;            masked_data = _mm_loadu_si128((<span class="keyword">const</span> __m128i *)(applicationData+i));</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;            _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;        }</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    }</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        <span class="keywordtype">char</span> buffer[16];</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 16);</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;        masked_data = _mm_loadu_si128((<span class="keyword">const</span> __m128i *)buffer);</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;        _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    }</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    uint64_t i, j;</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    <span class="keywordflow">for</span> (i = 0, j = 0; likely(i &lt; frame-&gt;applicationDataLength); i++, j++){</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        applicationData[j] = applicationData[i] ^ frame-&gt;maskingKey[j % 4];</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    }</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;}</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160; </div>
-<div class="line"><a name="l00233"></a><span class="lineno"><a class="line" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">  233</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a>(<span class="keywordtype">char</span> *payload, <span class="keywordtype">size_t</span> length, <span class="keywordtype">size_t</span> *offset) {</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    wss_frame_t *frame;</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160; </div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Parsing frame starting from offset %lu&quot;</span>, *offset);</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160; </div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame&quot;</span>);</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">   90</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> uint64_t <a class="code" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a>(uint64_t value) {</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> num = 42;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordflow">if</span> (*(<span class="keywordtype">char</span> *)&amp;num == 42) {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">return</span> ntohs(value);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">return</span> value;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    }</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;}</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno"><a class="line" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">  105</a></span>&#160;<span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a>(wss_frame_t *frame) {</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">char</span> *applicationData = frame-&gt;payload+frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="preprocessor">#if defined(__AVX512F__)</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    uint64_t i = 0;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    __m512i masked_data;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">int</span> mask = (frame-&gt;maskingKey[0] &lt;&lt; 24) | (frame-&gt;maskingKey[1] &lt;&lt; 16) | (frame-&gt;maskingKey[2] &lt;&lt; 8) | frame-&gt;maskingKey[3]</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        __m512i maskingKey = _mm512_setr_epi8(</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                mask,</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                mask,</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                mask,</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                mask,</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                mask,</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                mask,</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;                mask,</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;                mask,</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;                mask,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                mask,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                mask,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                mask,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                mask,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                mask,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                mask,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                mask</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                );</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 64 ) {</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 64); i += 64) {</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            masked_data = _mm512_loadu_si512((<span class="keyword">const</span> __m512i *)(applicationData+i));</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;            _mm512_storeu_si512((__m512i *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        }</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    }</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="comment">// last part</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        <span class="keywordtype">char</span> buffer[64];</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 64);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;        masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)buffer);</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    }</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="preprocessor">#elif defined(__AVX2__) &amp;&amp; defined(__AVX__)</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    uint64_t i = 0;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    __m256i masked_data;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    __m256i maskingKey = _mm256_setr_epi8(</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            frame-&gt;maskingKey[3]</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                );</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 32 ) {</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 32); i += 32) {</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)(applicationData+i));</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;            _mm256_storeu_si256((__m256i *)(applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        }</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    }</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="comment">// last part</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        <span class="keywordtype">char</span> buffer[32];</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 32);</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        masked_data = _mm256_loadu_si256((<span class="keyword">const</span> __m256i *)buffer);</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    }</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="preprocessor">#elif defined(__SSE2__)</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    uint64_t i = 0;</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    __m128i masked_data;</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    __m128i maskingKey = _mm_setr_epi8(</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;            frame-&gt;maskingKey[3],</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;            frame-&gt;maskingKey[0],</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;            frame-&gt;maskingKey[1],</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;            frame-&gt;maskingKey[2],</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;            frame-&gt;maskingKey[3]</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            );</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160; </div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="keywordflow">if</span> ( frame-&gt;applicationDataLength &gt; 16 ) {</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        <span class="keywordflow">for</span> (; likely(i &lt;= frame-&gt;applicationDataLength - 16); i += 16) {</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;            masked_data = _mm_loadu_si128((<span class="keyword">const</span> __m128i *)(applicationData+i));</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;            _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        }</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    }</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keywordflow">if</span> ( likely(i &lt; frame-&gt;applicationDataLength) ) {</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;        <span class="keywordtype">char</span> buffer[16];</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;        memset(buffer, <span class="charliteral">&#39;\0&#39;</span>, 16);</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;        memcpy(buffer, applicationData + i, frame-&gt;applicationDataLength - i);</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        masked_data = _mm_loadu_si128((<span class="keyword">const</span> __m128i *)buffer);</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;        _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        memcpy(applicationData + i, buffer, (frame-&gt;applicationDataLength - i));</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    }</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    uint64_t i, j;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="keywordflow">for</span> (i = 0, j = 0; likely(i &lt; frame-&gt;applicationDataLength); i++, j++){</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        applicationData[j] = applicationData[i] ^ frame-&gt;maskingKey[j % 4];</div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    }</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160; </div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    frame-&gt;mask = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    frame-&gt;payloadLength = 0;</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    frame-&gt;applicationDataLength = 0;</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    frame-&gt;extensionDataLength = 0;</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    frame-&gt;fin    = 0x80 &amp; payload[*offset];</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    frame-&gt;rsv1   = 0x40 &amp; payload[*offset];</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    frame-&gt;rsv2   = 0x20 &amp; payload[*offset];</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    frame-&gt;rsv3   = 0x10 &amp; payload[*offset];</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    frame-&gt;opcode = 0x0F &amp; payload[*offset];</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    *offset += 1;</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160; </div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordflow">if</span> ( likely(*offset &lt; length) ) {</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;        frame-&gt;mask          = 0x80 &amp; payload[*offset];</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;        frame-&gt;payloadLength = 0x7F &amp; payload[*offset];</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    }</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    *offset += 1;</div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160; </div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    <span class="keywordflow">switch</span> (frame-&gt;payloadLength) { </div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;        <span class="keywordflow">case</span> 126:</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;            <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint16_t) &lt;= length) ) {</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;                memcpy(&amp;frame-&gt;payloadLength, payload+*offset, <span class="keyword">sizeof</span>(uint16_t));</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;                frame-&gt;payloadLength = ntohs(frame-&gt;payloadLength);</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;            }</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            *offset += <span class="keyword">sizeof</span>(uint16_t);</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        <span class="keywordflow">case</span> 127:</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint64_t) &lt;= length) ) {</div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;                memcpy(&amp;frame-&gt;payloadLength, payload+*offset, <span class="keyword">sizeof</span>(uint64_t));</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;                frame-&gt;payloadLength = <a class="code" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a>(frame-&gt;payloadLength);</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            }</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            *offset += <span class="keyword">sizeof</span>(uint64_t);</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;    }</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160; </div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;mask) ) {</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint32_t) &lt;= length) ) {</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;            memcpy(frame-&gt;maskingKey, payload+*offset, <span class="keyword">sizeof</span>(uint32_t));</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        }</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        *offset += <span class="keyword">sizeof</span>(uint32_t);</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    }</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160; </div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;    frame-&gt;applicationDataLength = frame-&gt;payloadLength-frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;applicationDataLength &gt; 0) ) {</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <span class="keywordflow">if</span> ( likely(*offset+frame-&gt;applicationDataLength &lt;= length) ) {</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength))) ) {</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame application data&quot;</span>);</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            }</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160; </div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;            memcpy(frame-&gt;payload, payload+*offset, frame-&gt;applicationDataLength);</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        }</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        *offset += frame-&gt;applicationDataLength;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    }</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160; </div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;mask &amp;&amp; *offset &lt;= length) ) {</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;        <a class="code" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a>(frame);</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    }</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160; </div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    <span class="keywordflow">return</span> frame;</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;}</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160; </div>
-<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">  312</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a>(wss_frame_t *frame, <span class="keywordtype">char</span> **message) {</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    <span class="keywordtype">size_t</span> offset = 0;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="keywordtype">size_t</span> len = 2;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="keywordtype">char</span> *mes;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160; </div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating byte message from frame&quot;</span>);</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160; </div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &gt; 125) ) {</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &lt;= 65535) ) {</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            len += 2;</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;            len += 8;</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        }</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    }</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    len += frame-&gt;payloadLength;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160; </div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (mes = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(len*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate return message&quot;</span>);</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        *message = NULL;</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    }</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;fin) {</div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;        mes[offset] |= 0x80;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    }</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160; </div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;rsv1) {</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        mes[offset] |= 0x40;</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    }</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160; </div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;rsv2) {</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        mes[offset] |= 0x20;</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    }</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160; </div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;rsv3) {</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        mes[offset] |= 0x10;</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    }</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    mes[offset++] |= 0xF &amp; frame-&gt;opcode;</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160; </div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordflow">if</span> ( unlikely(frame-&gt;payloadLength &lt;= 125) ) {</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        mes[offset++] = frame-&gt;payloadLength;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &lt;= 65535) ) {</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;        uint16_t plen;</div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;        mes[offset++] = 126;</div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;        plen = htons(frame-&gt;payloadLength);</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        memcpy(mes+offset, &amp;plen, <span class="keyword">sizeof</span>(plen));</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        offset += <span class="keyword">sizeof</span>(plen);</div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;        uint64_t plen;</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        mes[offset++] = 127;</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        plen = <a class="code" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a>(frame-&gt;payloadLength);</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        memcpy(mes+offset, &amp;plen, <span class="keyword">sizeof</span>(plen));</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;        offset += <span class="keyword">sizeof</span>(plen);</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    }</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160; </div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;extensionDataLength &gt; 0) {</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;        memcpy(mes+offset, frame-&gt;payload, frame-&gt;extensionDataLength);</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;        offset += frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    }</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160; </div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;applicationDataLength &gt; 0) ) {</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        memcpy(mes+offset, frame-&gt;payload+frame-&gt;extensionDataLength, frame-&gt;applicationDataLength);</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        offset += frame-&gt;applicationDataLength;</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    }</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    *message = mes;</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160; </div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;    <span class="keywordflow">return</span> offset;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;}</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;}</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160; </div>
+<div class="line"><a name="l00255"></a><span class="lineno"><a class="line" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">  255</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a>(<span class="keywordtype">char</span> *payload, <span class="keywordtype">size_t</span> length, <span class="keywordtype">size_t</span> *offset) {</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    wss_frame_t *frame;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160; </div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == payload) ) {</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Payload cannot be NULL&quot;</span>);</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    }</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160; </div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame&quot;</span>);</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    }</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Parsing frame starting from offset %lu&quot;</span>, *offset);</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    frame-&gt;mask = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    frame-&gt;payloadLength = 0;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    frame-&gt;applicationDataLength = 0;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;    frame-&gt;extensionDataLength = 0;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    frame-&gt;fin    = 0x80 &amp; payload[*offset];</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;    frame-&gt;rsv1   = 0x40 &amp; payload[*offset];</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    frame-&gt;rsv2   = 0x20 &amp; payload[*offset];</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;    frame-&gt;rsv3   = 0x10 &amp; payload[*offset];</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    frame-&gt;opcode = 0x0F &amp; payload[*offset];</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    *offset += 1;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160; </div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    <span class="keywordflow">if</span> ( likely(*offset &lt; length) ) {</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        frame-&gt;mask          = 0x80 &amp; payload[*offset];</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        frame-&gt;payloadLength = 0x7F &amp; payload[*offset];</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    }</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;    *offset += 1;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;    <span class="keywordflow">switch</span> (frame-&gt;payloadLength) { </div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        <span class="keywordflow">case</span> 126:</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint16_t) &lt;= length) ) {</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;                memcpy(&amp;frame-&gt;payloadLength, payload+*offset, <span class="keyword">sizeof</span>(uint16_t));</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;                frame-&gt;payloadLength = <a class="code" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a>(frame-&gt;payloadLength);</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            }</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;            *offset += <span class="keyword">sizeof</span>(uint16_t);</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        <span class="keywordflow">case</span> 127:</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;            <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint64_t) &lt;= length) ) {</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                memcpy(&amp;frame-&gt;payloadLength, payload+*offset, <span class="keyword">sizeof</span>(uint64_t));</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;                frame-&gt;payloadLength = <a class="code" href="frame_8c.html#aed141735b291915e132f69db9eb88916">htonl64</a>(frame-&gt;payloadLength);</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            }</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;            *offset += <span class="keyword">sizeof</span>(uint64_t);</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    }</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;mask) ) {</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        <span class="keywordflow">if</span> ( likely(*offset+<span class="keyword">sizeof</span>(uint32_t) &lt;= length) ) {</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;            memcpy(frame-&gt;maskingKey, payload+*offset, <span class="keyword">sizeof</span>(uint32_t));</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        }</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        *offset += <span class="keyword">sizeof</span>(uint32_t);</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;    }</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160; </div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    frame-&gt;applicationDataLength = frame-&gt;payloadLength-frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;applicationDataLength &gt; 0) ) {</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        <span class="keywordflow">if</span> ( likely(*offset+frame-&gt;applicationDataLength &lt;= length) ) {</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;            <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength))) ) {</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame application data&quot;</span>);</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;            }</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            memcpy(frame-&gt;payload, payload+*offset, frame-&gt;applicationDataLength);</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;        }</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        *offset += frame-&gt;applicationDataLength;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    }</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160; </div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;mask &amp;&amp; *offset &lt;= length) ) {</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        <a class="code" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a>(frame);</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    }</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160; </div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    <span class="keywordflow">return</span> frame;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;}</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160; </div>
+<div class="line"><a name="l00340"></a><span class="lineno"><a class="line" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">  340</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a>(wss_frame_t *frame, <span class="keywordtype">char</span> **message) {</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    <span class="keywordtype">size_t</span> offset = 0;</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    <span class="keywordtype">size_t</span> len = 2;</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    <span class="keywordtype">char</span> *mes;</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160; </div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == frame) ) {</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        *message = NULL;</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;    }</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160; </div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating byte message from frame&quot;</span>);</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160; </div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &gt; 125) ) {</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &lt;= 65535) ) {</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;            len += <span class="keyword">sizeof</span>(uint16_t);</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;            len += <span class="keyword">sizeof</span>(uint64_t);</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;        }</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    }</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160; </div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;    len += frame-&gt;payloadLength;</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160; </div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (mes = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(len*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate return message&quot;</span>);</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        *message = NULL;</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    }</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160; </div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;fin) {</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;        mes[offset] |= 0x80;</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    }</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160; </div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keywordflow">if</span> (frame-&gt;rsv1) {</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;        mes[offset] |= 0x40;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    }</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160; </div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    <span class="keywordflow">if</span> ( unlikely(frame-&gt;rsv2) ) {</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        mes[offset] |= 0x20;</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    }</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160; </div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    <span class="keywordflow">if</span> ( unlikely(frame-&gt;rsv3) ) {</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;        mes[offset] |= 0x10;</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    }</div>
 <div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160; </div>
-<div class="line"><a name="l00392"></a><span class="lineno"><a class="line" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">  392</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">WSS_stringify_frames</a>(wss_frame_t **frames, <span class="keywordtype">size_t</span> size, <span class="keywordtype">char</span> **message) {</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    <span class="keywordtype">size_t</span> i, n;</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    <span class="keywordtype">char</span> *f;</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    <span class="keywordtype">char</span> *msg = NULL;</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;    <span class="keywordtype">size_t</span> message_length = 0;</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160; </div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating byte message from frames&quot;</span>);</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160; </div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; size); i++) {</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;        n = <a class="code" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a>(frames[i], &amp;f);</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160; </div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        <span class="comment">// If we receive less than two bytes, we did not receive a valid frame</span></div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;        <span class="keywordflow">if</span> ( unlikely(n &lt; 2) ) {</div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Received invalid frame&quot;</span>);</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        }</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160; </div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (msg = <a class="code" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a>((<span class="keywordtype">void</span> **) &amp;msg, </div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;                        message_length*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>), (message_length+n+1)*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate message string&quot;</span>);</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        }</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160; </div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        memcpy(msg+message_length, f, n);</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        message_length += n;</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160; </div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160; </div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;f);</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;    }</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160; </div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;    *message = msg;</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160; </div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    <span class="keywordflow">return</span> message_length;</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;}</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160; </div>
-<div class="line"><a name="l00437"></a><span class="lineno"><a class="line" href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">  437</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">WSS_create_frames</a>(wss_config_t *config, wss_opcode_t opcode, <span class="keywordtype">char</span> *message, <span class="keywordtype">size_t</span> message_length, wss_frame_t ***fs) {</div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;    <span class="keywordtype">size_t</span> i, j;</div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;    wss_frame_t *frame;</div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;    <span class="keywordtype">size_t</span> frames_count = MAX(1, (<span class="keywordtype">size_t</span>)ceil((<span class="keywordtype">double</span>)message_length/(<span class="keywordtype">double</span>)config-&gt;size_frame));</div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;    wss_frame_t **frames;</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;    wss_close_t code;</div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    <span class="keywordtype">char</span> *msg = message;</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;    mes[offset++] |= 0xF &amp; frame-&gt;opcode;</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160; </div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    <span class="keywordflow">if</span> ( unlikely(frame-&gt;payloadLength &lt;= 125) ) {</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;        mes[offset++] = frame-&gt;payloadLength;</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( likely(frame-&gt;payloadLength &lt;= 65535) ) {</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;        uint16_t plen;</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;        mes[offset++] = 126;</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;        plen = <a class="code" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a>(frame-&gt;payloadLength);</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;        memcpy(mes+offset, &amp;plen, <span class="keyword">sizeof</span>(plen));</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;        offset += <span class="keyword">sizeof</span>(plen);</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;        uint64_t plen;</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;        mes[offset++] = 127;</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;        plen = <a class="code" href="frame_8c.html#aed141735b291915e132f69db9eb88916">htonl64</a>(frame-&gt;payloadLength);</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;        memcpy(mes+offset, &amp;plen, <span class="keyword">sizeof</span>(plen));</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;        offset += <span class="keyword">sizeof</span>(plen);</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    }</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160; </div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <span class="keywordflow">if</span> ( unlikely(frame-&gt;extensionDataLength &gt; 0) ) {</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        memcpy(mes+offset, frame-&gt;payload, frame-&gt;extensionDataLength);</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;        offset += frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    }</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160; </div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;    <span class="keywordflow">if</span> ( likely(frame-&gt;applicationDataLength &gt; 0) ) {</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;        memcpy(mes+offset, frame-&gt;payload+frame-&gt;extensionDataLength, frame-&gt;applicationDataLength);</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;        offset += frame-&gt;applicationDataLength;</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;    }</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160; </div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    *message = mes;</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160; </div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    <span class="keywordflow">return</span> offset;</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;}</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160; </div>
+<div class="line"><a name="l00425"></a><span class="lineno"><a class="line" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">  425</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">WSS_stringify_frames</a>(wss_frame_t **frames, <span class="keywordtype">size_t</span> size, <span class="keywordtype">char</span> **message) {</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    <span class="keywordtype">size_t</span> i, n;</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    <span class="keywordtype">char</span> *f;</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    <span class="keywordtype">char</span> *msg = NULL;</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;    <span class="keywordtype">size_t</span> message_length = 0;</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160; </div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating byte message from frames&quot;</span>);</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160; </div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; size); i++) {</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;        n = <a class="code" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a>(frames[i], &amp;f);</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; </div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;        <span class="comment">// If we receive less than two bytes, we did not receive a valid frame</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;        <span class="keywordflow">if</span> ( unlikely(n &lt; 2) ) {</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Received invalid frame&quot;</span>);</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;            *message = NULL;</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;f);</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;msg);</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;        }</div>
 <div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160; </div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (*fs = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frames_count*<span class="keyword">sizeof</span>(wss_frame_t *)))) ) {</div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame&quot;</span>);</div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;        fs = NULL;</div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;    }</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160; </div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;    frames = *fs;</div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160; </div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;    <span class="keywordflow">if</span> (opcode == CLOSE_FRAME) {</div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;        <span class="keywordflow">if</span> (message_length &gt;= <span class="keyword">sizeof</span>(uint16_t)) {</div>
-<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;            memcpy(&amp;code, msg, <span class="keyword">sizeof</span>(uint16_t));</div>
-<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;            code = ntohs(code);</div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;            msg = msg + <span class="keyword">sizeof</span>(uint16_t);</div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (message_length == 1) {</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;            code = CLOSE_PROTOCOL;</div>
-<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;            code = CLOSE_NORMAL;</div>
-<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;        }</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160; </div>
-<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;        frame = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(code, msg);</div>
-<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;        frames[0] = frame;</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;        <span class="keywordflow">return</span> 1;</div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;    }</div>
-<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160; </div>
-<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;    <span class="keywordflow">for</span> (i = 0; i &lt; frames_count; i++) {</div>
-<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;        <span class="comment">// Always allocate one frame</span></div>
-<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
-<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame&quot;</span>);</div>
-<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;            <span class="keywordflow">for</span> (j = 0; j &lt; i; j++) {</div>
-<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;            }</div>
-<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frames);</div>
-<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;            fs = NULL;</div>
-<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;        }</div>
-<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160; </div>
-<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;        frame-&gt;fin = 0;</div>
-<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;        frame-&gt;opcode = opcode;</div>
-<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;        frame-&gt;mask = 0;</div>
-<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160; </div>
-<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;        frame-&gt;applicationDataLength = MIN(message_length-(config-&gt;size_frame*i), config-&gt;size_frame);</div>
-<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength+1))) ) {</div>
-<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame application data&quot;</span>);</div>
-<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;            <span class="keywordflow">for</span> (j = 0; j &lt; i; j++) {</div>
-<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;            }</div>
-<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frame);</div>
-<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frames);</div>
-<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;            fs = NULL;</div>
-<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;        }</div>
-<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;        memcpy(frame-&gt;payload, msg, frame-&gt;applicationDataLength);</div>
-<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;        frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;        frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
-<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160; </div>
-<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;        frames[i] = frame;</div>
-<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;    }</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (msg = <a class="code" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a>((<span class="keywordtype">void</span> **) &amp;msg, </div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;                        message_length*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>), (message_length+n+1)*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate message string&quot;</span>);</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;            *message = NULL;</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;f);</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;msg);</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;        }</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160; </div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;        memcpy(msg+message_length, f, n);</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;        message_length += n;</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160; </div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;f);</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;    }</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160; </div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;    *message = msg;</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160; </div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;    <span class="keywordflow">return</span> message_length;</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;}</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160; </div>
+<div class="line"><a name="l00475"></a><span class="lineno"><a class="line" href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">  475</a></span>&#160;<span class="keywordtype">size_t</span> <a class="code" href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">WSS_create_frames</a>(wss_config_t *config, wss_opcode_t opcode, <span class="keywordtype">char</span> *message, <span class="keywordtype">size_t</span> message_length, wss_frame_t ***fs) {</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;    <span class="keywordtype">size_t</span> i, j;</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;    wss_frame_t *frame;</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;    <span class="keywordtype">size_t</span> frames_count;</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;    wss_frame_t **frames;</div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;    wss_close_t code;</div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;    <span class="keywordtype">char</span> *msg = message;</div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160; </div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == config) ) {</div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;        *fs = NULL;</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;    }</div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160; </div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == message &amp;&amp; message_length != 0) ) {</div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;        *fs = NULL;</div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;    }</div>
+<div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160; </div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;    frames_count = MAX(1, (<span class="keywordtype">size_t</span>)ceil((<span class="keywordtype">double</span>)message_length/(<span class="keywordtype">double</span>)config-&gt;size_frame));</div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160; </div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (*fs = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frames_count*<span class="keyword">sizeof</span>(wss_frame_t *)))) ) {</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame&quot;</span>);</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;        *fs = NULL;</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;    }</div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160; </div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;    frames = *fs;</div>
 <div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160; </div>
-<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;    frames[frames_count-1]-&gt;fin = 1;</div>
-<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160; </div>
-<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;    <span class="keywordflow">return</span> frames_count;</div>
-<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;}</div>
-<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160; </div>
-<div class="line"><a name="l00514"></a><span class="lineno"><a class="line" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">  514</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(wss_close_t reason, <span class="keywordtype">char</span> *message) {</div>
-<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;    wss_frame_t *frame;</div>
-<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;    uint16_t nbo_reason;</div>
-<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;    <span class="keywordtype">char</span> *reason_str = message;</div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;    <span class="keywordflow">if</span> (opcode == CLOSE_FRAME) {</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;        <span class="keywordflow">if</span> ( likely(message_length &gt;= <span class="keyword">sizeof</span>(uint16_t)) ) {</div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;            memcpy(&amp;code, msg, <span class="keyword">sizeof</span>(uint16_t));</div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;            code = ntohs(code);</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;            msg = msg + <span class="keyword">sizeof</span>(uint16_t);</div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( unlikely(message_length == 1) ) {</div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;            code = CLOSE_PROTOCOL;</div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;            code = CLOSE_NORMAL;</div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;        }</div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160; </div>
+<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;        frame = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(code, msg);</div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;        frames[0] = frame;</div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;        <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;    }</div>
 <div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160; </div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating closing frame&quot;</span>);</div>
-<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160; </div>
-<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
-<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame&quot;</span>);</div>
-<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;    }</div>
-<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160; </div>
-<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;    frame-&gt;fin = 1;</div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;    frame-&gt;opcode = CLOSE_FRAME;</div>
-<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;    frame-&gt;mask = 0;</div>
-<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160; </div>
-<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;    <span class="keywordflow">if</span> (NULL == reason_str) {</div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;        <span class="keywordflow">switch</span> (reason) {</div>
-<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;            <span class="keywordflow">case</span> CLOSE_NORMAL:</div>
-<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;                reason_str = <span class="stringliteral">&quot;Normal close&quot;</span>;</div>
-<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;            <span class="keywordflow">case</span> CLOSE_SHUTDOWN:</div>
-<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;                reason_str = <span class="stringliteral">&quot;Server is shutting down&quot;</span>;</div>
-<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;            <span class="keywordflow">case</span> CLOSE_PROTOCOL:</div>
-<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;                reason_str = <span class="stringliteral">&quot;Experienced a protocol error&quot;</span>;</div>
-<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;            <span class="keywordflow">case</span> CLOSE_TYPE:</div>
-<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;                reason_str = <span class="stringliteral">&quot;Unsupported data type&quot;</span>;</div>
-<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;            <span class="keywordflow">case</span> CLOSE_NO_STATUS_CODE:</div>
-<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;                reason_str = <span class="stringliteral">&quot;No status received&quot;</span>;</div>
-<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;            <span class="keywordflow">case</span> CLOSE_ABNORMAL:</div>
-<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;                reason_str = <span class="stringliteral">&quot;Abnormal closure&quot;</span>;</div>
-<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;            <span class="keywordflow">case</span> CLOSE_UTF8:</div>
-<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;                reason_str = <span class="stringliteral">&quot;Invalid frame payload data&quot;</span>;</div>
-<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;            <span class="keywordflow">case</span> CLOSE_POLICY:</div>
-<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;                reason_str = <span class="stringliteral">&quot;Policy Violation&quot;</span>;</div>
-<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;            <span class="keywordflow">case</span> CLOSE_BIG:</div>
-<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;                reason_str = <span class="stringliteral">&quot;Message is too big&quot;</span>;</div>
-<div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;            <span class="keywordflow">case</span> CLOSE_EXTENSION:</div>
-<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;                reason_str = <span class="stringliteral">&quot;Mandatory extension&quot;</span>;</div>
-<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;            <span class="keywordflow">case</span> CLOSE_UNEXPECTED:</div>
-<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;                reason_str = <span class="stringliteral">&quot;Internal server error&quot;</span>;</div>
-<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;            <span class="keywordflow">case</span> CLOSE_RESTARTING:</div>
-<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;                reason_str = <span class="stringliteral">&quot;Server is restarting&quot;</span>;</div>
-<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;            <span class="keywordflow">case</span> CLOSE_TRY_AGAIN:</div>
-<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;                reason_str = <span class="stringliteral">&quot;Try again later&quot;</span>;</div>
-<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;            <span class="keywordflow">case</span> CLOSE_INVALID_PROXY_RESPONSE:</div>
-<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;                reason_str = <span class="stringliteral">&quot;The server was acting as a gateway or proxy and received an invalid response from the upstream server.&quot;</span>;</div>
-<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;            <span class="keywordflow">case</span> CLOSE_FAILED_TLS_HANDSHAKE:</div>
-<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;                reason_str = <span class="stringliteral">&quot;Failed TLS Handshake&quot;</span>;</div>
-<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;            <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unknown closing reason&quot;</span>);</div>
-<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
-<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;                <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;        }</div>
-<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;    }</div>
-<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;    frame-&gt;applicationDataLength = strlen(reason_str)+<span class="keyword">sizeof</span>(uint16_t);</div>
-<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength+1))) ) {</div>
-<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame application data&quot;</span>);</div>
-<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
-<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;    }</div>
-<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;    nbo_reason = htons(reason);</div>
-<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;    memcpy(frame-&gt;payload, &amp;nbo_reason, <span class="keyword">sizeof</span>(uint16_t));</div>
-<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;    memcpy(frame-&gt;payload+<span class="keyword">sizeof</span>(uint16_t), reason_str, strlen(reason_str));</div>
-<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160; </div>
-<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;    frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;    frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
-<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160; </div>
-<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;    <span class="keywordflow">return</span> frame;</div>
-<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;}</div>
-<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160; </div>
-<div class="line"><a name="l00604"></a><span class="lineno"><a class="line" href="frame_8c.html#a85850b494b3e6598733e75436de3136e">  604</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a85850b494b3e6598733e75436de3136e">WSS_ping_frame</a>() {</div>
-<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating ping frame&quot;</span>);</div>
-<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160; </div>
-<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;    wss_frame_t *frame;</div>
-<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160; </div>
-<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
-<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate ping frame&quot;</span>);</div>
-<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    }</div>
-<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160; </div>
-<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;    frame-&gt;fin = 1;</div>
-<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;    frame-&gt;opcode = PING_FRAME;</div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;    frame-&gt;mask = 0;</div>
-<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160; </div>
-<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;    frame-&gt;applicationDataLength = 120;</div>
-<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="frame_8c.html#a5eb168cf9a6abf466f8e310df973bcbf">random_bytes</a>(frame-&gt;applicationDataLength))) ) {</div>
-<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate ping frame application data&quot;</span>);</div>
-<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
-<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
-<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;    }</div>
-<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160; </div>
-<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;    frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
-<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;    frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
-<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160; </div>
-<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;    <span class="keywordflow">return</span> frame;</div>
-<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;}</div>
-<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160; </div>
-<div class="line"><a name="l00637"></a><span class="lineno"><a class="line" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">  637</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a>(wss_frame_t *ping) {</div>
-<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Converting ping frame to pong frame&quot;</span>);</div>
-<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160; </div>
-<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;    ping-&gt;fin = 1;</div>
-<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;    ping-&gt;rsv1 = 0;</div>
-<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;    ping-&gt;rsv2 = 0;</div>
-<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;    ping-&gt;rsv3 = 0;</div>
-<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;    ping-&gt;opcode = PONG_FRAME;</div>
-<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    ping-&gt;mask = 0;</div>
-<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160; </div>
-<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;    memset(ping-&gt;maskingKey, <span class="charliteral">&#39;\0&#39;</span>, <span class="keyword">sizeof</span>(uint32_t));</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;    <span class="keywordflow">for</span> (i = 0; i &lt; frames_count; i++) {</div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;        <span class="comment">// Always allocate one frame</span></div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame&quot;</span>);</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;            <span class="keywordflow">for</span> (j = 0; j &lt; i; j++) {</div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;            }</div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frames);</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;            fs = NULL;</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;        }</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160; </div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;        frame-&gt;fin = 0;</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;        frame-&gt;opcode = opcode;</div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;        frame-&gt;mask = 0;</div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160; </div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;        frame-&gt;applicationDataLength = MIN(message_length-(config-&gt;size_frame*i), config-&gt;size_frame);</div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength+1))) ) {</div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to allocate frame application data&quot;</span>);</div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;            <span class="keywordflow">for</span> (j = 0; j &lt; i; j++) {</div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;            }</div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frame);</div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;frames);</div>
+<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;            fs = NULL;</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;        }</div>
+<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;        memcpy(frame-&gt;payload, msg, frame-&gt;applicationDataLength);</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;        frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;        frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
+<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160; </div>
+<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;        frames[i] = frame;</div>
+<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;    }</div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160; </div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;    frames[frames_count-1]-&gt;fin = 1;</div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160; </div>
+<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;    <span class="keywordflow">return</span> frames_count;</div>
+<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;}</div>
+<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160; </div>
+<div class="line"><a name="l00564"></a><span class="lineno"><a class="line" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">  564</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(wss_close_t reason, <span class="keywordtype">char</span> *message) {</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;    wss_frame_t *frame;</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;    uint16_t nbo_reason;</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;    <span class="keywordtype">char</span> *reason_str = message;</div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160; </div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating closing frame&quot;</span>);</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160; </div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame&quot;</span>);</div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;    }</div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160; </div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;    frame-&gt;fin = 1;</div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;    frame-&gt;opcode = CLOSE_FRAME;</div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;    frame-&gt;mask = 0;</div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160; </div>
+<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;    <span class="keywordflow">if</span> (NULL == reason_str) {</div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;        <span class="keywordflow">switch</span> (reason) {</div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;            <span class="keywordflow">case</span> CLOSE_NORMAL:</div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;                reason_str = <span class="stringliteral">&quot;Normal close&quot;</span>;</div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;            <span class="keywordflow">case</span> CLOSE_SHUTDOWN:</div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;                reason_str = <span class="stringliteral">&quot;Server is shutting down&quot;</span>;</div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;            <span class="keywordflow">case</span> CLOSE_PROTOCOL:</div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;                reason_str = <span class="stringliteral">&quot;Experienced a protocol error&quot;</span>;</div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;            <span class="keywordflow">case</span> CLOSE_TYPE:</div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;                reason_str = <span class="stringliteral">&quot;Unsupported data type&quot;</span>;</div>
+<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;            <span class="keywordflow">case</span> CLOSE_NO_STATUS_CODE:</div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;                reason_str = <span class="stringliteral">&quot;No status received&quot;</span>;</div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;            <span class="keywordflow">case</span> CLOSE_ABNORMAL:</div>
+<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;                reason_str = <span class="stringliteral">&quot;Abnormal closure&quot;</span>;</div>
+<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;            <span class="keywordflow">case</span> CLOSE_UTF8:</div>
+<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;                reason_str = <span class="stringliteral">&quot;Invalid frame payload data&quot;</span>;</div>
+<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;            <span class="keywordflow">case</span> CLOSE_POLICY:</div>
+<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;                reason_str = <span class="stringliteral">&quot;Policy Violation&quot;</span>;</div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;            <span class="keywordflow">case</span> CLOSE_BIG:</div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;                reason_str = <span class="stringliteral">&quot;Message is too big&quot;</span>;</div>
+<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;            <span class="keywordflow">case</span> CLOSE_EXTENSION:</div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;                reason_str = <span class="stringliteral">&quot;Mandatory extension&quot;</span>;</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;            <span class="keywordflow">case</span> CLOSE_UNEXPECTED:</div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;                reason_str = <span class="stringliteral">&quot;Internal server error&quot;</span>;</div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;            <span class="keywordflow">case</span> CLOSE_RESTARTING:</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;                reason_str = <span class="stringliteral">&quot;Server is restarting&quot;</span>;</div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;            <span class="keywordflow">case</span> CLOSE_TRY_AGAIN:</div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;                reason_str = <span class="stringliteral">&quot;Try again later&quot;</span>;</div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;            <span class="keywordflow">case</span> CLOSE_INVALID_PROXY_RESPONSE:</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;                reason_str = <span class="stringliteral">&quot;The server was acting as a gateway or proxy and received an invalid response from the upstream server.&quot;</span>;</div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;            <span class="keywordflow">case</span> CLOSE_FAILED_TLS_HANDSHAKE:</div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;                reason_str = <span class="stringliteral">&quot;Failed TLS Handshake&quot;</span>;</div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;            <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unknown closing reason&quot;</span>);</div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;                <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;        }</div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;    }</div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;    frame-&gt;applicationDataLength = strlen(reason_str)+<span class="keyword">sizeof</span>(uint16_t);</div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(frame-&gt;applicationDataLength+1))) ) {</div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate closing frame application data&quot;</span>);</div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;    }</div>
+<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;    nbo_reason = <a class="code" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a>(reason);</div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;    memcpy(frame-&gt;payload, &amp;nbo_reason, <span class="keyword">sizeof</span>(uint16_t));</div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;    memcpy(frame-&gt;payload+<span class="keyword">sizeof</span>(uint16_t), reason_str, strlen(reason_str));</div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160; </div>
+<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;    frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;    frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160; </div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;    <span class="keywordflow">return</span> frame;</div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;}</div>
 <div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160; </div>
-<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;    <span class="keywordflow">return</span> ping;</div>
-<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;}</div>
-<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160; </div>
-<div class="line"><a name="l00658"></a><span class="lineno"><a class="line" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">  658</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(wss_frame_t *frame) {</div>
-<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frame-&gt;payload);</div>
-<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frame);</div>
-<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;}</div>
+<div class="line"><a name="l00654"></a><span class="lineno"><a class="line" href="frame_8c.html#a85850b494b3e6598733e75436de3136e">  654</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#a85850b494b3e6598733e75436de3136e">WSS_ping_frame</a>() {</div>
+<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Creating ping frame&quot;</span>);</div>
+<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160; </div>
+<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;    wss_frame_t *frame;</div>
+<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160; </div>
+<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>(<span class="keyword">sizeof</span>(wss_frame_t)))) ) {</div>
+<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate ping frame&quot;</span>);</div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;    }</div>
+<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160; </div>
+<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;    frame-&gt;fin = 1;</div>
+<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;    frame-&gt;opcode = PING_FRAME;</div>
+<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;    frame-&gt;mask = 0;</div>
+<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160; </div>
+<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;    frame-&gt;applicationDataLength = 120;</div>
+<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (frame-&gt;payload = <a class="code" href="frame_8c.html#a5eb168cf9a6abf466f8e310df973bcbf">random_bytes</a>(frame-&gt;applicationDataLength))) ) {</div>
+<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;        WSS_log_error(<span class="stringliteral">&quot;Unable to allocate ping frame application data&quot;</span>);</div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) frame);</div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;    }</div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160; </div>
+<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;    frame-&gt;payloadLength += frame-&gt;extensionDataLength;</div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;    frame-&gt;payloadLength += frame-&gt;applicationDataLength;</div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160; </div>
+<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;    <span class="keywordflow">return</span> frame;</div>
+<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;}</div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160; </div>
+<div class="line"><a name="l00687"></a><span class="lineno"><a class="line" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">  687</a></span>&#160;wss_frame_t *<a class="code" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a>(wss_frame_t *ping) {</div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Converting ping frame to pong frame&quot;</span>);</div>
+<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;    </div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;    <span class="keywordflow">if</span> ( NULL == ping ) {</div>
+<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160;        <span class="keywordflow">return</span> NULL;</div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;    }</div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160; </div>
+<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160;    ping-&gt;fin = 1;</div>
+<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;    ping-&gt;rsv1 = 0;</div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;    ping-&gt;rsv2 = 0;</div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;    ping-&gt;rsv3 = 0;</div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;    ping-&gt;opcode = PONG_FRAME;</div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;    ping-&gt;mask = 0;</div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160; </div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;    memset(ping-&gt;maskingKey, <span class="charliteral">&#39;\0&#39;</span>, <span class="keyword">sizeof</span>(uint32_t));</div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160; </div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;    <span class="keywordflow">return</span> ping;</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;}</div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160; </div>
+<div class="line"><a name="l00712"></a><span class="lineno"><a class="line" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">  712</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(wss_frame_t *frame) {</div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frame-&gt;payload);</div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frame);</div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
+<div class="ttc" id="aframe_8c_html_aed141735b291915e132f69db9eb88916"><div class="ttname"><a href="frame_8c.html#aed141735b291915e132f69db9eb88916">htonl64</a></div><div class="ttdeci">static uint64_t htonl64(uint64_t value)</div><div class="ttdoc">Converts the unsigned 64 bit integer from host byte order to network byte order.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00065">frame.c:65</a></div></div>
+<div class="ttc" id="aframe_8c_html_aa8e2698f477ac8304f1ac23362363f77"><div class="ttname"><a href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a></div><div class="ttdeci">static uint64_t htons16(uint64_t value)</div><div class="ttdoc">Converts the unsigned 16 bit integer from host byte order to network byte order.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00090">frame.c:90</a></div></div>
 <div class="ttc" id="aalloc_8c_html_a6e256791db29407ee9b80ae3728307cd"><div class="ttname"><a href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a></div><div class="ttdeci">void * WSS_realloc(void **ptr, size_t oldSize, size_t newSize)</div><div class="ttdoc">Function that re-allocates some memory.</div><div class="ttdef"><b>Definition:</b> <a href="alloc_8c_source.html#l00091">alloc.c:91</a></div></div>
 <div class="ttc" id="aalloc_8c_html_aafc61d568f2f093f1f72238f51fbdba4"><div class="ttname"><a href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a></div><div class="ttdeci">void * WSS_malloc(size_t size)</div><div class="ttdoc">Function that allocates memory.</div><div class="ttdef"><b>Definition:</b> <a href="alloc_8c_source.html#l00032">alloc.c:32</a></div></div>
-<div class="ttc" id="aframe_8c_html_a5892cf46fba829eb0c8bc67b8162288d"><div class="ttname"><a href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a></div><div class="ttdeci">wss_frame_t * WSS_closing_frame(wss_close_t reason, char *message)</div><div class="ttdoc">Creates a closing frame given a reason for the closure.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00514">frame.c:514</a></div></div>
-<div class="ttc" id="aframe_8c_html_a85850b494b3e6598733e75436de3136e"><div class="ttname"><a href="frame_8c.html#a85850b494b3e6598733e75436de3136e">WSS_ping_frame</a></div><div class="ttdeci">wss_frame_t * WSS_ping_frame()</div><div class="ttdoc">Creates a ping frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00604">frame.c:604</a></div></div>
-<div class="ttc" id="aframe_8c_html_a110cbe657181858c43bad1f86453915f"><div class="ttname"><a href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a></div><div class="ttdeci">void WSS_free_frame(wss_frame_t *frame)</div><div class="ttdoc">Releases memory used by a frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00658">frame.c:658</a></div></div>
-<div class="ttc" id="aframe_8c_html_af921b15f7e265f23253c059bcd050021"><div class="ttname"><a href="frame_8c.html#af921b15f7e265f23253c059bcd050021">WSS_stringify_frames</a></div><div class="ttdeci">size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message)</div><div class="ttdoc">Converts an array of frames into a char array that can be written to others.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00392">frame.c:392</a></div></div>
-<div class="ttc" id="aframe_8c_html_a572b61ed22e15ac196f279f0446fc8bd"><div class="ttname"><a href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a></div><div class="ttdeci">wss_frame_t * WSS_parse_frame(char *payload, size_t length, size_t *offset)</div><div class="ttdoc">Parses a payload of data into a websocket frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00233">frame.c:233</a></div></div>
-<div class="ttc" id="aframe_8c_html_af5c433dfec7214fe91ec2137dc18ba2b"><div class="ttname"><a href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a></div><div class="ttdeci">size_t WSS_stringify_frame(wss_frame_t *frame, char **message)</div><div class="ttdoc">Converts a single frame into a char array.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00312">frame.c:312</a></div></div>
-<div class="ttc" id="aframe_8c_html_af3340bd289b5863c51dc12418f7f71ce"><div class="ttname"><a href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a></div><div class="ttdeci">wss_frame_t * WSS_pong_frame(wss_frame_t *ping)</div><div class="ttdoc">Creates a pong frame from a received ping frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00637">frame.c:637</a></div></div>
-<div class="ttc" id="aframe_8c_html_a0672b756ce5f51ad015ed1c31dec6efd"><div class="ttname"><a href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a></div><div class="ttdeci">static uint64_t ntohl64(uint64_t value)</div><div class="ttdoc">Converts the unsigned 64 bit integer from host byte order to network byte order.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00065">frame.c:65</a></div></div>
+<div class="ttc" id="aframe_8c_html_a5892cf46fba829eb0c8bc67b8162288d"><div class="ttname"><a href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a></div><div class="ttdeci">wss_frame_t * WSS_closing_frame(wss_close_t reason, char *message)</div><div class="ttdoc">Creates a closing frame given a reason for the closure.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00564">frame.c:564</a></div></div>
+<div class="ttc" id="aframe_8c_html_a85850b494b3e6598733e75436de3136e"><div class="ttname"><a href="frame_8c.html#a85850b494b3e6598733e75436de3136e">WSS_ping_frame</a></div><div class="ttdeci">wss_frame_t * WSS_ping_frame()</div><div class="ttdoc">Creates a ping frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00654">frame.c:654</a></div></div>
+<div class="ttc" id="aframe_8c_html_a110cbe657181858c43bad1f86453915f"><div class="ttname"><a href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a></div><div class="ttdeci">void WSS_free_frame(wss_frame_t *frame)</div><div class="ttdoc">Releases memory used by a frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00712">frame.c:712</a></div></div>
+<div class="ttc" id="aframe_8c_html_af921b15f7e265f23253c059bcd050021"><div class="ttname"><a href="frame_8c.html#af921b15f7e265f23253c059bcd050021">WSS_stringify_frames</a></div><div class="ttdeci">size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message)</div><div class="ttdoc">Converts an array of frames into a char array that can be written to others.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00425">frame.c:425</a></div></div>
+<div class="ttc" id="aframe_8c_html_a572b61ed22e15ac196f279f0446fc8bd"><div class="ttname"><a href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a></div><div class="ttdeci">wss_frame_t * WSS_parse_frame(char *payload, size_t length, size_t *offset)</div><div class="ttdoc">Parses a payload of data into a websocket frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00255">frame.c:255</a></div></div>
+<div class="ttc" id="aframe_8c_html_af5c433dfec7214fe91ec2137dc18ba2b"><div class="ttname"><a href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">WSS_stringify_frame</a></div><div class="ttdeci">size_t WSS_stringify_frame(wss_frame_t *frame, char **message)</div><div class="ttdoc">Converts a single frame into a char array.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00340">frame.c:340</a></div></div>
+<div class="ttc" id="aframe_8c_html_af3340bd289b5863c51dc12418f7f71ce"><div class="ttname"><a href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a></div><div class="ttdeci">wss_frame_t * WSS_pong_frame(wss_frame_t *ping)</div><div class="ttdoc">Creates a pong frame from a received ping frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00687">frame.c:687</a></div></div>
 <div class="ttc" id="aframe_8c_html_a5eb168cf9a6abf466f8e310df973bcbf"><div class="ttname"><a href="frame_8c.html#a5eb168cf9a6abf466f8e310df973bcbf">random_bytes</a></div><div class="ttdeci">static char * random_bytes(int length)</div><div class="ttdoc">Converts the unsigned 64 bit integer from host byte order to network byte order.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00045">frame.c:45</a></div></div>
-<div class="ttc" id="aframe_8c_html_a230000c7d4e67cb10b6dd282b1b55994"><div class="ttname"><a href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a></div><div class="ttdeci">static void unmask(wss_frame_t *frame)</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00083">frame.c:83</a></div></div>
-<div class="ttc" id="aframe_8c_html_a205b644275e9f77d71a4cd213604aaee"><div class="ttname"><a href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">WSS_create_frames</a></div><div class="ttdeci">size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs)</div><div class="ttdoc">Creates a series of frames from a message.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00437">frame.c:437</a></div></div>
+<div class="ttc" id="aframe_8c_html_a230000c7d4e67cb10b6dd282b1b55994"><div class="ttname"><a href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a></div><div class="ttdeci">static void unmask(wss_frame_t *frame)</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00105">frame.c:105</a></div></div>
+<div class="ttc" id="aframe_8c_html_a205b644275e9f77d71a4cd213604aaee"><div class="ttname"><a href="frame_8c.html#a205b644275e9f77d71a4cd213604aaee">WSS_create_frames</a></div><div class="ttdeci">size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs)</div><div class="ttdoc">Creates a series of frames from a message.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00475">frame.c:475</a></div></div>
 <div class="ttc" id="aalloc_8c_html_af5bbb4cc11f30e61eb1864814ffce480"><div class="ttname"><a href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a></div><div class="ttdeci">void WSS_free(void **ptr)</div><div class="ttdoc">Function that re-allocates some memory.</div><div class="ttdef"><b>Definition:</b> <a href="alloc_8c_source.html#l00144">alloc.c:144</a></div></div>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

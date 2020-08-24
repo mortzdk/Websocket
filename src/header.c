@@ -695,14 +695,16 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
  */
 void WSS_free_header(wss_header_t *header) {
     size_t i;
-    for (i = 0; i < header->ws_extensions_count; i++) {
-        if ( likely(NULL != header->ws_extensions[i]) ) {
-            WSS_free((void **) &header->ws_extensions[i]->accepted);
-            WSS_free((void **) &header->ws_extensions[i]->name);
-            WSS_free((void **) &header->ws_extensions[i]);
+    if ( likely(NULL != header) ) {
+        for (i = 0; i < header->ws_extensions_count; i++) {
+            if ( likely(NULL != header->ws_extensions[i]) ) {
+                WSS_free((void **) &header->ws_extensions[i]->accepted);
+                WSS_free((void **) &header->ws_extensions[i]->name);
+                WSS_free((void **) &header->ws_extensions[i]);
+            }
         }
+        WSS_free((void **) &header->ws_extensions);
+        WSS_free((void **) &header->content);
     }
-    WSS_free((void **) &header->ws_extensions);
-    WSS_free((void **) &header->content);
     WSS_free((void **) &header);
 }

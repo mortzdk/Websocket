@@ -110,8 +110,10 @@ Include dependency graph for frame.c:</div>
 Functions</h2></td></tr>
 <tr class="memitem:a5eb168cf9a6abf466f8e310df973bcbf"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a5eb168cf9a6abf466f8e310df973bcbf">random_bytes</a> (int length)</td></tr>
 <tr class="separator:a5eb168cf9a6abf466f8e310df973bcbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0672b756ce5f51ad015ed1c31dec6efd"><td class="memItemLeft" align="right" valign="top">static uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd">ntohl64</a> (uint64_t value)</td></tr>
-<tr class="separator:a0672b756ce5f51ad015ed1c31dec6efd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed141735b291915e132f69db9eb88916"><td class="memItemLeft" align="right" valign="top">static uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#aed141735b291915e132f69db9eb88916">htonl64</a> (uint64_t value)</td></tr>
+<tr class="separator:aed141735b291915e132f69db9eb88916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8e2698f477ac8304f1ac23362363f77"><td class="memItemLeft" align="right" valign="top">static uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#aa8e2698f477ac8304f1ac23362363f77">htons16</a> (uint64_t value)</td></tr>
+<tr class="separator:aa8e2698f477ac8304f1ac23362363f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a230000c7d4e67cb10b6dd282b1b55994"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994">unmask</a> (wss_frame_t *frame)</td></tr>
 <tr class="separator:a230000c7d4e67cb10b6dd282b1b55994"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a572b61ed22e15ac196f279f0446fc8bd"><td class="memItemLeft" align="right" valign="top">wss_frame_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a> (char *payload, size_t length, size_t *offset)</td></tr>
@@ -132,8 +134,8 @@ Functions</h2></td></tr>
 <tr class="separator:a110cbe657181858c43bad1f86453915f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a0672b756ce5f51ad015ed1c31dec6efd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0672b756ce5f51ad015ed1c31dec6efd">&#9670;&nbsp;</a></span>ntohl64()</h2>
+<a id="aed141735b291915e132f69db9eb88916"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed141735b291915e132f69db9eb88916">&#9670;&nbsp;</a></span>htonl64()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -142,7 +144,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint64_t ntohl64 </td>
+          <td class="memname">static uint64_t htonl64 </td>
           <td>(</td>
           <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>value</em></td><td>)</td>
@@ -164,9 +166,47 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[uint64_t] "The 64 bit unsigned integer in network byte order" </dd></dl>
-<p>If these check is true, the system is using the little endian convention. Else the system is using the big endian convention, which means that we do not have to represent our integers in another way.</p>
+<p>If this check is true, the system is using the little endian convention. Else the system is using the big endian convention, which means that we do not have to represent our integers in another way.</p>
 
 <p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00065">65</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+
+</div>
+</div>
+<a id="aa8e2698f477ac8304f1ac23362363f77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8e2698f477ac8304f1ac23362363f77">&#9670;&nbsp;</a></span>htons16()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static uint64_t htons16 </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Converts the unsigned 16 bit integer from host byte order to network byte order. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">value</td><td>[uint64_t] "A 16 bit unsigned integer" </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>[uint64_t] "The 16 bit unsigned integer in network byte order" </dd></dl>
+<p>If this check is true, the system is using the little endian convention. Else the system is using the big endian convention, which means that we do not have to represent our integers in another way.</p>
+
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00090">90</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -231,7 +271,7 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00083">83</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00105">105</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -270,7 +310,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00514">514</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00564">564</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -331,7 +371,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The amount of frames created" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00437">437</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00475">475</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -361,7 +401,7 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>[void] <br  />
  </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00658">658</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00712">712</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -409,7 +449,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00233">233</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00255">255</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -431,7 +471,7 @@ Functions</h2></td></tr>
 <p>Creates a ping frame. </p>
 <dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00604">604</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00654">654</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -460,7 +500,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[wss_frame_t *] "A websocket frame" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00637">637</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00687">687</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -500,7 +540,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00312">312</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00340">340</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>
@@ -547,7 +587,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[size_t] "The size of the frame data" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00392">392</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="frame_8c_source.html#l00425">425</a> of file <a class="el" href="frame_8c_source.html">frame.c</a>.</p>
 
 </div>
 </div>

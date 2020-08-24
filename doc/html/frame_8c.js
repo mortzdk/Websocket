@@ -1,6 +1,7 @@
 var frame_8c =
 [
-    [ "ntohl64", "frame_8c.html#a0672b756ce5f51ad015ed1c31dec6efd", null ],
+    [ "htonl64", "frame_8c.html#aed141735b291915e132f69db9eb88916", null ],
+    [ "htons16", "frame_8c.html#aa8e2698f477ac8304f1ac23362363f77", null ],
     [ "random_bytes", "frame_8c.html#a5eb168cf9a6abf466f8e310df973bcbf", null ],
     [ "unmask", "frame_8c.html#a230000c7d4e67cb10b6dd282b1b55994", null ],
     [ "WSS_closing_frame", "frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d", null ],
