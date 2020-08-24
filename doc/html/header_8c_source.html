@@ -708,17 +708,19 @@ $(document).ready(function(){initNavTree('header_8c_source.html',''); initResiza
 <div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160; </div>
 <div class="line"><a name="l00696"></a><span class="lineno"><a class="line" href="header_8c.html#a10ed36d0e0e2cedc7009183de7f5dd6e">  696</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="header_8c.html#a10ed36d0e0e2cedc7009183de7f5dd6e">WSS_free_header</a>(wss_header_t *header) {</div>
 <div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;    <span class="keywordtype">size_t</span> i;</div>
-<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;    <span class="keywordflow">for</span> (i = 0; i &lt; header-&gt;ws_extensions_count; i++) {</div>
-<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;        <span class="keywordflow">if</span> ( likely(NULL != header-&gt;ws_extensions[i]) ) {</div>
-<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]-&gt;accepted);</div>
-<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]-&gt;name);</div>
-<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]);</div>
-<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;        }</div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;    }</div>
-<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions);</div>
-<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;content);</div>
-<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header);</div>
-<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;}</div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;    <span class="keywordflow">if</span> ( likely(NULL != header) ) {</div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;        <span class="keywordflow">for</span> (i = 0; i &lt; header-&gt;ws_extensions_count; i++) {</div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;            <span class="keywordflow">if</span> ( likely(NULL != header-&gt;ws_extensions[i]) ) {</div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]-&gt;accepted);</div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]-&gt;name);</div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions[i]);</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;            }</div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;        }</div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;ws_extensions);</div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header-&gt;content);</div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;    }</div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;header);</div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div class="ttc" id="aheader_8c_html_aff80fe4752e4723f3532f1f8b6ef1db4"><div class="ttname"><a href="header_8c.html#aff80fe4752e4723f3532f1f8b6ef1db4">versions</a></div><div class="ttdeci">const char * versions[]</div><div class="ttdoc">Acceptable HTTP versions.</div><div class="ttdef"><b>Definition:</b> <a href="header_8c_source.html#l00056">header.c:56</a></div></div>
