@@ -84,7 +84,7 @@ static wss_message_t *handshake_response(wss_header_t *header, enum HttpStatus_C
 
     // Generate accept key
     memset(key, '\0', key_length);
-    memset(sha1Key, '\0', 20);
+    memset(sha1Key, '\0', SHA_DIGEST_LENGTH);
     memcpy(key+(key_length-magic_length), MAGIC_WEBSOCKET_KEY, magic_length);
     memcpy(key, header->ws_key, (key_length-magic_length));
 #ifdef USE_OPENSSL
@@ -111,7 +111,6 @@ static wss_message_t *handshake_response(wss_header_t *header, enum HttpStatus_C
 #else
     SHA1Context sha;
     int i, b;
-    memset(sha1Key, '\0', SHA_DIGEST_LENGTH);
 
     SHA1Reset(&sha);
     SHA1Input(&sha, (const unsigned char*) key, key_length);

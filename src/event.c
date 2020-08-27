@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 #include "server.h" 
 #include "alloc.h" 
 #include "worker.h" 
@@ -95,34 +96,47 @@ static inline void handle_rearm(wss_server_t *server) {
  * @return 			[wss_error_t]       "The error status"
  */
 wss_error_t WSS_add_to_threadpool(wss_server_t *server, void (*func)(void *), void *args) {
-    int err;
+    int err, retries = 0;
+    struct timespec tim;
 
-    if ( unlikely((err = threadpool_add(server->pool, func, args, 0) != 0) < 0) ) {
-        switch (err) {
-            case threadpool_invalid:
-                WSS_log_fatal("Threadpool was served with invalid data");
-                return WSS_THREADPOOL_LOCK_ERROR;
-            case threadpool_lock_failure:
-                WSS_log_fatal("Locking in thread failed");
-                return WSS_THREADPOOL_LOCK_ERROR;
-            case threadpool_queue_full:
-                // TODO: Currently we treat a full threadpool as an error, but
-                // we could try to handle this by dynamically increasing size
-                // of threadpool, and maybe reset thread count to that of the
-                // configuration when the hot load is over
-                WSS_log_error("Threadpool queue is full");
-                return WSS_THREADPOOL_FULL_ERROR;
-            case threadpool_shutdown:
-                WSS_log_error("Threadpool is shutting down");
-                return WSS_THREADPOOL_SHUTDOWN_ERROR;
-            case threadpool_thread_failure:
-                WSS_log_fatal("Threadpool thread return an error");
-                return WSS_THREADPOOL_THREAD_ERROR;
-            default:
-                WSS_log_fatal("Unknown error occured with threadpool");
-                return WSS_THREADPOOL_ERROR;
+    tim.tv_sec = 0;
+    tim.tv_nsec = 100000000;
+
+    do {
+        if ( unlikely((err = threadpool_add(server->pool, func, args, 0) != 0) < 0) ) {
+            switch (err) {
+                case threadpool_invalid:
+                    WSS_log_fatal("Threadpool was served with invalid data");
+                    return WSS_THREADPOOL_INVALID_ERROR;
+                case threadpool_lock_failure:
+                    WSS_log_fatal("Locking in thread failed");
+                    return WSS_THREADPOOL_LOCK_ERROR;
+                case threadpool_queue_full:
+                    if (retries < 5) {
+                        retries += 1;
+                        WSS_log_trace("Threadpool full, will retry shortly. Retry number: %d", retries);
+                        nanosleep(&tim, NULL);
+                        continue;
+                    }
+
+                    // Currently we treat a full threadpool as an error, but
+                    // we could try to handle this by dynamically increasing size
+                    // of threadpool, and maybe reset thread count to that of the
+                    // configuration when the hot load is over
+                    WSS_log_error("Threadpool queue is full");
+                    return WSS_THREADPOOL_FULL_ERROR;
+                case threadpool_shutdown:
+                    WSS_log_error("Threadpool is shutting down");
+                    return WSS_THREADPOOL_SHUTDOWN_ERROR;
+                case threadpool_thread_failure:
+                    WSS_log_fatal("Threadpool thread return an error");
+                    return WSS_THREADPOOL_THREAD_ERROR;
+                default:
+                    WSS_log_fatal("Unknown error occured with threadpool");
+                    return WSS_THREADPOOL_ERROR;
+            }
         }
-    }
+    } while (0);
 
     return WSS_SUCCESS;
 }
@@ -373,7 +387,7 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
         errno = 0;
 
         if (server->config->timeout_poll >= 0) {
-            n = kevent(server->poll_fd, NULL, 0, events, server->config->pool_workers, timeout_poll);
+            n = kevent(server->poll_fd, NULL, 0, events, server->config->pool_workers, &timeout);
         } else {
             n = kevent(server->poll_fd, NULL, 0, events, server->config->pool_workers, NULL);
         }

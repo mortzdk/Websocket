@@ -48,8 +48,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "alloc_8c.html",
-"rpmalloc_8c.html#a66893939b9053e9bf8a97a5f50bc773a",
-"worker_8c.html#a685be5552b8cabfa87ecfe6dced8f8c3"
+"rpmalloc_8c.html#a6780f79fe39d5c99886e27fccaf4133c",
+"worker_8c.html#a979adc6ccec1cbdd5a415ae67713c1b6"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

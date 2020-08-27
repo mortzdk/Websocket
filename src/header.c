@@ -19,23 +19,6 @@
 #include "extensions.h"
 #include "predict.h"
 
-static char *str2hex(const unsigned char *s, size_t len)
-{
-    char *out;
-    size_t i, offset = 0;
-
-    if ( unlikely(NULL == (out = (char *) WSS_malloc(len*5+1))) ) {
-        return NULL;
-    }
-
-    for (i = 0; likely(i < len); i++) {
-        sprintf(out+offset, "0x%02x ", (short) s[i]);
-        offset += 5;
-    }
-
-    return out;
-}
-
 /**
  * Acceptable HTTP methods
  */
@@ -57,7 +40,7 @@ const char *versions[] = {
 //    "HTTP/0.9",
 //    "HTTP/1.0",
     "HTTP/1.1",
-    "HTTP/2.0",
+//    "HTTP/2.0",
 };
 
 /**
@@ -181,8 +164,8 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         WSS_log_trace("The size of the request URI was too large");
         return HttpStatus_URITooLong;
     } else if ( unlikely(strncmp("/", header->path, sizeof(char)*1) != 0 &&
-            strncasecmp("ws://", header->path, sizeof(char)*7) != 0 &&
-            strncasecmp("wss://", header->path, sizeof(char)*7) != 0 &&
+            strncasecmp("ws://", header->path, sizeof(char)*5) != 0 &&
+            strncasecmp("wss://", header->path, sizeof(char)*6) != 0 &&
             strncasecmp("http://", header->path, sizeof(char)*7) != 0 &&
             strncasecmp("https://", header->path, sizeof(char)*8) != 0) ) {
         WSS_log_trace("The request URI is not absolute URI nor relative path.");

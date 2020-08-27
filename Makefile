@@ -7,7 +7,9 @@ NAME = WSServer
 CC = gcc
 
 #Version
-VER = $(shell git describe --abbrev=0 --tags)
+ifeq ($(VER),)
+	VER = $(shell git describe --abbrev=0 --tags)
+endif
 
 #Debug or Release
 PROFILE = -Og -g -DNDEBUG
@@ -48,10 +50,10 @@ CFLAGS = $(EXEC) \
 		 -Wreturn-type \
 	     -Wsign-compare \
 		 -Wuninitialized \
-		 -DWSS_SERVER_VERSION=\"$(VER)\" \
 		 -D_DEFAULT_SOURCE \
+		 -DWSS_SERVER_VERSION=\"$(VER)\" \
 		 -DUSE_RPMALLOC #\
-		 -DUSE_POLL
+		 -DUSE_POLL\
 
 CVER = -std=c11
 
@@ -74,6 +76,7 @@ REPORTS_FOLDER = $(ROOT)/reports
 RESOURCES_FOLDER = $(ROOT)/resources
 EXTENSIONS_FOLDER = $(ROOT)/extensions
 SUBPROTOCOLS_FOLDER = $(ROOT)/subprotocols
+SCRIPTS_FOLDER = $(ROOT)/scripts
 
 # Include folders
 INCLUDES = -I$(INCLUDE_FOLDER) -I$(SRC_FOLDER) -I$(EXTENSIONS_FOLDER) -I$(SUBPROTOCOLS_FOLDER)
@@ -87,6 +90,11 @@ ALL_OBJ  = ${SRC_OBJ} ${TEST_OBJ}
 TEST_NAMES = ${patsubst ${TEST_FOLDER}/%.c, %, ${TESTS}}
 DEPS = $(ALL_OBJ:%.o=%.d)
 
+ifeq ($(BUMP),)
+	BUMP = default
+endif
+
+
 $(shell pkg-config --exists openssl)
 ifeq ($(.SHELLSTATUS), 0)
 	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
@@ -98,10 +106,10 @@ ifeq ($(.SHELLSTATUS), 0)
 	FLAGS_TEST += $(shell pkg-config --libs criterion)
 endif
 
-.PHONY: valgrind cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+.PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
-all: clean bin build docs log subprotocols extensions $(NAME)
+all: clean version bin build docs log subprotocols extensions $(NAME)
 
 build:
 	if [[ ! -e $(BUILD_FOLDER) ]]; then mkdir -p $(BUILD_FOLDER); fi
@@ -284,9 +292,6 @@ autobahn_cache: profiling
 
 criterion:
 	$(eval FLAGS_COVERAGE = -fprofile-arcs -ftest-coverage)
-	rm -rf $(REPORTS_FOLDER)/criterion
-	mkdir -p $(REPORTS_FOLDER)/criterion
-
 
 #make test
 test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}} 
@@ -298,8 +303,11 @@ test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NA
 ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
 	@echo ================ [Running test ${patsubst run_%,%,$@}] ================
 	@echo
-	mkdir -p $(REPORTS_FOLDER)/criterion/
 	${BIN_FOLDER}/${patsubst run_%,%,$@} --verbose
+
+#make version
+version:
+	@echo ================ [$(NAME) - version $(VER)] ================
 
 #make release
 release: release_mode all
@@ -312,3 +320,10 @@ profiling: profiling_mode all
 
 #make space
 space: space_mode all
+
+#make bump
+bump:
+	$(eval VER = $(shell ./$(SCRIPTS_FOLDER/bump.sh --$(BUMP)))
+	make test VER=$(VER)
+	make autobahn VER=$(VER)
+	make release VER=$(VER)

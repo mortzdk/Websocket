@@ -17,4 +17,8 @@
  5. Fuzz testing
  6. Fix TODO's in code
  7. Look at khash or tommy_hashdyn instead of uthash
- 8. Rate limiting users messages/frames
+ 8. Rate limiting clients messages/frames
+ 9. Use Autoconf to check dependencies
+ 10. OpenCollective.com
+ 11. Test on FreeBSD/MacOS
+ 12. Support HTTP2

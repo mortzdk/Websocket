@@ -7,6 +7,7 @@
 #include "server.h"             /* server_start */
 #include "config.h"             /* config_t, WSS_config_load(), WSS_config_free() */
 #include "error.h"              /* wss_error_t */
+#include "subprotocols.h"       /* wss_subprotocol_t */
 #include "alloc.h"              /* WSS_malloc() */
 #include "log.h"                /* WSS_log_*() */
 #include "predict.h"
@@ -40,6 +41,7 @@ int main(int argc, char *argv[]) {
     wss_config_t config;
     FILE *file;
     pthread_mutex_t log_lock;
+    char *echo = "subprotocols/echo/echo.so", *broadcast = "subprotocols/broadcast/broadcast.so";
 
 #ifdef USE_RPMALLOC
     rpmalloc_initialize();
@@ -50,7 +52,7 @@ int main(int argc, char *argv[]) {
         {"config"       , required_argument, 0, 'c'},
         {0          	, 0                , 0,  0 }
     };
-
+    
     // Default values
     config.subprotocols         = NULL;
     config.subprotocols_length  = 0;
@@ -58,14 +60,18 @@ int main(int argc, char *argv[]) {
     config.extensions_length    = 0;
     config.favicon              = NULL;
     config.origins              = NULL;
+    config.origins_length       = 0;
     config.hosts                = NULL;
+    config.hosts_length         = 0;
     config.paths                = NULL;
+    config.paths_length         = 0;
     config.queries              = NULL;
+    config.queries_length       = 0;
     config.string               = NULL;
     config.data                 = NULL;
     config.length               = 0;
-    config.port_http 	        = 9010;
-    config.port_https	        = 9011;
+    config.port_http 	        = 80;
+    config.port_https	        = 443;
 #ifdef NDEBUG
     config.log 		            = WSS_LOG_INFO;
 #else
@@ -80,15 +86,11 @@ int main(int argc, char *argv[]) {
     config.size_frame           = 1048576;
     config.max_frames           = 1048576;
     config.pool_workers         = 4;
-    config.timeout_pings        = 0;  // Times that a client will be pinged before timeout occurs
-    config.timeout_poll         = -1; // 1 Second
-    config.timeout_read         = -1; // 1 Second
-    config.timeout_write        = -1; // 1 Second
-    config.timeout_client       = -1; // 1 Hour
-    config.origins_length       = 0;
-    config.hosts_length         = 0;
-    config.paths_length         = 0;
-    config.queries_length       = 0;
+    config.timeout_pings        = 1;     // Times that a client will be pinged before timeout occurs
+    config.timeout_poll         = -1;    // Infinite
+    config.timeout_read         = 1000;  // 1 Second
+    config.timeout_write        = 1000;  // 1 Second
+    config.timeout_client       = 60000; // 1 Hour
     config.ssl_key              = NULL;
     config.ssl_cert             = NULL;
     config.ssl_dhparam          = NULL;
@@ -96,8 +98,8 @@ int main(int argc, char *argv[]) {
     config.ssl_ca_path          = NULL;
     config.ssl_cipher_list      = NULL;
     config.ssl_cipher_suites    = NULL;
-    config.ssl_compression      = true;
-    config.ssl_peer_cert        = true;
+    config.ssl_compression      = false;
+    config.ssl_peer_cert        = false;
 
     if ( NULL == (file = fopen("log/WSServer.log", "a+")) ) {
         WSS_config_free(&config);
@@ -185,6 +187,19 @@ int main(int argc, char *argv[]) {
 
     // Set log level to what what specified in the configuration
     log_set_level(config.log);
+
+    // Setting echo and broadcast protocols as default if none was loaded
+    if ( config.subprotocols_length == 0 && config.subprotocols == NULL) {
+        if ( NULL != (config.subprotocols = WSS_calloc(2, sizeof(char *)))) {
+            if ( NULL != (config.subprotocols_config = WSS_calloc(2, sizeof(char *)))) {
+                config.subprotocols[0] = echo;
+                config.subprotocols[1] = broadcast;
+                config.subprotocols_config[0] = NULL;
+                config.subprotocols_config[1] = NULL;
+                config.subprotocols_length = 2;
+            }
+        }
+    }
 
     res = WSS_server_start(&config);
 
