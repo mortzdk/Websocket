@@ -1024,7 +1024,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     }
 
     // Notify websocket protocol of the connection
-    header->ws_protocol->connect(session->fd, header->path, header->cookies);
+    header->ws_protocol->connect(session->fd, session->ip, session->port, header->path, header->cookies);
 
     // Set session as fully handshaked
     session->handshaked = true;
@@ -1264,11 +1264,6 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
         if ( unlikely(frame->opcode == PONG_FRAME) ) {
             WSS_log_trace("Pong received");
 
-            if ( session->pong == NULL || (session->pong_length == frame->applicationDataLength &&
-                    memcmp(session->pong, frame->payload+frame->extensionDataLength, frame->applicationDataLength) == 0) ) {
-                clock_gettime(CLOCK_MONOTONIC, &session->alive);
-            }
-
             WSS_free_frame(frame);
 
             continue;
@@ -1495,10 +1490,12 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
         }
     }
 
-    for (i = 0; likely(i < frames_length); i++) {
-        WSS_free_frame(frames[i]);
+    if (frames_length > 0) {
+        for (i = 0; likely(i < frames_length); i++) {
+            WSS_free_frame(frames[i]);
+        }
+        WSS_free((void **) &frames);
     }
-    WSS_free((void **) &frames);
 
     if (! closing && session->event == NONE) {
         WSS_log_trace("Set epoll file descriptor to read mode after finishing read");

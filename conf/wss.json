@@ -1,21 +1,22 @@
 {
     // Allowed Hosts 
-    "hosts" : [
-        "localhost",
-        "127.0.0.1",
-    ],
-    // Allowed paths (POSIX Extended Regular Expressions syntax can be used)
+	"hosts" : [
+		"localhost",
+		"127.0.0.1"
+	],
+    // Allowed paths
     "paths" : [
     ],
-    // Allowed queries (POSIX Extended Regular Expressions syntax can be used)
+    // Allowed queries
     "queries" : [
     ],
     // Allowed origins
-    "origins" : [
-        "http://localhost",
-        "http://127.0.0.1",
-    ],
-    "setup" : {
+	"origins" : [
+		"http://localhost",
+		"http://127.0.0.1"
+	],
+	"setup" : {
+        "log_level": 3,
         // Subprotocols to load with the server
         "subprotocols" : [
             {
@@ -36,48 +37,48 @@
         ],
         // A favicon to present to webserver request
         "favicon" : "resources/favicon.ico",
-        // Timeouts in milliseconds (ms)
+        // Timeouts
         "timeouts" : {
             // How long the eventpoll should wait for a timeout. -1 is infinitely
             "poll"   : -1,
             // How long, before timeouting reading from a client. -1 is infinitely
-            "read"   : 10000,
+            "read"   : 1000,
             // How long, before timeouting writing to a client. -1 is infinitely
-            "write"  : 10000,
+            "write"  : 1000,
             // How long, since a client last was active before timing out. -1 is infinitely
-            "client" : 60000,
+            "client" : 3600000,
             // How many pings should be sent during the client timeout period
-            "pings"  : 1
+            "pings"  : 2
         },
         // Ports to assign the ws and wss to
-        "port" : {
-            "http" : 9010,
-            "https" : 9011
-        },
+		"port" : {
+			"http" : 9010,
+			"https" : 9011
+		},
         // Sizes of different aspects of the server
-        "size" : {
+		"size" : {
             // How large the payload from a client can be
-            "payload" : 16777215,
+			"payload" : 16777215,
             // How large the HTTP header from a client can be
-            "header" : 8192,
+			"header" : 8192,
             // How large the URI of a HTTP request from a client can be
-            "uri" : 8192,
+			"uri" : 8192,
             // The buffer size used to read and write
-            "buffer" : 32768,
+			"buffer" : 32768,
             // How large the stack of a thread should be 
-            "thread" : 2097152,
+			"thread" : 2097152,
             // How many messages the ringbuffer is able to contain at once
             "ringbuffer" : 1024,
             // Max size of a single frames payload
             "frame" : 1048576,
             // Maximum amount of frames in fragmented message
             "fragmented" : 1048576
-        },
+		},
         // Configurations regarding the thread poll
-        "pool" : {
+		"pool" : {
             // How many worker threads to use
-            "workers" : 8
-        },
+			"workers" : 8
+		},
         // Configurations regarding SSL
         "ssl" : {
             // The private key of the server
@@ -99,5 +100,5 @@
             // Whether a peer certificate is required from the connection clients
             "peer_cert" : false
         }
-    }
+	}
 }

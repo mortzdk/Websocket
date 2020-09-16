@@ -18,6 +18,8 @@
 #include "message.h"
 #include "config.h"
 
+typedef void (*pyInit)(void);
+
 typedef struct {
     int *handle;
     char *name;
@@ -28,6 +30,7 @@ typedef struct {
     subWrite write; 
     subClose close;
     subDestroy destroy;
+    pyInit pyinit;
     UT_hash_handle hh;
 } wss_subprotocol_t;
 

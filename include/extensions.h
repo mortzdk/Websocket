@@ -19,6 +19,8 @@
 
 #include <stdbool.h>
 
+typedef void (*pyInit)(void);
+
 typedef struct {
     int *handle;
     char *name;
@@ -31,6 +33,7 @@ typedef struct {
     extOutFrames outframes;
     extClose close;
     extDestroy destroy;
+    pyInit pyinit;
     UT_hash_handle hh;
 } wss_extension_t;
 

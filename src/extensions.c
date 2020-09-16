@@ -28,6 +28,7 @@ void WSS_load_extensions(wss_config_t *config)
 {
     size_t i, j;
     char *name;
+    char *pyname;
     int *handle;
     wss_extension_t* proto;
     int name_length;
@@ -129,6 +130,21 @@ void WSS_load_extensions(wss_config_t *config)
             WSS_free((void **) &proto);
             return;
         }
+
+        // Call Cython init if available
+        if ( unlikely(NULL == (pyname = WSS_malloc(7+name_length+1))) ) {
+            WSS_log_error("Unable to allocate name");
+            dlclose(proto->handle);
+            WSS_free((void **) &proto->name);
+            WSS_free((void **) &proto);
+            return;
+        }
+
+        sprintf(pyname, "PyInit_%s", name); 
+        if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
+            proto->pyinit(); 
+        }
+        WSS_free((void **) &pyname);
 
         memcpy(proto->name, name, name_length);
 

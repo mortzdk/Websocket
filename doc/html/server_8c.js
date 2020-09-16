@@ -9,6 +9,7 @@ var server_8c =
     [ "WSS_server_set_max_fd", "server_8c.html#a26c751fbd88dd81292b574af18f1bfec", null ],
     [ "WSS_server_set_state", "server_8c.html#ae8f5c0c2d37bc22657fed36465730d66", null ],
     [ "WSS_server_start", "server_8c.html#ab0c740b5a4d1405d3dcbc7bd24a76936", null ],
+    [ "now", "server_8c.html#a133013525fac7907e0baa31ec30f8b4b", null ],
     [ "servers", "server_8c.html#afa7e338367a3f0ca59f79bd30ca82207", null ],
     [ "state", "server_8c.html#aa1633b4924f6e8653002962dd7dc12be", null ]
 ];

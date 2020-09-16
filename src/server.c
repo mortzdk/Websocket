@@ -33,6 +33,11 @@ wss_server_state_t state;
  */
 wss_servers_t servers;
 
+/**
+ * Global variable holding current timestamp 
+ */
+struct timespec now;
+
 static inline void write_control_frame(wss_frame_t *frame, wss_session_t *session) {
     size_t j;
     char *message;
@@ -95,7 +100,6 @@ static void cleanup_session(wss_session_t *session) {
     wss_error_t err;
     wss_frame_t *frame;
     long unsigned int ms;
-    struct timespec now;
     int fd = session->fd;
     wss_server_t *server = servers.http;
     bool dc;
@@ -110,8 +114,9 @@ static void cleanup_session(wss_session_t *session) {
     }
 #endif
 
-    clock_gettime(CLOCK_MONOTONIC, &now);
     ms = (((now.tv_sec - session->alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session->alive.tv_nsec/1000000);
+
+    WSS_log_info("Check timeout %d ms", ms);
 
     // Session timed out
     if ( unlikely(server->config->timeout_client >= 0 && ms >= (long unsigned int)server->config->timeout_client) ) {
@@ -122,7 +127,7 @@ static void cleanup_session(wss_session_t *session) {
 
         WSS_session_jobs_wait(session);
 
-        WSS_log_info("Session %d has timedout", fd);
+        WSS_log_info("Session %d has timedout last active %d ms ago", fd, ms);
 
         session->closing = true;
         session->state = CLOSING;
@@ -259,6 +264,7 @@ void *WSS_cleanup() {
         } else if ( likely(n == 0) ) {
             WSS_log_info("Pings clients and cleanup timedout ones");
             
+            clock_gettime(CLOCK_MONOTONIC, &now);
             if ( unlikely(WSS_SUCCESS != (err = WSS_session_all(cleanup_session))) ) {
 #ifdef USE_RPMALLOC
                 rpmalloc_thread_finalize();

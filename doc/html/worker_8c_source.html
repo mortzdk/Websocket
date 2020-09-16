@@ -271,7 +271,7 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;}</div>
 <div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
 <div class="line"><a name="l00223"></a><span class="lineno"><a class="line" href="worker_8c.html#ae6ef1c0a3a3332ec645fe42b9e5f7bd0">  223</a></span>&#160;<span class="keyword">static</span> wss_message_t *<a class="code" href="worker_8c.html#ae6ef1c0a3a3332ec645fe42b9e5f7bd0">favicon_response</a>(wss_header_t *header, <span class="keyword">enum</span> HttpStatus_Code code, wss_config_t *config) {</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    time_t now;</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    time_t <a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>;</div>
 <div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="keyword">struct </span><a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a>;</div>
 <div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <span class="keywordtype">char</span> *ico;</div>
 <div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordtype">char</span> *etag;</div>
@@ -290,8 +290,8 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    <span class="comment">// Get GMT current time</span></div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    strncpy(savedlocale, setlocale(LC_ALL, NULL), 255);</div>
 <div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    setlocale(LC_ALL, <span class="stringliteral">&quot;C&quot;</span>);</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    now = time(0);</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> = *gmtime(&amp;now);</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a> = time(0);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> = *gmtime(&amp;<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>);</div>
 <div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    memset(date, <span class="charliteral">&#39;\0&#39;</span>, GMT_FORMAT_LENGTH);</div>
 <div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    memset(modified, <span class="charliteral">&#39;\0&#39;</span>, GMT_FORMAT_LENGTH);</div>
 <div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    strftime(date, <span class="keyword">sizeof</span> date, <span class="stringliteral">&quot;%a, %d %b %Y %H:%M:%S %Z&quot;</span>, &amp;<a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a>);</div>
@@ -415,7 +415,7 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;}</div>
 <div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160; </div>
 <div class="line"><a name="l00385"></a><span class="lineno"><a class="line" href="worker_8c.html#a2d0b35712140125549d01bcb2b96437d">  385</a></span>&#160;<span class="keyword">static</span> wss_message_t *<a class="code" href="worker_8c.html#a2d0b35712140125549d01bcb2b96437d">http_response</a>(wss_header_t *header, <span class="keyword">enum</span> HttpStatus_Code code, <span class="keywordtype">char</span> *exp) {</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    time_t now;</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    time_t <a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>;</div>
 <div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    <span class="keyword">struct </span><a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a>;</div>
 <div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    wss_message_t *msg;</div>
 <div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    <span class="keywordtype">int</span> length;</div>
@@ -431,8 +431,8 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    <span class="comment">// Get GMT current time</span></div>
 <div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    strncpy(savedlocale, setlocale(LC_ALL, NULL), 255);</div>
 <div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    setlocale(LC_ALL, <span class="stringliteral">&quot;C&quot;</span>);</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    now = time(0);</div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> = *gmtime(&amp;now);</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a> = time(0);</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    <a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a> = *gmtime(&amp;<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>);</div>
 <div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    strftime(date, <span class="keyword">sizeof</span> date, <span class="stringliteral">&quot;%a, %d %b %Y %H:%M:%S %Z&quot;</span>, &amp;<a class="code" href="log_8c.html#a9f2a8f3f4d047d83e930aba651d036eb">tm</a>);</div>
 <div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    setlocale(LC_ALL, savedlocale);</div>
 <div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160; </div>
@@ -1010,7 +1010,7 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l01024"></a><span class="lineno"> 1024</span>&#160;    }</div>
 <div class="line"><a name="l01025"></a><span class="lineno"> 1025</span>&#160; </div>
 <div class="line"><a name="l01026"></a><span class="lineno"> 1026</span>&#160;    <span class="comment">// Notify websocket protocol of the connection</span></div>
-<div class="line"><a name="l01027"></a><span class="lineno"> 1027</span>&#160;    header-&gt;ws_protocol-&gt;connect(session-&gt;fd, header-&gt;path, header-&gt;cookies);</div>
+<div class="line"><a name="l01027"></a><span class="lineno"> 1027</span>&#160;    header-&gt;ws_protocol-&gt;connect(session-&gt;fd, session-&gt;ip, session-&gt;port, header-&gt;path, header-&gt;cookies);</div>
 <div class="line"><a name="l01028"></a><span class="lineno"> 1028</span>&#160; </div>
 <div class="line"><a name="l01029"></a><span class="lineno"> 1029</span>&#160;    <span class="comment">// Set session as fully handshaked</span></div>
 <div class="line"><a name="l01030"></a><span class="lineno"> 1030</span>&#160;    session-&gt;handshaked = <span class="keyword">true</span>;</div>
@@ -1243,496 +1243,493 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="line"><a name="l01264"></a><span class="lineno"> 1264</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frame-&gt;opcode == PONG_FRAME) ) {</div>
 <div class="line"><a name="l01265"></a><span class="lineno"> 1265</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Pong received&quot;</span>);</div>
 <div class="line"><a name="l01266"></a><span class="lineno"> 1266</span>&#160; </div>
-<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;            <span class="keywordflow">if</span> ( session-&gt;pong == NULL || (session-&gt;pong_length == frame-&gt;applicationDataLength &amp;&amp;</div>
-<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160;                    memcmp(session-&gt;pong, frame-&gt;payload+frame-&gt;extensionDataLength, frame-&gt;applicationDataLength) == 0) ) {</div>
-<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;                clock_gettime(CLOCK_MONOTONIC, &amp;session-&gt;alive);</div>
-<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;            }</div>
+<div class="line"><a name="l01267"></a><span class="lineno"> 1267</span>&#160;            <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frame);</div>
+<div class="line"><a name="l01268"></a><span class="lineno"> 1268</span>&#160; </div>
+<div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;        } <span class="keywordflow">else</span></div>
 <div class="line"><a name="l01271"></a><span class="lineno"> 1271</span>&#160; </div>
-<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;            <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frame);</div>
-<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160; </div>
-<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;            <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01275"></a><span class="lineno"> 1275</span>&#160;        } <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01276"></a><span class="lineno"> 1276</span>&#160; </div>
-<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160;        <span class="comment">// Ping</span></div>
-<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frame-&gt;opcode == PING_FRAME) ) {</div>
-<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Ping received&quot;</span>);</div>
-<div class="line"><a name="l01280"></a><span class="lineno"> 1280</span>&#160;            frame = <a class="code" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a>(frame);</div>
-<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160;        }</div>
-<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160; </div>
-<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frames = <a class="code" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a>((<span class="keywordtype">void</span> **) &amp;frames, frames_length*<span class="keyword">sizeof</span>(wss_frame_t *),</div>
-<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;                        (frames_length+1)*<span class="keyword">sizeof</span>(wss_frame_t *)))) ) {</div>
-<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to reallocate frames&quot;</span>);</div>
-<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160;            session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;        }</div>
-<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;        frames[frames_length] = frame;</div>
-<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;        frames_length += 1;</div>
-<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160; </div>
-<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160;        <span class="comment">// Check if frame count is exceeded</span></div>
-<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frames_length &gt; server-&gt;config-&gt;max_frames) ) {</div>
-<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;            <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frame);</div>
-<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;            frame = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_BIG, NULL);</div>
-<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160;            frames[frames_length-1] = frame;</div>
-<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160;        }</div>
-<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160; </div>
-<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;        <span class="comment">// Close</span></div>
-<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frame-&gt;opcode == CLOSE_FRAME) ) {</div>
-<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160;            closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Stopping frame validation as closing frame was parsed&quot;</span>);</div>
-<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;        }</div>
-<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;    } <span class="keywordflow">while</span> ( likely(offset &lt; payload_length) );</div>
-<div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160; </div>
-<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;payload);</div>
-<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160; </div>
-<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;A total of %lu frames was parsed.&quot;</span>, frames_length);</div>
-<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160; </div>
-<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Starting frame validation&quot;</span>);</div>
-<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160; </div>
-<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160;    <span class="comment">// Validating frames.</span></div>
-<div class="line"><a name="l01314"></a><span class="lineno"> 1314</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
-<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160;        <span class="comment">// If we are not processing a fragmented set of frames, expect the</span></div>
-<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;        <span class="comment">// opcode different from the continuation frame.</span></div>
-<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;        <span class="keywordflow">if</span> ( unlikely(! fragmented &amp;&amp; (frames[i]-&gt;opcode == CONTINUATION_FRAME)) ) {</div>
-<div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Protocol Error: continuation opcode used in non-fragmented message&quot;</span>);</div>
-<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;            <span class="keywordflow">for</span> (j = i; likely(j &lt; frames_length); j++) {</div>
-<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;            }</div>
-<div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160;            frames[i] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_PROTOCOL, NULL);</div>
-<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;            frames_length = i+1;</div>
-<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;            closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160;        }</div>
-<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160; </div>
-<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;        <span class="comment">// If we receive control frame within fragmented frames.</span></div>
-<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;        <span class="keywordflow">if</span> ( unlikely(fragmented &amp;&amp; (frames[i]-&gt;opcode &gt;= 0x8 &amp;&amp; frames[i]-&gt;opcode &lt;= 0xA)) ) {</div>
-<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Received control frame within fragmented message&quot;</span>);</div>
-<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160; </div>
-<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160;            frame = frames[i];</div>
-<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;            <span class="comment">// If we received a closing frame substitue the fragment with the</span></div>
-<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;            <span class="comment">// closing frame and end validation</span></div>
-<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;            <span class="keywordflow">if</span> (frames[i]-&gt;opcode == CLOSE_FRAME) {</div>
-<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Stopping further validation of fragmented message as a closing frame was detected&quot;</span>);</div>
-<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160; </div>
-<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;                <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
-<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;                    <span class="keywordflow">if</span> ( unlikely(j != i) ) {</div>
-<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;                        <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;                    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01342"></a><span class="lineno"> 1342</span>&#160;                        frames[j] = NULL;</div>
-<div class="line"><a name="l01343"></a><span class="lineno"> 1343</span>&#160;                    }</div>
-<div class="line"><a name="l01344"></a><span class="lineno"> 1344</span>&#160;                }</div>
-<div class="line"><a name="l01345"></a><span class="lineno"> 1345</span>&#160;                frames[starting_frame] = frame;</div>
-<div class="line"><a name="l01346"></a><span class="lineno"> 1346</span>&#160;                frames_length = starting_frame+1;</div>
-<div class="line"><a name="l01347"></a><span class="lineno"> 1347</span>&#160;                fragmented = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01348"></a><span class="lineno"> 1348</span>&#160;                closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01349"></a><span class="lineno"> 1349</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01350"></a><span class="lineno"> 1350</span>&#160;            <span class="comment">// Else rearrange the frames, such that control frame is first</span></div>
-<div class="line"><a name="l01351"></a><span class="lineno"> 1351</span>&#160;            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01352"></a><span class="lineno"> 1352</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Rearranging frames such that control frame will be written before fragmented frames&quot;</span>);</div>
-<div class="line"><a name="l01353"></a><span class="lineno"> 1353</span>&#160;                <span class="keywordflow">for</span> (j = i; likely(j &gt; starting_frame); j--) {</div>
-<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;                    frames[j] = frames[j-1];</div>
-<div class="line"><a name="l01355"></a><span class="lineno"> 1355</span>&#160;                }</div>
-<div class="line"><a name="l01356"></a><span class="lineno"> 1356</span>&#160;                frames[starting_frame] = frame;</div>
-<div class="line"><a name="l01357"></a><span class="lineno"> 1357</span>&#160;                starting_frame++;</div>
-<div class="line"><a name="l01358"></a><span class="lineno"> 1358</span>&#160;            }</div>
-<div class="line"><a name="l01359"></a><span class="lineno"> 1359</span>&#160;        } <span class="keywordflow">else</span></div>
-<div class="line"><a name="l01360"></a><span class="lineno"> 1360</span>&#160; </div>
-<div class="line"><a name="l01361"></a><span class="lineno"> 1361</span>&#160;        <span class="comment">// If we are processing a fragmented set of frames, expect the opcode</span></div>
-<div class="line"><a name="l01362"></a><span class="lineno"> 1362</span>&#160;        <span class="comment">// to be a contination frame.</span></div>
-<div class="line"><a name="l01363"></a><span class="lineno"> 1363</span>&#160;        <span class="keywordflow">if</span> ( unlikely(fragmented &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME) ) {</div>
-<div class="line"><a name="l01364"></a><span class="lineno"> 1364</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Protocol Error: during fragmented message received other opcode than continuation&quot;</span>);</div>
-<div class="line"><a name="l01365"></a><span class="lineno"> 1365</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
-<div class="line"><a name="l01366"></a><span class="lineno"> 1366</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l01367"></a><span class="lineno"> 1367</span>&#160;            }</div>
-<div class="line"><a name="l01368"></a><span class="lineno"> 1368</span>&#160;            frames[starting_frame] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_PROTOCOL, NULL);</div>
-<div class="line"><a name="l01369"></a><span class="lineno"> 1369</span>&#160;            frames_length = starting_frame+1;</div>
-<div class="line"><a name="l01370"></a><span class="lineno"> 1370</span>&#160;            fragmented = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01371"></a><span class="lineno"> 1371</span>&#160;            closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01372"></a><span class="lineno"> 1372</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01373"></a><span class="lineno"> 1373</span>&#160;        }</div>
-<div class="line"><a name="l01374"></a><span class="lineno"> 1374</span>&#160; </div>
-<div class="line"><a name="l01375"></a><span class="lineno"> 1375</span>&#160;        <span class="comment">// If message consists of single frame or we have the starting frame of</span></div>
-<div class="line"><a name="l01376"></a><span class="lineno"> 1376</span>&#160;        <span class="comment">// a multiframe message, store the starting index</span></div>
-<div class="line"><a name="l01377"></a><span class="lineno"> 1377</span>&#160;        <span class="keywordflow">if</span> ( frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME ) {</div>
-<div class="line"><a name="l01378"></a><span class="lineno"> 1378</span>&#160;            starting_frame = i;</div>
-<div class="line"><a name="l01379"></a><span class="lineno"> 1379</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( ! frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME ) {</div>
-<div class="line"><a name="l01380"></a><span class="lineno"> 1380</span>&#160;            starting_frame = i;</div>
-<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;            fragmented = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01382"></a><span class="lineno"> 1382</span>&#160;        }</div>
+<div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;        <span class="comment">// Ping</span></div>
+<div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frame-&gt;opcode == PING_FRAME) ) {</div>
+<div class="line"><a name="l01274"></a><span class="lineno"> 1274</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Ping received&quot;</span>);</div>
+<div class="line"><a name="l01275"></a><span class="lineno"> 1275</span>&#160;            frame = <a class="code" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">WSS_pong_frame</a>(frame);</div>
+<div class="line"><a name="l01276"></a><span class="lineno"> 1276</span>&#160;        }</div>
+<div class="line"><a name="l01277"></a><span class="lineno"> 1277</span>&#160; </div>
+<div class="line"><a name="l01278"></a><span class="lineno"> 1278</span>&#160;        <span class="keywordflow">if</span> ( unlikely(NULL == (frames = <a class="code" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">WSS_realloc</a>((<span class="keywordtype">void</span> **) &amp;frames, frames_length*<span class="keyword">sizeof</span>(wss_frame_t *),</div>
+<div class="line"><a name="l01279"></a><span class="lineno"> 1279</span>&#160;                        (frames_length+1)*<span class="keyword">sizeof</span>(wss_frame_t *)))) ) {</div>
+<div class="line"><a name="l01280"></a><span class="lineno"> 1280</span>&#160;            WSS_log_error(<span class="stringliteral">&quot;Unable to reallocate frames&quot;</span>);</div>
+<div class="line"><a name="l01281"></a><span class="lineno"> 1281</span>&#160;            session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160;            <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;        }</div>
+<div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;        frames[frames_length] = frame;</div>
+<div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;        frames_length += 1;</div>
+<div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160; </div>
+<div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;        <span class="comment">// Check if frame count is exceeded</span></div>
+<div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frames_length &gt; server-&gt;config-&gt;max_frames) ) {</div>
+<div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;            <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frame);</div>
+<div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;            frame = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_BIG, NULL);</div>
+<div class="line"><a name="l01291"></a><span class="lineno"> 1291</span>&#160;            frames[frames_length-1] = frame;</div>
+<div class="line"><a name="l01292"></a><span class="lineno"> 1292</span>&#160;        }</div>
+<div class="line"><a name="l01293"></a><span class="lineno"> 1293</span>&#160; </div>
+<div class="line"><a name="l01294"></a><span class="lineno"> 1294</span>&#160;        <span class="comment">// Close</span></div>
+<div class="line"><a name="l01295"></a><span class="lineno"> 1295</span>&#160;        <span class="keywordflow">if</span> ( unlikely(frame-&gt;opcode == CLOSE_FRAME) ) {</div>
+<div class="line"><a name="l01296"></a><span class="lineno"> 1296</span>&#160;            closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01297"></a><span class="lineno"> 1297</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Stopping frame validation as closing frame was parsed&quot;</span>);</div>
+<div class="line"><a name="l01298"></a><span class="lineno"> 1298</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01299"></a><span class="lineno"> 1299</span>&#160;        }</div>
+<div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;    } <span class="keywordflow">while</span> ( likely(offset &lt; payload_length) );</div>
+<div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160; </div>
+<div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;payload);</div>
+<div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160; </div>
+<div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;A total of %lu frames was parsed.&quot;</span>, frames_length);</div>
+<div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160; </div>
+<div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Starting frame validation&quot;</span>);</div>
+<div class="line"><a name="l01307"></a><span class="lineno"> 1307</span>&#160; </div>
+<div class="line"><a name="l01308"></a><span class="lineno"> 1308</span>&#160;    <span class="comment">// Validating frames.</span></div>
+<div class="line"><a name="l01309"></a><span class="lineno"> 1309</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
+<div class="line"><a name="l01310"></a><span class="lineno"> 1310</span>&#160;        <span class="comment">// If we are not processing a fragmented set of frames, expect the</span></div>
+<div class="line"><a name="l01311"></a><span class="lineno"> 1311</span>&#160;        <span class="comment">// opcode different from the continuation frame.</span></div>
+<div class="line"><a name="l01312"></a><span class="lineno"> 1312</span>&#160;        <span class="keywordflow">if</span> ( unlikely(! fragmented &amp;&amp; (frames[i]-&gt;opcode == CONTINUATION_FRAME)) ) {</div>
+<div class="line"><a name="l01313"></a><span class="lineno"> 1313</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Protocol Error: continuation opcode used in non-fragmented message&quot;</span>);</div>
+<div class="line"><a name="l01314"></a><span class="lineno"> 1314</span>&#160;            <span class="keywordflow">for</span> (j = i; likely(j &lt; frames_length); j++) {</div>
+<div class="line"><a name="l01315"></a><span class="lineno"> 1315</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l01316"></a><span class="lineno"> 1316</span>&#160;            }</div>
+<div class="line"><a name="l01317"></a><span class="lineno"> 1317</span>&#160;            frames[i] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_PROTOCOL, NULL);</div>
+<div class="line"><a name="l01318"></a><span class="lineno"> 1318</span>&#160;            frames_length = i+1;</div>
+<div class="line"><a name="l01319"></a><span class="lineno"> 1319</span>&#160;            closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01320"></a><span class="lineno"> 1320</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01321"></a><span class="lineno"> 1321</span>&#160;        }</div>
+<div class="line"><a name="l01322"></a><span class="lineno"> 1322</span>&#160; </div>
+<div class="line"><a name="l01323"></a><span class="lineno"> 1323</span>&#160;        <span class="comment">// If we receive control frame within fragmented frames.</span></div>
+<div class="line"><a name="l01324"></a><span class="lineno"> 1324</span>&#160;        <span class="keywordflow">if</span> ( unlikely(fragmented &amp;&amp; (frames[i]-&gt;opcode &gt;= 0x8 &amp;&amp; frames[i]-&gt;opcode &lt;= 0xA)) ) {</div>
+<div class="line"><a name="l01325"></a><span class="lineno"> 1325</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Received control frame within fragmented message&quot;</span>);</div>
+<div class="line"><a name="l01326"></a><span class="lineno"> 1326</span>&#160; </div>
+<div class="line"><a name="l01327"></a><span class="lineno"> 1327</span>&#160;            frame = frames[i];</div>
+<div class="line"><a name="l01328"></a><span class="lineno"> 1328</span>&#160;            <span class="comment">// If we received a closing frame substitue the fragment with the</span></div>
+<div class="line"><a name="l01329"></a><span class="lineno"> 1329</span>&#160;            <span class="comment">// closing frame and end validation</span></div>
+<div class="line"><a name="l01330"></a><span class="lineno"> 1330</span>&#160;            <span class="keywordflow">if</span> (frames[i]-&gt;opcode == CLOSE_FRAME) {</div>
+<div class="line"><a name="l01331"></a><span class="lineno"> 1331</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Stopping further validation of fragmented message as a closing frame was detected&quot;</span>);</div>
+<div class="line"><a name="l01332"></a><span class="lineno"> 1332</span>&#160; </div>
+<div class="line"><a name="l01333"></a><span class="lineno"> 1333</span>&#160;                <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
+<div class="line"><a name="l01334"></a><span class="lineno"> 1334</span>&#160;                    <span class="keywordflow">if</span> ( unlikely(j != i) ) {</div>
+<div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;                        <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l01336"></a><span class="lineno"> 1336</span>&#160;                    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;                        frames[j] = NULL;</div>
+<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;                    }</div>
+<div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;                }</div>
+<div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;                frames[starting_frame] = frame;</div>
+<div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;                frames_length = starting_frame+1;</div>
+<div class="line"><a name="l01342"></a><span class="lineno"> 1342</span>&#160;                fragmented = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01343"></a><span class="lineno"> 1343</span>&#160;                closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01344"></a><span class="lineno"> 1344</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01345"></a><span class="lineno"> 1345</span>&#160;            <span class="comment">// Else rearrange the frames, such that control frame is first</span></div>
+<div class="line"><a name="l01346"></a><span class="lineno"> 1346</span>&#160;            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01347"></a><span class="lineno"> 1347</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Rearranging frames such that control frame will be written before fragmented frames&quot;</span>);</div>
+<div class="line"><a name="l01348"></a><span class="lineno"> 1348</span>&#160;                <span class="keywordflow">for</span> (j = i; likely(j &gt; starting_frame); j--) {</div>
+<div class="line"><a name="l01349"></a><span class="lineno"> 1349</span>&#160;                    frames[j] = frames[j-1];</div>
+<div class="line"><a name="l01350"></a><span class="lineno"> 1350</span>&#160;                }</div>
+<div class="line"><a name="l01351"></a><span class="lineno"> 1351</span>&#160;                frames[starting_frame] = frame;</div>
+<div class="line"><a name="l01352"></a><span class="lineno"> 1352</span>&#160;                starting_frame++;</div>
+<div class="line"><a name="l01353"></a><span class="lineno"> 1353</span>&#160;            }</div>
+<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;        } <span class="keywordflow">else</span></div>
+<div class="line"><a name="l01355"></a><span class="lineno"> 1355</span>&#160; </div>
+<div class="line"><a name="l01356"></a><span class="lineno"> 1356</span>&#160;        <span class="comment">// If we are processing a fragmented set of frames, expect the opcode</span></div>
+<div class="line"><a name="l01357"></a><span class="lineno"> 1357</span>&#160;        <span class="comment">// to be a contination frame.</span></div>
+<div class="line"><a name="l01358"></a><span class="lineno"> 1358</span>&#160;        <span class="keywordflow">if</span> ( unlikely(fragmented &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME) ) {</div>
+<div class="line"><a name="l01359"></a><span class="lineno"> 1359</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Protocol Error: during fragmented message received other opcode than continuation&quot;</span>);</div>
+<div class="line"><a name="l01360"></a><span class="lineno"> 1360</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
+<div class="line"><a name="l01361"></a><span class="lineno"> 1361</span>&#160;                <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l01362"></a><span class="lineno"> 1362</span>&#160;            }</div>
+<div class="line"><a name="l01363"></a><span class="lineno"> 1363</span>&#160;            frames[starting_frame] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_PROTOCOL, NULL);</div>
+<div class="line"><a name="l01364"></a><span class="lineno"> 1364</span>&#160;            frames_length = starting_frame+1;</div>
+<div class="line"><a name="l01365"></a><span class="lineno"> 1365</span>&#160;            fragmented = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01366"></a><span class="lineno"> 1366</span>&#160;            closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01367"></a><span class="lineno"> 1367</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01368"></a><span class="lineno"> 1368</span>&#160;        }</div>
+<div class="line"><a name="l01369"></a><span class="lineno"> 1369</span>&#160; </div>
+<div class="line"><a name="l01370"></a><span class="lineno"> 1370</span>&#160;        <span class="comment">// If message consists of single frame or we have the starting frame of</span></div>
+<div class="line"><a name="l01371"></a><span class="lineno"> 1371</span>&#160;        <span class="comment">// a multiframe message, store the starting index</span></div>
+<div class="line"><a name="l01372"></a><span class="lineno"> 1372</span>&#160;        <span class="keywordflow">if</span> ( frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME ) {</div>
+<div class="line"><a name="l01373"></a><span class="lineno"> 1373</span>&#160;            starting_frame = i;</div>
+<div class="line"><a name="l01374"></a><span class="lineno"> 1374</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( ! frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != CONTINUATION_FRAME ) {</div>
+<div class="line"><a name="l01375"></a><span class="lineno"> 1375</span>&#160;            starting_frame = i;</div>
+<div class="line"><a name="l01376"></a><span class="lineno"> 1376</span>&#160;            fragmented = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01377"></a><span class="lineno"> 1377</span>&#160;        }</div>
+<div class="line"><a name="l01378"></a><span class="lineno"> 1378</span>&#160; </div>
+<div class="line"><a name="l01379"></a><span class="lineno"> 1379</span>&#160;        <span class="keywordflow">if</span> (frames[i]-&gt;fin) {</div>
+<div class="line"><a name="l01380"></a><span class="lineno"> 1380</span>&#160;            fragmented = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;        }</div>
+<div class="line"><a name="l01382"></a><span class="lineno"> 1382</span>&#160;    }</div>
 <div class="line"><a name="l01383"></a><span class="lineno"> 1383</span>&#160; </div>
-<div class="line"><a name="l01384"></a><span class="lineno"> 1384</span>&#160;        <span class="keywordflow">if</span> (frames[i]-&gt;fin) {</div>
-<div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;            fragmented = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01386"></a><span class="lineno"> 1386</span>&#160;        }</div>
-<div class="line"><a name="l01387"></a><span class="lineno"> 1387</span>&#160;    }</div>
+<div class="line"><a name="l01384"></a><span class="lineno"> 1384</span>&#160;    <span class="comment">// If fragmented is still true, we did not receive the whole message, and</span></div>
+<div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;    <span class="comment">// we hence want to wait until we get the rest.</span></div>
+<div class="line"><a name="l01386"></a><span class="lineno"> 1386</span>&#160;    <span class="keywordflow">if</span> ( unlikely(fragmented) ) {</div>
+<div class="line"><a name="l01387"></a><span class="lineno"> 1387</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Detected missing frames in fragmented message, will wait for further IO&quot;</span>);</div>
 <div class="line"><a name="l01388"></a><span class="lineno"> 1388</span>&#160; </div>
-<div class="line"><a name="l01389"></a><span class="lineno"> 1389</span>&#160;    <span class="comment">// If fragmented is still true, we did not receive the whole message, and</span></div>
-<div class="line"><a name="l01390"></a><span class="lineno"> 1390</span>&#160;    <span class="comment">// we hence want to wait until we get the rest.</span></div>
-<div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;    <span class="keywordflow">if</span> ( unlikely(fragmented) ) {</div>
-<div class="line"><a name="l01392"></a><span class="lineno"> 1392</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Detected missing frames in fragmented message, will wait for further IO&quot;</span>);</div>
-<div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160; </div>
-<div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;        session-&gt;frames = frames;</div>
-<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;        session-&gt;frames_length = frames_length;</div>
-<div class="line"><a name="l01396"></a><span class="lineno"> 1396</span>&#160;        session-&gt;event = READ;</div>
-<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160; </div>
-<div class="line"><a name="l01398"></a><span class="lineno"> 1398</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01399"></a><span class="lineno"> 1399</span>&#160;    }</div>
-<div class="line"><a name="l01400"></a><span class="lineno"> 1400</span>&#160; </div>
-<div class="line"><a name="l01401"></a><span class="lineno"> 1401</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Frames was validated&quot;</span>);</div>
-<div class="line"><a name="l01402"></a><span class="lineno"> 1402</span>&#160;    </div>
-<div class="line"><a name="l01403"></a><span class="lineno"> 1403</span>&#160;    session-&gt;state = IDLE;</div>
-<div class="line"><a name="l01404"></a><span class="lineno"> 1404</span>&#160; </div>
-<div class="line"><a name="l01405"></a><span class="lineno"> 1405</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Sending frames to receivers&quot;</span>);</div>
-<div class="line"><a name="l01406"></a><span class="lineno"> 1406</span>&#160; </div>
-<div class="line"><a name="l01407"></a><span class="lineno"> 1407</span>&#160;    <span class="comment">// Sending message to subprotocol and sending it to the filedescriptors</span></div>
-<div class="line"><a name="l01408"></a><span class="lineno"> 1408</span>&#160;    <span class="comment">// returned by the subprotocol.</span></div>
-<div class="line"><a name="l01409"></a><span class="lineno"> 1409</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
-<div class="line"><a name="l01410"></a><span class="lineno"> 1410</span>&#160;        <span class="comment">// If message consists of single frame or we have the starting frame of</span></div>
-<div class="line"><a name="l01411"></a><span class="lineno"> 1411</span>&#160;        <span class="comment">// a multiframe message, store the starting index</span></div>
-<div class="line"><a name="l01412"></a><span class="lineno"> 1412</span>&#160;        <span class="keywordflow">if</span> ( (frames[i]-&gt;fin &amp;&amp; !(frames[i]-&gt;opcode == 0x0)) ||</div>
-<div class="line"><a name="l01413"></a><span class="lineno"> 1413</span>&#160;             (! frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != 0x0) ) {</div>
-<div class="line"><a name="l01414"></a><span class="lineno"> 1414</span>&#160;            starting_frame = i;</div>
-<div class="line"><a name="l01415"></a><span class="lineno"> 1415</span>&#160;        }</div>
+<div class="line"><a name="l01389"></a><span class="lineno"> 1389</span>&#160;        session-&gt;frames = frames;</div>
+<div class="line"><a name="l01390"></a><span class="lineno"> 1390</span>&#160;        session-&gt;frames_length = frames_length;</div>
+<div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;        session-&gt;event = READ;</div>
+<div class="line"><a name="l01392"></a><span class="lineno"> 1392</span>&#160; </div>
+<div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;    }</div>
+<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160; </div>
+<div class="line"><a name="l01396"></a><span class="lineno"> 1396</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Frames was validated&quot;</span>);</div>
+<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160;    </div>
+<div class="line"><a name="l01398"></a><span class="lineno"> 1398</span>&#160;    session-&gt;state = IDLE;</div>
+<div class="line"><a name="l01399"></a><span class="lineno"> 1399</span>&#160; </div>
+<div class="line"><a name="l01400"></a><span class="lineno"> 1400</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Sending frames to receivers&quot;</span>);</div>
+<div class="line"><a name="l01401"></a><span class="lineno"> 1401</span>&#160; </div>
+<div class="line"><a name="l01402"></a><span class="lineno"> 1402</span>&#160;    <span class="comment">// Sending message to subprotocol and sending it to the filedescriptors</span></div>
+<div class="line"><a name="l01403"></a><span class="lineno"> 1403</span>&#160;    <span class="comment">// returned by the subprotocol.</span></div>
+<div class="line"><a name="l01404"></a><span class="lineno"> 1404</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
+<div class="line"><a name="l01405"></a><span class="lineno"> 1405</span>&#160;        <span class="comment">// If message consists of single frame or we have the starting frame of</span></div>
+<div class="line"><a name="l01406"></a><span class="lineno"> 1406</span>&#160;        <span class="comment">// a multiframe message, store the starting index</span></div>
+<div class="line"><a name="l01407"></a><span class="lineno"> 1407</span>&#160;        <span class="keywordflow">if</span> ( (frames[i]-&gt;fin &amp;&amp; !(frames[i]-&gt;opcode == 0x0)) ||</div>
+<div class="line"><a name="l01408"></a><span class="lineno"> 1408</span>&#160;             (! frames[i]-&gt;fin &amp;&amp; frames[i]-&gt;opcode != 0x0) ) {</div>
+<div class="line"><a name="l01409"></a><span class="lineno"> 1409</span>&#160;            starting_frame = i;</div>
+<div class="line"><a name="l01410"></a><span class="lineno"> 1410</span>&#160;        }</div>
+<div class="line"><a name="l01411"></a><span class="lineno"> 1411</span>&#160; </div>
+<div class="line"><a name="l01412"></a><span class="lineno"> 1412</span>&#160;        <span class="keywordflow">if</span> (frames[i]-&gt;fin) {</div>
+<div class="line"><a name="l01413"></a><span class="lineno"> 1413</span>&#160;            len = i-starting_frame+1;</div>
+<div class="line"><a name="l01414"></a><span class="lineno"> 1414</span>&#160; </div>
+<div class="line"><a name="l01415"></a><span class="lineno"> 1415</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Applying %d extensions on input&quot;</span>, session-&gt;header-&gt;ws_extensions_count);</div>
 <div class="line"><a name="l01416"></a><span class="lineno"> 1416</span>&#160; </div>
-<div class="line"><a name="l01417"></a><span class="lineno"> 1417</span>&#160;        <span class="keywordflow">if</span> (frames[i]-&gt;fin) {</div>
-<div class="line"><a name="l01418"></a><span class="lineno"> 1418</span>&#160;            len = i-starting_frame+1;</div>
-<div class="line"><a name="l01419"></a><span class="lineno"> 1419</span>&#160; </div>
-<div class="line"><a name="l01420"></a><span class="lineno"> 1420</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Applying %d extensions on input&quot;</span>, session-&gt;header-&gt;ws_extensions_count);</div>
-<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160; </div>
-<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;            <span class="comment">// Apply extensions to collection of frames (message)</span></div>
-<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;            <span class="keywordflow">for</span> (j = 0; likely(j &lt; session-&gt;header-&gt;ws_extensions_count); j++) {</div>
-<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;                <span class="comment">// Apply extension perframe</span></div>
-<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160;                <span class="keywordflow">for</span> (k = 0; likely(k &lt; len); k++) {</div>
-<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;                    session-&gt;header-&gt;ws_extensions[j]-&gt;ext-&gt;inframe(</div>
-<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;                            session-&gt;fd,</div>
-<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;                            (<span class="keywordtype">void</span> *)frames[k+starting_frame]);</div>
-<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;                }</div>
-<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160; </div>
-<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;                <span class="comment">// Apply extension for set of frames</span></div>
-<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160;                session-&gt;header-&gt;ws_extensions[j]-&gt;ext-&gt;inframes(</div>
-<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;                        session-&gt;fd,</div>
-<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160;                        frames+starting_frame,</div>
-<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;                        len);</div>
-<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;            }</div>
-<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160; </div>
-<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Assembling message&quot;</span>);</div>
-<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160; </div>
-<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt;= i); j++) {</div>
-<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160;                msg_length += frames[j]-&gt;applicationDataLength;</div>
-<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;            }</div>
-<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160; </div>
-<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;            <span class="keywordflow">if</span> ( unlikely(NULL == (msg = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>((msg_length+1)*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
-<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unable to allocate message&quot;</span>);</div>
+<div class="line"><a name="l01417"></a><span class="lineno"> 1417</span>&#160;            <span class="comment">// Apply extensions to collection of frames (message)</span></div>
+<div class="line"><a name="l01418"></a><span class="lineno"> 1418</span>&#160;            <span class="keywordflow">for</span> (j = 0; likely(j &lt; session-&gt;header-&gt;ws_extensions_count); j++) {</div>
+<div class="line"><a name="l01419"></a><span class="lineno"> 1419</span>&#160;                <span class="comment">// Apply extension perframe</span></div>
+<div class="line"><a name="l01420"></a><span class="lineno"> 1420</span>&#160;                <span class="keywordflow">for</span> (k = 0; likely(k &lt; len); k++) {</div>
+<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160;                    session-&gt;header-&gt;ws_extensions[j]-&gt;ext-&gt;inframe(</div>
+<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;                            session-&gt;fd,</div>
+<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;                            (<span class="keywordtype">void</span> *)frames[k+starting_frame]);</div>
+<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;                }</div>
+<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160; </div>
+<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;                <span class="comment">// Apply extension for set of frames</span></div>
+<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;                session-&gt;header-&gt;ws_extensions[j]-&gt;ext-&gt;inframes(</div>
+<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;                        session-&gt;fd,</div>
+<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;                        frames+starting_frame,</div>
+<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160;                        len);</div>
+<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;            }</div>
+<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160; </div>
+<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;            WSS_log_trace(<span class="stringliteral">&quot;Assembling message&quot;</span>);</div>
+<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160; </div>
+<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt;= i); j++) {</div>
+<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;                msg_length += frames[j]-&gt;applicationDataLength;</div>
+<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160;            }</div>
+<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160; </div>
+<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160;            <span class="keywordflow">if</span> ( unlikely(NULL == (msg = <a class="code" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a>((msg_length+1)*<span class="keyword">sizeof</span>(<span class="keywordtype">char</span>)))) ) {</div>
+<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;                WSS_log_error(<span class="stringliteral">&quot;Unable to allocate message&quot;</span>);</div>
+<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160; </div>
+<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;                <span class="keywordflow">for</span> (k = 0; likely(k &lt; frames_length); k++) {</div>
+<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160;                    <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[k]);</div>
+<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;                }</div>
+<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frames);</div>
 <div class="line"><a name="l01446"></a><span class="lineno"> 1446</span>&#160; </div>
-<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;                <span class="keywordflow">for</span> (k = 0; likely(k &lt; frames_length); k++) {</div>
-<div class="line"><a name="l01448"></a><span class="lineno"> 1448</span>&#160;                    <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[k]);</div>
-<div class="line"><a name="l01449"></a><span class="lineno"> 1449</span>&#160;                }</div>
-<div class="line"><a name="l01450"></a><span class="lineno"> 1450</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frames);</div>
+<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01448"></a><span class="lineno"> 1448</span>&#160; </div>
+<div class="line"><a name="l01449"></a><span class="lineno"> 1449</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01450"></a><span class="lineno"> 1450</span>&#160;            }</div>
 <div class="line"><a name="l01451"></a><span class="lineno"> 1451</span>&#160; </div>
-<div class="line"><a name="l01452"></a><span class="lineno"> 1452</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01453"></a><span class="lineno"> 1453</span>&#160; </div>
-<div class="line"><a name="l01454"></a><span class="lineno"> 1454</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01452"></a><span class="lineno"> 1452</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt;= i); j++) {</div>
+<div class="line"><a name="l01453"></a><span class="lineno"> 1453</span>&#160;                memcpy(msg+msg_offset, frames[j]-&gt;payload+frames[j]-&gt;extensionDataLength, frames[j]-&gt;applicationDataLength);</div>
+<div class="line"><a name="l01454"></a><span class="lineno"> 1454</span>&#160;                msg_offset += frames[j]-&gt;applicationDataLength;</div>
 <div class="line"><a name="l01455"></a><span class="lineno"> 1455</span>&#160;            }</div>
 <div class="line"><a name="l01456"></a><span class="lineno"> 1456</span>&#160; </div>
-<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;            <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt;= i); j++) {</div>
-<div class="line"><a name="l01458"></a><span class="lineno"> 1458</span>&#160;                memcpy(msg+msg_offset, frames[j]-&gt;payload+frames[j]-&gt;extensionDataLength, frames[j]-&gt;applicationDataLength);</div>
-<div class="line"><a name="l01459"></a><span class="lineno"> 1459</span>&#160;                msg_offset += frames[j]-&gt;applicationDataLength;</div>
-<div class="line"><a name="l01460"></a><span class="lineno"> 1460</span>&#160;            }</div>
-<div class="line"><a name="l01461"></a><span class="lineno"> 1461</span>&#160; </div>
-<div class="line"><a name="l01462"></a><span class="lineno"> 1462</span>&#160;            WSS_log_debug(<span class="stringliteral">&quot;Unmasked message (%d bytes): %s\n&quot;</span>, msg_length, msg);</div>
-<div class="line"><a name="l01463"></a><span class="lineno"> 1463</span>&#160; </div>
-<div class="line"><a name="l01464"></a><span class="lineno"> 1464</span>&#160;            <span class="comment">// Check utf8 for text frames</span></div>
-<div class="line"><a name="l01465"></a><span class="lineno"> 1465</span>&#160;            <span class="keywordflow">if</span> ( unlikely(frames[starting_frame]-&gt;opcode == TEXT_FRAME &amp;&amp; ! <a class="code" href="utf8_8c.html#a6dd558c73c700233e9b2d9376e238d7e">utf8_check</a>(msg, msg_length)) ) {</div>
-<div class="line"><a name="l01466"></a><span class="lineno"> 1466</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;UTF8 Error: the text was not UTF8 encoded correctly&quot;</span>);</div>
-<div class="line"><a name="l01467"></a><span class="lineno"> 1467</span>&#160; </div>
-<div class="line"><a name="l01468"></a><span class="lineno"> 1468</span>&#160;                <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
-<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;                    <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
-<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;                }</div>
-<div class="line"><a name="l01471"></a><span class="lineno"> 1471</span>&#160;                frames[starting_frame] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_UTF8, NULL);</div>
-<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;                frames_length = starting_frame+1;</div>
-<div class="line"><a name="l01473"></a><span class="lineno"> 1473</span>&#160;                i = starting_frame;</div>
-<div class="line"><a name="l01474"></a><span class="lineno"> 1474</span>&#160;                len = 1;</div>
-<div class="line"><a name="l01475"></a><span class="lineno"> 1475</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;msg);</div>
-<div class="line"><a name="l01476"></a><span class="lineno"> 1476</span>&#160;                msg_length = 0;</div>
-<div class="line"><a name="l01477"></a><span class="lineno"> 1477</span>&#160;                closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01478"></a><span class="lineno"> 1478</span>&#160;            }</div>
-<div class="line"><a name="l01479"></a><span class="lineno"> 1479</span>&#160; </div>
-<div class="line"><a name="l01480"></a><span class="lineno"> 1480</span>&#160;            <span class="keywordflow">if</span> ( likely(frames[starting_frame]-&gt;opcode == TEXT_FRAME || frames[starting_frame]-&gt;opcode == BINARY_FRAME) ) {</div>
-<div class="line"><a name="l01481"></a><span class="lineno"> 1481</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Notifying subprotocol of message&quot;</span>);</div>
+<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;            WSS_log_debug(<span class="stringliteral">&quot;Unmasked message (%d bytes): %s\n&quot;</span>, msg_length, msg);</div>
+<div class="line"><a name="l01458"></a><span class="lineno"> 1458</span>&#160; </div>
+<div class="line"><a name="l01459"></a><span class="lineno"> 1459</span>&#160;            <span class="comment">// Check utf8 for text frames</span></div>
+<div class="line"><a name="l01460"></a><span class="lineno"> 1460</span>&#160;            <span class="keywordflow">if</span> ( unlikely(frames[starting_frame]-&gt;opcode == TEXT_FRAME &amp;&amp; ! <a class="code" href="utf8_8c.html#a6dd558c73c700233e9b2d9376e238d7e">utf8_check</a>(msg, msg_length)) ) {</div>
+<div class="line"><a name="l01461"></a><span class="lineno"> 1461</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;UTF8 Error: the text was not UTF8 encoded correctly&quot;</span>);</div>
+<div class="line"><a name="l01462"></a><span class="lineno"> 1462</span>&#160; </div>
+<div class="line"><a name="l01463"></a><span class="lineno"> 1463</span>&#160;                <span class="keywordflow">for</span> (j = starting_frame; likely(j &lt; frames_length); j++) {</div>
+<div class="line"><a name="l01464"></a><span class="lineno"> 1464</span>&#160;                    <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[j]);</div>
+<div class="line"><a name="l01465"></a><span class="lineno"> 1465</span>&#160;                }</div>
+<div class="line"><a name="l01466"></a><span class="lineno"> 1466</span>&#160;                frames[starting_frame] = <a class="code" href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a>(CLOSE_UTF8, NULL);</div>
+<div class="line"><a name="l01467"></a><span class="lineno"> 1467</span>&#160;                frames_length = starting_frame+1;</div>
+<div class="line"><a name="l01468"></a><span class="lineno"> 1468</span>&#160;                i = starting_frame;</div>
+<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;                len = 1;</div>
+<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;                <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;msg);</div>
+<div class="line"><a name="l01471"></a><span class="lineno"> 1471</span>&#160;                msg_length = 0;</div>
+<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;                closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01473"></a><span class="lineno"> 1473</span>&#160;            }</div>
+<div class="line"><a name="l01474"></a><span class="lineno"> 1474</span>&#160; </div>
+<div class="line"><a name="l01475"></a><span class="lineno"> 1475</span>&#160;            <span class="keywordflow">if</span> ( likely(frames[starting_frame]-&gt;opcode == TEXT_FRAME || frames[starting_frame]-&gt;opcode == BINARY_FRAME) ) {</div>
+<div class="line"><a name="l01476"></a><span class="lineno"> 1476</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Notifying subprotocol of message&quot;</span>);</div>
+<div class="line"><a name="l01477"></a><span class="lineno"> 1477</span>&#160; </div>
+<div class="line"><a name="l01478"></a><span class="lineno"> 1478</span>&#160;                <span class="comment">// Use subprotocol</span></div>
+<div class="line"><a name="l01479"></a><span class="lineno"> 1479</span>&#160;                session-&gt;header-&gt;ws_protocol-&gt;message(session-&gt;fd, frames[starting_frame]-&gt;opcode, msg, msg_length);</div>
+<div class="line"><a name="l01480"></a><span class="lineno"> 1480</span>&#160;            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01481"></a><span class="lineno"> 1481</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Writing control frame message&quot;</span>);</div>
 <div class="line"><a name="l01482"></a><span class="lineno"> 1482</span>&#160; </div>
-<div class="line"><a name="l01483"></a><span class="lineno"> 1483</span>&#160;                <span class="comment">// Use subprotocol</span></div>
-<div class="line"><a name="l01484"></a><span class="lineno"> 1484</span>&#160;                session-&gt;header-&gt;ws_protocol-&gt;message(session-&gt;fd, frames[starting_frame]-&gt;opcode, msg, msg_length);</div>
-<div class="line"><a name="l01485"></a><span class="lineno"> 1485</span>&#160;            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01486"></a><span class="lineno"> 1486</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Writing control frame message&quot;</span>);</div>
-<div class="line"><a name="l01487"></a><span class="lineno"> 1487</span>&#160; </div>
-<div class="line"><a name="l01488"></a><span class="lineno"> 1488</span>&#160;                <a class="code" href="session_8c.html#afc2c95cb48396ed56ae592b260cb0485">WSS_session_jobs_inc</a>(session);</div>
-<div class="line"><a name="l01489"></a><span class="lineno"> 1489</span>&#160;                <a class="code" href="message_8c.html#a6dfd151c3c708b1fa76faee67feebe7d">WSS_message_send_frames</a>((<span class="keywordtype">void</span> *)server, (<span class="keywordtype">void</span> *)session, &amp;frames[starting_frame], len);</div>
-<div class="line"><a name="l01490"></a><span class="lineno"> 1490</span>&#160;            }</div>
-<div class="line"><a name="l01491"></a><span class="lineno"> 1491</span>&#160; </div>
-<div class="line"><a name="l01492"></a><span class="lineno"> 1492</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;msg);</div>
-<div class="line"><a name="l01493"></a><span class="lineno"> 1493</span>&#160;            msg_length = 0;</div>
-<div class="line"><a name="l01494"></a><span class="lineno"> 1494</span>&#160;            msg_offset = 0;</div>
-<div class="line"><a name="l01495"></a><span class="lineno"> 1495</span>&#160;        }</div>
-<div class="line"><a name="l01496"></a><span class="lineno"> 1496</span>&#160;    }</div>
-<div class="line"><a name="l01497"></a><span class="lineno"> 1497</span>&#160; </div>
-<div class="line"><a name="l01498"></a><span class="lineno"> 1498</span>&#160;    <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
-<div class="line"><a name="l01499"></a><span class="lineno"> 1499</span>&#160;        <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[i]);</div>
-<div class="line"><a name="l01500"></a><span class="lineno"> 1500</span>&#160;    }</div>
-<div class="line"><a name="l01501"></a><span class="lineno"> 1501</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frames);</div>
-<div class="line"><a name="l01502"></a><span class="lineno"> 1502</span>&#160; </div>
-<div class="line"><a name="l01503"></a><span class="lineno"> 1503</span>&#160;    <span class="keywordflow">if</span> (! closing &amp;&amp; session-&gt;event == NONE) {</div>
-<div class="line"><a name="l01504"></a><span class="lineno"> 1504</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Set epoll file descriptor to read mode after finishing read&quot;</span>);</div>
-<div class="line"><a name="l01505"></a><span class="lineno"> 1505</span>&#160;        session-&gt;event = READ;</div>
-<div class="line"><a name="l01506"></a><span class="lineno"> 1506</span>&#160;    }</div>
-<div class="line"><a name="l01507"></a><span class="lineno"> 1507</span>&#160;}</div>
-<div class="line"><a name="l01508"></a><span class="lineno"> 1508</span>&#160; </div>
-<div class="line"><a name="l01517"></a><span class="lineno"><a class="line" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc"> 1517</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(wss_server_t *server, wss_session_t *session) {</div>
-<div class="line"><a name="l01518"></a><span class="lineno"> 1518</span>&#160;    <span class="keywordtype">int</span> n;</div>
-<div class="line"><a name="l01519"></a><span class="lineno"> 1519</span>&#160;    wss_message_t *message;</div>
-<div class="line"><a name="l01520"></a><span class="lineno"> 1520</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i;</div>
-<div class="line"><a name="l01521"></a><span class="lineno"> 1521</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> message_length;</div>
-<div class="line"><a name="l01522"></a><span class="lineno"> 1522</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bytes_sent;</div>
-<div class="line"><a name="l01523"></a><span class="lineno"> 1523</span>&#160;    <span class="keywordtype">size_t</span> len, off;</div>
-<div class="line"><a name="l01524"></a><span class="lineno"> 1524</span>&#160;    <span class="keywordtype">bool</span> closing = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01525"></a><span class="lineno"> 1525</span>&#160; </div>
-<div class="line"><a name="l01526"></a><span class="lineno"> 1526</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Performing write by popping messages from ringbuffer&quot;</span>);</div>
-<div class="line"><a name="l01527"></a><span class="lineno"> 1527</span>&#160; </div>
-<div class="line"><a name="l01528"></a><span class="lineno"> 1528</span>&#160;    <span class="keywordflow">while</span> ( likely(0 != (len = <a class="code" href="ringbuf_8c.html#a5465c2fe7902e30a284f6948c288819e">ringbuf_consume</a>(session-&gt;ringbuf, &amp;off))) ) {</div>
-<div class="line"><a name="l01529"></a><span class="lineno"> 1529</span>&#160;        <span class="keywordflow">for</span> (i = 0; likely(i &lt; len); i++) {</div>
-<div class="line"><a name="l01530"></a><span class="lineno"> 1530</span>&#160;            <span class="keywordflow">if</span> ( unlikely(session-&gt;handshaked &amp;&amp; closing) ) {</div>
-<div class="line"><a name="l01531"></a><span class="lineno"> 1531</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;No further messages are necessary as client connection is closing&quot;</span>);</div>
-<div class="line"><a name="l01532"></a><span class="lineno"> 1532</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01533"></a><span class="lineno"> 1533</span>&#160;            }</div>
-<div class="line"><a name="l01534"></a><span class="lineno"> 1534</span>&#160; </div>
-<div class="line"><a name="l01535"></a><span class="lineno"> 1535</span>&#160;            bytes_sent = session-&gt;written;</div>
-<div class="line"><a name="l01536"></a><span class="lineno"> 1536</span>&#160;            session-&gt;written = 0;</div>
-<div class="line"><a name="l01537"></a><span class="lineno"> 1537</span>&#160;            message = session-&gt;messages[off+i];</div>
-<div class="line"><a name="l01538"></a><span class="lineno"> 1538</span>&#160;            message_length = message-&gt;length;</div>
-<div class="line"><a name="l01539"></a><span class="lineno"> 1539</span>&#160; </div>
-<div class="line"><a name="l01540"></a><span class="lineno"> 1540</span>&#160;            <span class="keywordflow">while</span> ( likely(bytes_sent &lt; message_length) ) {</div>
-<div class="line"><a name="l01541"></a><span class="lineno"> 1541</span>&#160;                <span class="comment">// Check if message contains closing byte</span></div>
-<div class="line"><a name="l01542"></a><span class="lineno"> 1542</span>&#160;                <span class="keywordflow">if</span> ( unlikely(message-&gt;framed &amp;&amp; bytes_sent == 0 &amp;&amp;</div>
-<div class="line"><a name="l01543"></a><span class="lineno"> 1543</span>&#160;                     ((message-&gt;msg[0] &amp; 0xF) &amp; 0x8) == (message-&gt;msg[0] &amp; 0xF)) ) {</div>
-<div class="line"><a name="l01544"></a><span class="lineno"> 1544</span>&#160;                    closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01545"></a><span class="lineno"> 1545</span>&#160;                }</div>
-<div class="line"><a name="l01546"></a><span class="lineno"> 1546</span>&#160; </div>
-<div class="line"><a name="l01547"></a><span class="lineno"> 1547</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
-<div class="line"><a name="l01548"></a><span class="lineno"> 1548</span>&#160;                <span class="keywordflow">if</span> (NULL != server-&gt;ssl_ctx) {</div>
-<div class="line"><a name="l01549"></a><span class="lineno"> 1549</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> err;</div>
+<div class="line"><a name="l01483"></a><span class="lineno"> 1483</span>&#160;                <a class="code" href="session_8c.html#afc2c95cb48396ed56ae592b260cb0485">WSS_session_jobs_inc</a>(session);</div>
+<div class="line"><a name="l01484"></a><span class="lineno"> 1484</span>&#160;                <a class="code" href="message_8c.html#a6dfd151c3c708b1fa76faee67feebe7d">WSS_message_send_frames</a>((<span class="keywordtype">void</span> *)server, (<span class="keywordtype">void</span> *)session, &amp;frames[starting_frame], len);</div>
+<div class="line"><a name="l01485"></a><span class="lineno"> 1485</span>&#160;            }</div>
+<div class="line"><a name="l01486"></a><span class="lineno"> 1486</span>&#160; </div>
+<div class="line"><a name="l01487"></a><span class="lineno"> 1487</span>&#160;            <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;msg);</div>
+<div class="line"><a name="l01488"></a><span class="lineno"> 1488</span>&#160;            msg_length = 0;</div>
+<div class="line"><a name="l01489"></a><span class="lineno"> 1489</span>&#160;            msg_offset = 0;</div>
+<div class="line"><a name="l01490"></a><span class="lineno"> 1490</span>&#160;        }</div>
+<div class="line"><a name="l01491"></a><span class="lineno"> 1491</span>&#160;    }</div>
+<div class="line"><a name="l01492"></a><span class="lineno"> 1492</span>&#160; </div>
+<div class="line"><a name="l01493"></a><span class="lineno"> 1493</span>&#160;    <span class="keywordflow">if</span> (frames_length &gt; 0) {</div>
+<div class="line"><a name="l01494"></a><span class="lineno"> 1494</span>&#160;        <span class="keywordflow">for</span> (i = 0; likely(i &lt; frames_length); i++) {</div>
+<div class="line"><a name="l01495"></a><span class="lineno"> 1495</span>&#160;            <a class="code" href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a>(frames[i]);</div>
+<div class="line"><a name="l01496"></a><span class="lineno"> 1496</span>&#160;        }</div>
+<div class="line"><a name="l01497"></a><span class="lineno"> 1497</span>&#160;        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;frames);</div>
+<div class="line"><a name="l01498"></a><span class="lineno"> 1498</span>&#160;    }</div>
+<div class="line"><a name="l01499"></a><span class="lineno"> 1499</span>&#160; </div>
+<div class="line"><a name="l01500"></a><span class="lineno"> 1500</span>&#160;    <span class="keywordflow">if</span> (! closing &amp;&amp; session-&gt;event == NONE) {</div>
+<div class="line"><a name="l01501"></a><span class="lineno"> 1501</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Set epoll file descriptor to read mode after finishing read&quot;</span>);</div>
+<div class="line"><a name="l01502"></a><span class="lineno"> 1502</span>&#160;        session-&gt;event = READ;</div>
+<div class="line"><a name="l01503"></a><span class="lineno"> 1503</span>&#160;    }</div>
+<div class="line"><a name="l01504"></a><span class="lineno"> 1504</span>&#160;}</div>
+<div class="line"><a name="l01505"></a><span class="lineno"> 1505</span>&#160; </div>
+<div class="line"><a name="l01514"></a><span class="lineno"><a class="line" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc"> 1514</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(wss_server_t *server, wss_session_t *session) {</div>
+<div class="line"><a name="l01515"></a><span class="lineno"> 1515</span>&#160;    <span class="keywordtype">int</span> n;</div>
+<div class="line"><a name="l01516"></a><span class="lineno"> 1516</span>&#160;    wss_message_t *message;</div>
+<div class="line"><a name="l01517"></a><span class="lineno"> 1517</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> i;</div>
+<div class="line"><a name="l01518"></a><span class="lineno"> 1518</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> message_length;</div>
+<div class="line"><a name="l01519"></a><span class="lineno"> 1519</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> bytes_sent;</div>
+<div class="line"><a name="l01520"></a><span class="lineno"> 1520</span>&#160;    <span class="keywordtype">size_t</span> len, off;</div>
+<div class="line"><a name="l01521"></a><span class="lineno"> 1521</span>&#160;    <span class="keywordtype">bool</span> closing = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01522"></a><span class="lineno"> 1522</span>&#160; </div>
+<div class="line"><a name="l01523"></a><span class="lineno"> 1523</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Performing write by popping messages from ringbuffer&quot;</span>);</div>
+<div class="line"><a name="l01524"></a><span class="lineno"> 1524</span>&#160; </div>
+<div class="line"><a name="l01525"></a><span class="lineno"> 1525</span>&#160;    <span class="keywordflow">while</span> ( likely(0 != (len = <a class="code" href="ringbuf_8c.html#a5465c2fe7902e30a284f6948c288819e">ringbuf_consume</a>(session-&gt;ringbuf, &amp;off))) ) {</div>
+<div class="line"><a name="l01526"></a><span class="lineno"> 1526</span>&#160;        <span class="keywordflow">for</span> (i = 0; likely(i &lt; len); i++) {</div>
+<div class="line"><a name="l01527"></a><span class="lineno"> 1527</span>&#160;            <span class="keywordflow">if</span> ( unlikely(session-&gt;handshaked &amp;&amp; closing) ) {</div>
+<div class="line"><a name="l01528"></a><span class="lineno"> 1528</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;No further messages are necessary as client connection is closing&quot;</span>);</div>
+<div class="line"><a name="l01529"></a><span class="lineno"> 1529</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01530"></a><span class="lineno"> 1530</span>&#160;            }</div>
+<div class="line"><a name="l01531"></a><span class="lineno"> 1531</span>&#160; </div>
+<div class="line"><a name="l01532"></a><span class="lineno"> 1532</span>&#160;            bytes_sent = session-&gt;written;</div>
+<div class="line"><a name="l01533"></a><span class="lineno"> 1533</span>&#160;            session-&gt;written = 0;</div>
+<div class="line"><a name="l01534"></a><span class="lineno"> 1534</span>&#160;            message = session-&gt;messages[off+i];</div>
+<div class="line"><a name="l01535"></a><span class="lineno"> 1535</span>&#160;            message_length = message-&gt;length;</div>
+<div class="line"><a name="l01536"></a><span class="lineno"> 1536</span>&#160; </div>
+<div class="line"><a name="l01537"></a><span class="lineno"> 1537</span>&#160;            <span class="keywordflow">while</span> ( likely(bytes_sent &lt; message_length) ) {</div>
+<div class="line"><a name="l01538"></a><span class="lineno"> 1538</span>&#160;                <span class="comment">// Check if message contains closing byte</span></div>
+<div class="line"><a name="l01539"></a><span class="lineno"> 1539</span>&#160;                <span class="keywordflow">if</span> ( unlikely(message-&gt;framed &amp;&amp; bytes_sent == 0 &amp;&amp;</div>
+<div class="line"><a name="l01540"></a><span class="lineno"> 1540</span>&#160;                     ((message-&gt;msg[0] &amp; 0xF) &amp; 0x8) == (message-&gt;msg[0] &amp; 0xF)) ) {</div>
+<div class="line"><a name="l01541"></a><span class="lineno"> 1541</span>&#160;                    closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01542"></a><span class="lineno"> 1542</span>&#160;                }</div>
+<div class="line"><a name="l01543"></a><span class="lineno"> 1543</span>&#160; </div>
+<div class="line"><a name="l01544"></a><span class="lineno"> 1544</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
+<div class="line"><a name="l01545"></a><span class="lineno"> 1545</span>&#160;                <span class="keywordflow">if</span> (NULL != server-&gt;ssl_ctx) {</div>
+<div class="line"><a name="l01546"></a><span class="lineno"> 1546</span>&#160;                    <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> err;</div>
+<div class="line"><a name="l01547"></a><span class="lineno"> 1547</span>&#160; </div>
+<div class="line"><a name="l01548"></a><span class="lineno"> 1548</span>&#160;                    n = SSL_write(session-&gt;ssl, message-&gt;msg+bytes_sent, message_length-bytes_sent);</div>
+<div class="line"><a name="l01549"></a><span class="lineno"> 1549</span>&#160;                    err = SSL_get_error(session-&gt;ssl, n);</div>
 <div class="line"><a name="l01550"></a><span class="lineno"> 1550</span>&#160; </div>
-<div class="line"><a name="l01551"></a><span class="lineno"> 1551</span>&#160;                    n = SSL_write(session-&gt;ssl, message-&gt;msg+bytes_sent, message_length-bytes_sent);</div>
-<div class="line"><a name="l01552"></a><span class="lineno"> 1552</span>&#160;                    err = SSL_get_error(session-&gt;ssl, n);</div>
-<div class="line"><a name="l01553"></a><span class="lineno"> 1553</span>&#160; </div>
-<div class="line"><a name="l01554"></a><span class="lineno"> 1554</span>&#160;                    <span class="comment">// If something more needs to be read in order for the handshake to finish</span></div>
-<div class="line"><a name="l01555"></a><span class="lineno"> 1555</span>&#160;                    <span class="keywordflow">if</span> (err == SSL_ERROR_WANT_READ) {</div>
-<div class="line"><a name="l01556"></a><span class="lineno"> 1556</span>&#160;                        WSS_log_trace(<span class="stringliteral">&quot;Needs to wait for further reads&quot;</span>);</div>
+<div class="line"><a name="l01551"></a><span class="lineno"> 1551</span>&#160;                    <span class="comment">// If something more needs to be read in order for the handshake to finish</span></div>
+<div class="line"><a name="l01552"></a><span class="lineno"> 1552</span>&#160;                    <span class="keywordflow">if</span> (err == SSL_ERROR_WANT_READ) {</div>
+<div class="line"><a name="l01553"></a><span class="lineno"> 1553</span>&#160;                        WSS_log_trace(<span class="stringliteral">&quot;Needs to wait for further reads&quot;</span>);</div>
+<div class="line"><a name="l01554"></a><span class="lineno"> 1554</span>&#160; </div>
+<div class="line"><a name="l01555"></a><span class="lineno"> 1555</span>&#160;                        session-&gt;written = bytes_sent;</div>
+<div class="line"><a name="l01556"></a><span class="lineno"> 1556</span>&#160;                        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
 <div class="line"><a name="l01557"></a><span class="lineno"> 1557</span>&#160; </div>
-<div class="line"><a name="l01558"></a><span class="lineno"> 1558</span>&#160;                        session-&gt;written = bytes_sent;</div>
-<div class="line"><a name="l01559"></a><span class="lineno"> 1559</span>&#160;                        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
-<div class="line"><a name="l01560"></a><span class="lineno"> 1560</span>&#160; </div>
-<div class="line"><a name="l01561"></a><span class="lineno"> 1561</span>&#160;                        session-&gt;event = READ;</div>
+<div class="line"><a name="l01558"></a><span class="lineno"> 1558</span>&#160;                        session-&gt;event = READ;</div>
+<div class="line"><a name="l01559"></a><span class="lineno"> 1559</span>&#160; </div>
+<div class="line"><a name="l01560"></a><span class="lineno"> 1560</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01561"></a><span class="lineno"> 1561</span>&#160;                    }</div>
 <div class="line"><a name="l01562"></a><span class="lineno"> 1562</span>&#160; </div>
-<div class="line"><a name="l01563"></a><span class="lineno"> 1563</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01564"></a><span class="lineno"> 1564</span>&#160;                    }</div>
-<div class="line"><a name="l01565"></a><span class="lineno"> 1565</span>&#160; </div>
-<div class="line"><a name="l01566"></a><span class="lineno"> 1566</span>&#160;                    <span class="comment">// If something more needs to be written in order for the handshake to finish</span></div>
-<div class="line"><a name="l01567"></a><span class="lineno"> 1567</span>&#160;                    <span class="keywordflow">if</span> (err == SSL_ERROR_WANT_WRITE) {</div>
-<div class="line"><a name="l01568"></a><span class="lineno"> 1568</span>&#160;                        WSS_log_trace(<span class="stringliteral">&quot;Needs to wait for further writes&quot;</span>);</div>
-<div class="line"><a name="l01569"></a><span class="lineno"> 1569</span>&#160; </div>
-<div class="line"><a name="l01570"></a><span class="lineno"> 1570</span>&#160;                        session-&gt;written = bytes_sent;</div>
-<div class="line"><a name="l01571"></a><span class="lineno"> 1571</span>&#160; </div>
-<div class="line"><a name="l01572"></a><span class="lineno"> 1572</span>&#160;                        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
-<div class="line"><a name="l01573"></a><span class="lineno"> 1573</span>&#160; </div>
-<div class="line"><a name="l01574"></a><span class="lineno"> 1574</span>&#160;                        session-&gt;event = WRITE;</div>
+<div class="line"><a name="l01563"></a><span class="lineno"> 1563</span>&#160;                    <span class="comment">// If something more needs to be written in order for the handshake to finish</span></div>
+<div class="line"><a name="l01564"></a><span class="lineno"> 1564</span>&#160;                    <span class="keywordflow">if</span> (err == SSL_ERROR_WANT_WRITE) {</div>
+<div class="line"><a name="l01565"></a><span class="lineno"> 1565</span>&#160;                        WSS_log_trace(<span class="stringliteral">&quot;Needs to wait for further writes&quot;</span>);</div>
+<div class="line"><a name="l01566"></a><span class="lineno"> 1566</span>&#160; </div>
+<div class="line"><a name="l01567"></a><span class="lineno"> 1567</span>&#160;                        session-&gt;written = bytes_sent;</div>
+<div class="line"><a name="l01568"></a><span class="lineno"> 1568</span>&#160; </div>
+<div class="line"><a name="l01569"></a><span class="lineno"> 1569</span>&#160;                        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
+<div class="line"><a name="l01570"></a><span class="lineno"> 1570</span>&#160; </div>
+<div class="line"><a name="l01571"></a><span class="lineno"> 1571</span>&#160;                        session-&gt;event = WRITE;</div>
+<div class="line"><a name="l01572"></a><span class="lineno"> 1572</span>&#160; </div>
+<div class="line"><a name="l01573"></a><span class="lineno"> 1573</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01574"></a><span class="lineno"> 1574</span>&#160;                    }</div>
 <div class="line"><a name="l01575"></a><span class="lineno"> 1575</span>&#160; </div>
-<div class="line"><a name="l01576"></a><span class="lineno"> 1576</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01577"></a><span class="lineno"> 1577</span>&#160;                    }</div>
-<div class="line"><a name="l01578"></a><span class="lineno"> 1578</span>&#160; </div>
-<div class="line"><a name="l01579"></a><span class="lineno"> 1579</span>&#160;                    <span class="keywordflow">if</span> ( unlikely(err != SSL_ERROR_NONE &amp;&amp; err != SSL_ERROR_ZERO_RETURN) ) {</div>
-<div class="line"><a name="l01580"></a><span class="lineno"> 1580</span>&#160;                        <span class="keywordtype">char</span> msg[1024];</div>
-<div class="line"><a name="l01581"></a><span class="lineno"> 1581</span>&#160;                        <span class="keywordflow">while</span> ( (err = ERR_get_error()) != 0 ) {</div>
-<div class="line"><a name="l01582"></a><span class="lineno"> 1582</span>&#160;                            ERR_error_string_n(err, msg, 1024);</div>
-<div class="line"><a name="l01583"></a><span class="lineno"> 1583</span>&#160;                            WSS_log_error(<span class="stringliteral">&quot;SSL write failed: %s&quot;</span>, msg);</div>
-<div class="line"><a name="l01584"></a><span class="lineno"> 1584</span>&#160;                        }</div>
-<div class="line"><a name="l01585"></a><span class="lineno"> 1585</span>&#160; </div>
-<div class="line"><a name="l01586"></a><span class="lineno"> 1586</span>&#160;                        session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01587"></a><span class="lineno"> 1587</span>&#160; </div>
-<div class="line"><a name="l01588"></a><span class="lineno"> 1588</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01589"></a><span class="lineno"> 1589</span>&#160;                    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01590"></a><span class="lineno"> 1590</span>&#160;                        <span class="keywordflow">if</span> (unlikely(n &lt; 0)) {</div>
-<div class="line"><a name="l01591"></a><span class="lineno"> 1591</span>&#160;                            n = 0;</div>
-<div class="line"><a name="l01592"></a><span class="lineno"> 1592</span>&#160;                        }</div>
-<div class="line"><a name="l01593"></a><span class="lineno"> 1593</span>&#160;                        bytes_sent += n;</div>
-<div class="line"><a name="l01594"></a><span class="lineno"> 1594</span>&#160;                    }</div>
-<div class="line"><a name="l01595"></a><span class="lineno"> 1595</span>&#160;                } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01596"></a><span class="lineno"> 1596</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l01597"></a><span class="lineno"> 1597</span>&#160;                    <span class="keywordflow">do</span> {</div>
-<div class="line"><a name="l01598"></a><span class="lineno"> 1598</span>&#160;                        n = write(session-&gt;fd, message-&gt;msg+bytes_sent, message_length-bytes_sent);</div>
-<div class="line"><a name="l01599"></a><span class="lineno"> 1599</span>&#160;                        <span class="keywordflow">if</span> (unlikely(n == -1)) {</div>
-<div class="line"><a name="l01600"></a><span class="lineno"> 1600</span>&#160;                            <span class="keywordflow">if</span> ( unlikely(errno == EINTR) ) {</div>
-<div class="line"><a name="l01601"></a><span class="lineno"> 1601</span>&#160;                                errno = 0;</div>
-<div class="line"><a name="l01602"></a><span class="lineno"> 1602</span>&#160;                                <span class="keywordflow">continue</span>;</div>
-<div class="line"><a name="l01603"></a><span class="lineno"> 1603</span>&#160;                            } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( unlikely(errno != EAGAIN &amp;&amp; errno != EWOULDBLOCK) ) {</div>
-<div class="line"><a name="l01604"></a><span class="lineno"> 1604</span>&#160;                                WSS_log_error(<span class="stringliteral">&quot;Write failed: %s&quot;</span>, strerror(errno));</div>
-<div class="line"><a name="l01605"></a><span class="lineno"> 1605</span>&#160;                                session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01606"></a><span class="lineno"> 1606</span>&#160;                                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01607"></a><span class="lineno"> 1607</span>&#160;                            }</div>
+<div class="line"><a name="l01576"></a><span class="lineno"> 1576</span>&#160;                    <span class="keywordflow">if</span> ( unlikely(err != SSL_ERROR_NONE &amp;&amp; err != SSL_ERROR_ZERO_RETURN) ) {</div>
+<div class="line"><a name="l01577"></a><span class="lineno"> 1577</span>&#160;                        <span class="keywordtype">char</span> msg[1024];</div>
+<div class="line"><a name="l01578"></a><span class="lineno"> 1578</span>&#160;                        <span class="keywordflow">while</span> ( (err = ERR_get_error()) != 0 ) {</div>
+<div class="line"><a name="l01579"></a><span class="lineno"> 1579</span>&#160;                            ERR_error_string_n(err, msg, 1024);</div>
+<div class="line"><a name="l01580"></a><span class="lineno"> 1580</span>&#160;                            WSS_log_error(<span class="stringliteral">&quot;SSL write failed: %s&quot;</span>, msg);</div>
+<div class="line"><a name="l01581"></a><span class="lineno"> 1581</span>&#160;                        }</div>
+<div class="line"><a name="l01582"></a><span class="lineno"> 1582</span>&#160; </div>
+<div class="line"><a name="l01583"></a><span class="lineno"> 1583</span>&#160;                        session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01584"></a><span class="lineno"> 1584</span>&#160; </div>
+<div class="line"><a name="l01585"></a><span class="lineno"> 1585</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01586"></a><span class="lineno"> 1586</span>&#160;                    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01587"></a><span class="lineno"> 1587</span>&#160;                        <span class="keywordflow">if</span> (unlikely(n &lt; 0)) {</div>
+<div class="line"><a name="l01588"></a><span class="lineno"> 1588</span>&#160;                            n = 0;</div>
+<div class="line"><a name="l01589"></a><span class="lineno"> 1589</span>&#160;                        }</div>
+<div class="line"><a name="l01590"></a><span class="lineno"> 1590</span>&#160;                        bytes_sent += n;</div>
+<div class="line"><a name="l01591"></a><span class="lineno"> 1591</span>&#160;                    }</div>
+<div class="line"><a name="l01592"></a><span class="lineno"> 1592</span>&#160;                } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01593"></a><span class="lineno"> 1593</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l01594"></a><span class="lineno"> 1594</span>&#160;                    <span class="keywordflow">do</span> {</div>
+<div class="line"><a name="l01595"></a><span class="lineno"> 1595</span>&#160;                        n = write(session-&gt;fd, message-&gt;msg+bytes_sent, message_length-bytes_sent);</div>
+<div class="line"><a name="l01596"></a><span class="lineno"> 1596</span>&#160;                        <span class="keywordflow">if</span> (unlikely(n == -1)) {</div>
+<div class="line"><a name="l01597"></a><span class="lineno"> 1597</span>&#160;                            <span class="keywordflow">if</span> ( unlikely(errno == EINTR) ) {</div>
+<div class="line"><a name="l01598"></a><span class="lineno"> 1598</span>&#160;                                errno = 0;</div>
+<div class="line"><a name="l01599"></a><span class="lineno"> 1599</span>&#160;                                <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l01600"></a><span class="lineno"> 1600</span>&#160;                            } <span class="keywordflow">else</span> <span class="keywordflow">if</span> ( unlikely(errno != EAGAIN &amp;&amp; errno != EWOULDBLOCK) ) {</div>
+<div class="line"><a name="l01601"></a><span class="lineno"> 1601</span>&#160;                                WSS_log_error(<span class="stringliteral">&quot;Write failed: %s&quot;</span>, strerror(errno));</div>
+<div class="line"><a name="l01602"></a><span class="lineno"> 1602</span>&#160;                                session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01603"></a><span class="lineno"> 1603</span>&#160;                                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01604"></a><span class="lineno"> 1604</span>&#160;                            }</div>
+<div class="line"><a name="l01605"></a><span class="lineno"> 1605</span>&#160; </div>
+<div class="line"><a name="l01606"></a><span class="lineno"> 1606</span>&#160;                            session-&gt;written = bytes_sent;</div>
+<div class="line"><a name="l01607"></a><span class="lineno"> 1607</span>&#160;                            <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
 <div class="line"><a name="l01608"></a><span class="lineno"> 1608</span>&#160; </div>
-<div class="line"><a name="l01609"></a><span class="lineno"> 1609</span>&#160;                            session-&gt;written = bytes_sent;</div>
-<div class="line"><a name="l01610"></a><span class="lineno"> 1610</span>&#160;                            <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, i);</div>
-<div class="line"><a name="l01611"></a><span class="lineno"> 1611</span>&#160; </div>
-<div class="line"><a name="l01612"></a><span class="lineno"> 1612</span>&#160;                            session-&gt;event = WRITE;</div>
-<div class="line"><a name="l01613"></a><span class="lineno"> 1613</span>&#160; </div>
-<div class="line"><a name="l01614"></a><span class="lineno"> 1614</span>&#160;                            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01615"></a><span class="lineno"> 1615</span>&#160;                        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l01616"></a><span class="lineno"> 1616</span>&#160;                            bytes_sent += n;</div>
-<div class="line"><a name="l01617"></a><span class="lineno"> 1617</span>&#160;                        }</div>
-<div class="line"><a name="l01618"></a><span class="lineno"> 1618</span>&#160;                    } <span class="keywordflow">while</span> ( unlikely(0) );</div>
-<div class="line"><a name="l01619"></a><span class="lineno"> 1619</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
-<div class="line"><a name="l01620"></a><span class="lineno"> 1620</span>&#160;                }</div>
-<div class="line"><a name="l01621"></a><span class="lineno"> 1621</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l01622"></a><span class="lineno"> 1622</span>&#160;            }</div>
-<div class="line"><a name="l01623"></a><span class="lineno"> 1623</span>&#160; </div>
-<div class="line"><a name="l01624"></a><span class="lineno"> 1624</span>&#160;            <span class="keywordflow">if</span> ( likely(session-&gt;messages != NULL) ) {</div>
-<div class="line"><a name="l01625"></a><span class="lineno"> 1625</span>&#160;                <span class="keywordflow">if</span> ( likely(session-&gt;messages[off+i] != NULL) ) {</div>
-<div class="line"><a name="l01626"></a><span class="lineno"> 1626</span>&#160;                    <span class="keywordflow">if</span> ( likely(session-&gt;messages[off+i]-&gt;msg != NULL) ) {</div>
-<div class="line"><a name="l01627"></a><span class="lineno"> 1627</span>&#160;                        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;session-&gt;messages[off+i]-&gt;msg);</div>
-<div class="line"><a name="l01628"></a><span class="lineno"> 1628</span>&#160;                    }</div>
-<div class="line"><a name="l01629"></a><span class="lineno"> 1629</span>&#160;                    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;session-&gt;messages[off+i]);</div>
-<div class="line"><a name="l01630"></a><span class="lineno"> 1630</span>&#160;                }</div>
-<div class="line"><a name="l01631"></a><span class="lineno"> 1631</span>&#160;            }</div>
-<div class="line"><a name="l01632"></a><span class="lineno"> 1632</span>&#160;        }</div>
+<div class="line"><a name="l01609"></a><span class="lineno"> 1609</span>&#160;                            session-&gt;event = WRITE;</div>
+<div class="line"><a name="l01610"></a><span class="lineno"> 1610</span>&#160; </div>
+<div class="line"><a name="l01611"></a><span class="lineno"> 1611</span>&#160;                            <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01612"></a><span class="lineno"> 1612</span>&#160;                        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l01613"></a><span class="lineno"> 1613</span>&#160;                            bytes_sent += n;</div>
+<div class="line"><a name="l01614"></a><span class="lineno"> 1614</span>&#160;                        }</div>
+<div class="line"><a name="l01615"></a><span class="lineno"> 1615</span>&#160;                    } <span class="keywordflow">while</span> ( unlikely(0) );</div>
+<div class="line"><a name="l01616"></a><span class="lineno"> 1616</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
+<div class="line"><a name="l01617"></a><span class="lineno"> 1617</span>&#160;                }</div>
+<div class="line"><a name="l01618"></a><span class="lineno"> 1618</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l01619"></a><span class="lineno"> 1619</span>&#160;            }</div>
+<div class="line"><a name="l01620"></a><span class="lineno"> 1620</span>&#160; </div>
+<div class="line"><a name="l01621"></a><span class="lineno"> 1621</span>&#160;            <span class="keywordflow">if</span> ( likely(session-&gt;messages != NULL) ) {</div>
+<div class="line"><a name="l01622"></a><span class="lineno"> 1622</span>&#160;                <span class="keywordflow">if</span> ( likely(session-&gt;messages[off+i] != NULL) ) {</div>
+<div class="line"><a name="l01623"></a><span class="lineno"> 1623</span>&#160;                    <span class="keywordflow">if</span> ( likely(session-&gt;messages[off+i]-&gt;msg != NULL) ) {</div>
+<div class="line"><a name="l01624"></a><span class="lineno"> 1624</span>&#160;                        <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;session-&gt;messages[off+i]-&gt;msg);</div>
+<div class="line"><a name="l01625"></a><span class="lineno"> 1625</span>&#160;                    }</div>
+<div class="line"><a name="l01626"></a><span class="lineno"> 1626</span>&#160;                    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **)&amp;session-&gt;messages[off+i]);</div>
+<div class="line"><a name="l01627"></a><span class="lineno"> 1627</span>&#160;                }</div>
+<div class="line"><a name="l01628"></a><span class="lineno"> 1628</span>&#160;            }</div>
+<div class="line"><a name="l01629"></a><span class="lineno"> 1629</span>&#160;        }</div>
+<div class="line"><a name="l01630"></a><span class="lineno"> 1630</span>&#160; </div>
+<div class="line"><a name="l01631"></a><span class="lineno"> 1631</span>&#160;        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, len);</div>
+<div class="line"><a name="l01632"></a><span class="lineno"> 1632</span>&#160;    }</div>
 <div class="line"><a name="l01633"></a><span class="lineno"> 1633</span>&#160; </div>
-<div class="line"><a name="l01634"></a><span class="lineno"> 1634</span>&#160;        <a class="code" href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a>(session-&gt;ringbuf, len);</div>
-<div class="line"><a name="l01635"></a><span class="lineno"> 1635</span>&#160;    }</div>
-<div class="line"><a name="l01636"></a><span class="lineno"> 1636</span>&#160; </div>
-<div class="line"><a name="l01637"></a><span class="lineno"> 1637</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Done writing to filedescriptors&quot;</span>);</div>
-<div class="line"><a name="l01638"></a><span class="lineno"> 1638</span>&#160; </div>
-<div class="line"><a name="l01639"></a><span class="lineno"> 1639</span>&#160;    session-&gt;state = IDLE;</div>
+<div class="line"><a name="l01634"></a><span class="lineno"> 1634</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Done writing to filedescriptors&quot;</span>);</div>
+<div class="line"><a name="l01635"></a><span class="lineno"> 1635</span>&#160; </div>
+<div class="line"><a name="l01636"></a><span class="lineno"> 1636</span>&#160;    session-&gt;state = IDLE;</div>
+<div class="line"><a name="l01637"></a><span class="lineno"> 1637</span>&#160; </div>
+<div class="line"><a name="l01638"></a><span class="lineno"> 1638</span>&#160;    <span class="keywordflow">if</span> (closing) {</div>
+<div class="line"><a name="l01639"></a><span class="lineno"> 1639</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Closing connection, since closing frame has been sent&quot;</span>);</div>
 <div class="line"><a name="l01640"></a><span class="lineno"> 1640</span>&#160; </div>
-<div class="line"><a name="l01641"></a><span class="lineno"> 1641</span>&#160;    <span class="keywordflow">if</span> (closing) {</div>
-<div class="line"><a name="l01642"></a><span class="lineno"> 1642</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Closing connection, since closing frame has been sent&quot;</span>);</div>
-<div class="line"><a name="l01643"></a><span class="lineno"> 1643</span>&#160; </div>
-<div class="line"><a name="l01644"></a><span class="lineno"> 1644</span>&#160;        session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01645"></a><span class="lineno"> 1645</span>&#160; </div>
-<div class="line"><a name="l01646"></a><span class="lineno"> 1646</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01647"></a><span class="lineno"> 1647</span>&#160;    }</div>
-<div class="line"><a name="l01648"></a><span class="lineno"> 1648</span>&#160;}</div>
-<div class="line"><a name="l01649"></a><span class="lineno"> 1649</span>&#160; </div>
-<div class="line"><a name="l01656"></a><span class="lineno"><a class="line" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465"> 1656</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">WSS_work</a>(<span class="keywordtype">void</span> *args) {</div>
-<div class="line"><a name="l01657"></a><span class="lineno"> 1657</span>&#160;    wss_session_t *session;</div>
-<div class="line"><a name="l01658"></a><span class="lineno"> 1658</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> ms;</div>
-<div class="line"><a name="l01659"></a><span class="lineno"> 1659</span>&#160;    <span class="keyword">struct </span>timespec now;</div>
-<div class="line"><a name="l01660"></a><span class="lineno"> 1660</span>&#160;    wss_thread_args_t *arguments = (wss_thread_args_t *) args;</div>
-<div class="line"><a name="l01661"></a><span class="lineno"> 1661</span>&#160;    wss_server_t *server = (wss_server_t *) arguments-&gt;server;</div>
-<div class="line"><a name="l01662"></a><span class="lineno"> 1662</span>&#160;    wss_session_state_t <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a> = arguments-&gt;state;</div>
-<div class="line"><a name="l01663"></a><span class="lineno"> 1663</span>&#160;    <span class="keywordtype">int</span> fd = arguments-&gt;fd;</div>
+<div class="line"><a name="l01641"></a><span class="lineno"> 1641</span>&#160;        session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01642"></a><span class="lineno"> 1642</span>&#160; </div>
+<div class="line"><a name="l01643"></a><span class="lineno"> 1643</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01644"></a><span class="lineno"> 1644</span>&#160;    }</div>
+<div class="line"><a name="l01645"></a><span class="lineno"> 1645</span>&#160;}</div>
+<div class="line"><a name="l01646"></a><span class="lineno"> 1646</span>&#160; </div>
+<div class="line"><a name="l01653"></a><span class="lineno"><a class="line" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465"> 1653</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">WSS_work</a>(<span class="keywordtype">void</span> *args) {</div>
+<div class="line"><a name="l01654"></a><span class="lineno"> 1654</span>&#160;    wss_session_t *session;</div>
+<div class="line"><a name="l01655"></a><span class="lineno"> 1655</span>&#160;    <span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> ms;</div>
+<div class="line"><a name="l01656"></a><span class="lineno"> 1656</span>&#160;    <span class="keyword">struct </span>timespec <a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>;</div>
+<div class="line"><a name="l01657"></a><span class="lineno"> 1657</span>&#160;    wss_thread_args_t *arguments = (wss_thread_args_t *) args;</div>
+<div class="line"><a name="l01658"></a><span class="lineno"> 1658</span>&#160;    wss_server_t *server = (wss_server_t *) arguments-&gt;server;</div>
+<div class="line"><a name="l01659"></a><span class="lineno"> 1659</span>&#160;    wss_session_state_t <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a> = arguments-&gt;state;</div>
+<div class="line"><a name="l01660"></a><span class="lineno"> 1660</span>&#160;    <span class="keywordtype">int</span> fd = arguments-&gt;fd;</div>
+<div class="line"><a name="l01661"></a><span class="lineno"> 1661</span>&#160; </div>
+<div class="line"><a name="l01662"></a><span class="lineno"> 1662</span>&#160;    <span class="comment">// Free arguments structure as this won&#39;t be needed no more</span></div>
+<div class="line"><a name="l01663"></a><span class="lineno"> 1663</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;arguments);</div>
 <div class="line"><a name="l01664"></a><span class="lineno"> 1664</span>&#160; </div>
-<div class="line"><a name="l01665"></a><span class="lineno"> 1665</span>&#160;    <span class="comment">// Free arguments structure as this won&#39;t be needed no more</span></div>
-<div class="line"><a name="l01666"></a><span class="lineno"> 1666</span>&#160;    <a class="code" href="alloc_8c.html#af5bbb4cc11f30e61eb1864814ffce480">WSS_free</a>((<span class="keywordtype">void</span> **) &amp;arguments);</div>
-<div class="line"><a name="l01667"></a><span class="lineno"> 1667</span>&#160; </div>
-<div class="line"><a name="l01668"></a><span class="lineno"> 1668</span>&#160;    <span class="keywordflow">if</span> ( unlikely(<a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a> == CONNECTING) ) {</div>
-<div class="line"><a name="l01669"></a><span class="lineno"> 1669</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Handling connect event&quot;</span>);</div>
-<div class="line"><a name="l01670"></a><span class="lineno"> 1670</span>&#160;        <a class="code" href="worker_8c.html#a1bdf89bf5eba86aa355194f6fc671310">WSS_connect</a>(server);</div>
-<div class="line"><a name="l01671"></a><span class="lineno"> 1671</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01672"></a><span class="lineno"> 1672</span>&#160;    }</div>
-<div class="line"><a name="l01673"></a><span class="lineno"> 1673</span>&#160; </div>
-<div class="line"><a name="l01674"></a><span class="lineno"> 1674</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (session = <a class="code" href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">WSS_session_find</a>(fd))) ) {</div>
-<div class="line"><a name="l01675"></a><span class="lineno"> 1675</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Unable to find client with session %d&quot;</span>, fd);</div>
-<div class="line"><a name="l01676"></a><span class="lineno"> 1676</span>&#160;        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01677"></a><span class="lineno"> 1677</span>&#160;    }</div>
-<div class="line"><a name="l01678"></a><span class="lineno"> 1678</span>&#160; </div>
-<div class="line"><a name="l01679"></a><span class="lineno"> 1679</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Incrementing session jobs&quot;</span>);</div>
+<div class="line"><a name="l01665"></a><span class="lineno"> 1665</span>&#160;    <span class="keywordflow">if</span> ( unlikely(<a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a> == CONNECTING) ) {</div>
+<div class="line"><a name="l01666"></a><span class="lineno"> 1666</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Handling connect event&quot;</span>);</div>
+<div class="line"><a name="l01667"></a><span class="lineno"> 1667</span>&#160;        <a class="code" href="worker_8c.html#a1bdf89bf5eba86aa355194f6fc671310">WSS_connect</a>(server);</div>
+<div class="line"><a name="l01668"></a><span class="lineno"> 1668</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01669"></a><span class="lineno"> 1669</span>&#160;    }</div>
+<div class="line"><a name="l01670"></a><span class="lineno"> 1670</span>&#160; </div>
+<div class="line"><a name="l01671"></a><span class="lineno"> 1671</span>&#160;    <span class="keywordflow">if</span> ( unlikely(NULL == (session = <a class="code" href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">WSS_session_find</a>(fd))) ) {</div>
+<div class="line"><a name="l01672"></a><span class="lineno"> 1672</span>&#160;        WSS_log_trace(<span class="stringliteral">&quot;Unable to find client with session %d&quot;</span>, fd);</div>
+<div class="line"><a name="l01673"></a><span class="lineno"> 1673</span>&#160;        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01674"></a><span class="lineno"> 1674</span>&#160;    }</div>
+<div class="line"><a name="l01675"></a><span class="lineno"> 1675</span>&#160; </div>
+<div class="line"><a name="l01676"></a><span class="lineno"> 1676</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Incrementing session jobs&quot;</span>);</div>
+<div class="line"><a name="l01677"></a><span class="lineno"> 1677</span>&#160; </div>
+<div class="line"><a name="l01678"></a><span class="lineno"> 1678</span>&#160;    <a class="code" href="session_8c.html#afc2c95cb48396ed56ae592b260cb0485">WSS_session_jobs_inc</a>(session);</div>
+<div class="line"><a name="l01679"></a><span class="lineno"> 1679</span>&#160;    pthread_mutex_lock(&amp;session-&gt;lock);</div>
 <div class="line"><a name="l01680"></a><span class="lineno"> 1680</span>&#160; </div>
-<div class="line"><a name="l01681"></a><span class="lineno"> 1681</span>&#160;    <a class="code" href="session_8c.html#afc2c95cb48396ed56ae592b260cb0485">WSS_session_jobs_inc</a>(session);</div>
-<div class="line"><a name="l01682"></a><span class="lineno"> 1682</span>&#160;    pthread_mutex_lock(&amp;session-&gt;lock);</div>
-<div class="line"><a name="l01683"></a><span class="lineno"> 1683</span>&#160; </div>
-<div class="line"><a name="l01684"></a><span class="lineno"> 1684</span>&#160;    session-&gt;event = NONE;</div>
-<div class="line"><a name="l01685"></a><span class="lineno"> 1685</span>&#160; </div>
-<div class="line"><a name="l01686"></a><span class="lineno"> 1686</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Checking session state&quot;</span>);</div>
-<div class="line"><a name="l01687"></a><span class="lineno"> 1687</span>&#160; </div>
-<div class="line"><a name="l01688"></a><span class="lineno"> 1688</span>&#160;    <span class="comment">// We first check if session was in the middle of performing an IO task but</span></div>
-<div class="line"><a name="l01689"></a><span class="lineno"> 1689</span>&#160;    <span class="comment">// needed to wait for further IO</span></div>
-<div class="line"><a name="l01690"></a><span class="lineno"> 1690</span>&#160;    <span class="keywordflow">switch</span> (session-&gt;state) {</div>
-<div class="line"><a name="l01691"></a><span class="lineno"> 1691</span>&#160;        <span class="keywordflow">case</span> WRITING:</div>
-<div class="line"><a name="l01692"></a><span class="lineno"> 1692</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;now);</div>
-<div class="line"><a name="l01693"></a><span class="lineno"> 1693</span>&#160;            ms = (((now.tv_sec - session-&gt;alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session-&gt;alive.tv_nsec/1000000);</div>
-<div class="line"><a name="l01694"></a><span class="lineno"> 1694</span>&#160;            <span class="keywordflow">if</span> ( unlikely(server-&gt;config-&gt;timeout_write &gt;= 0 &amp;&amp; ms &gt;= (<span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)server-&gt;config-&gt;timeout_write) ) {</div>
-<div class="line"><a name="l01695"></a><span class="lineno"> 1695</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Write timeout detected for session %d&quot;</span>, fd);</div>
-<div class="line"><a name="l01696"></a><span class="lineno"> 1696</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01697"></a><span class="lineno"> 1697</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01698"></a><span class="lineno"> 1698</span>&#160;            }</div>
-<div class="line"><a name="l01699"></a><span class="lineno"> 1699</span>&#160; </div>
-<div class="line"><a name="l01700"></a><span class="lineno"> 1700</span>&#160;            session-&gt;event = READ;</div>
-<div class="line"><a name="l01701"></a><span class="lineno"> 1701</span>&#160;            <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(server, session);</div>
+<div class="line"><a name="l01681"></a><span class="lineno"> 1681</span>&#160;    session-&gt;event = NONE;</div>
+<div class="line"><a name="l01682"></a><span class="lineno"> 1682</span>&#160; </div>
+<div class="line"><a name="l01683"></a><span class="lineno"> 1683</span>&#160;    WSS_log_trace(<span class="stringliteral">&quot;Checking session state&quot;</span>);</div>
+<div class="line"><a name="l01684"></a><span class="lineno"> 1684</span>&#160; </div>
+<div class="line"><a name="l01685"></a><span class="lineno"> 1685</span>&#160;    <span class="comment">// We first check if session was in the middle of performing an IO task but</span></div>
+<div class="line"><a name="l01686"></a><span class="lineno"> 1686</span>&#160;    <span class="comment">// needed to wait for further IO</span></div>
+<div class="line"><a name="l01687"></a><span class="lineno"> 1687</span>&#160;    <span class="keywordflow">switch</span> (session-&gt;state) {</div>
+<div class="line"><a name="l01688"></a><span class="lineno"> 1688</span>&#160;        <span class="keywordflow">case</span> WRITING:</div>
+<div class="line"><a name="l01689"></a><span class="lineno"> 1689</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>);</div>
+<div class="line"><a name="l01690"></a><span class="lineno"> 1690</span>&#160;            ms = (((<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>.tv_sec - session-&gt;alive.tv_sec)*1000)+(<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>.tv_nsec/1000000)) - (session-&gt;alive.tv_nsec/1000000);</div>
+<div class="line"><a name="l01691"></a><span class="lineno"> 1691</span>&#160;            <span class="keywordflow">if</span> ( unlikely(server-&gt;config-&gt;timeout_write &gt;= 0 &amp;&amp; ms &gt;= (<span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)server-&gt;config-&gt;timeout_write) ) {</div>
+<div class="line"><a name="l01692"></a><span class="lineno"> 1692</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Write timeout detected for session %d&quot;</span>, fd);</div>
+<div class="line"><a name="l01693"></a><span class="lineno"> 1693</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01694"></a><span class="lineno"> 1694</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01695"></a><span class="lineno"> 1695</span>&#160;            }</div>
+<div class="line"><a name="l01696"></a><span class="lineno"> 1696</span>&#160; </div>
+<div class="line"><a name="l01697"></a><span class="lineno"> 1697</span>&#160;            session-&gt;event = READ;</div>
+<div class="line"><a name="l01698"></a><span class="lineno"> 1698</span>&#160;            <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(server, session);</div>
+<div class="line"><a name="l01699"></a><span class="lineno"> 1699</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01700"></a><span class="lineno"> 1700</span>&#160;        <span class="keywordflow">case</span> CLOSING:</div>
+<div class="line"><a name="l01701"></a><span class="lineno"> 1701</span>&#160;            session-&gt;closing = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l01702"></a><span class="lineno"> 1702</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01703"></a><span class="lineno"> 1703</span>&#160;        <span class="keywordflow">case</span> CLOSING:</div>
-<div class="line"><a name="l01704"></a><span class="lineno"> 1704</span>&#160;            session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01705"></a><span class="lineno"> 1705</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01706"></a><span class="lineno"> 1706</span>&#160;        <span class="keywordflow">case</span> CONNECTING:</div>
-<div class="line"><a name="l01707"></a><span class="lineno"> 1707</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
-<div class="line"><a name="l01708"></a><span class="lineno"> 1708</span>&#160;            <span class="keywordflow">if</span> (NULL != server-&gt;ssl_ctx) {</div>
-<div class="line"><a name="l01709"></a><span class="lineno"> 1709</span>&#160;                ssl_handshake(server, session);</div>
-<div class="line"><a name="l01710"></a><span class="lineno"> 1710</span>&#160;                <a class="code" href="session_8c.html#ae99ec2926a161aea6f0a2be6ad4fbd59">WSS_session_jobs_dec</a>(session);</div>
-<div class="line"><a name="l01711"></a><span class="lineno"> 1711</span>&#160;                pthread_mutex_unlock(&amp;session-&gt;lock);</div>
-<div class="line"><a name="l01712"></a><span class="lineno"> 1712</span>&#160;                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l01713"></a><span class="lineno"> 1713</span>&#160;            }</div>
-<div class="line"><a name="l01714"></a><span class="lineno"> 1714</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l01715"></a><span class="lineno"> 1715</span>&#160;            <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
-<div class="line"><a name="l01716"></a><span class="lineno"> 1716</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01717"></a><span class="lineno"> 1717</span>&#160;        <span class="keywordflow">case</span> READING:</div>
-<div class="line"><a name="l01718"></a><span class="lineno"> 1718</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;now);</div>
-<div class="line"><a name="l01719"></a><span class="lineno"> 1719</span>&#160;            ms = (((now.tv_sec - session-&gt;alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session-&gt;alive.tv_nsec/1000000);</div>
-<div class="line"><a name="l01720"></a><span class="lineno"> 1720</span>&#160;            <span class="keywordflow">if</span> ( unlikely(server-&gt;config-&gt;timeout_read &gt;= 0 &amp;&amp; ms &gt;= (<span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)server-&gt;config-&gt;timeout_read) ) {</div>
-<div class="line"><a name="l01721"></a><span class="lineno"> 1721</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Read timeout detected for session %d&quot;</span>, fd);</div>
-<div class="line"><a name="l01722"></a><span class="lineno"> 1722</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01723"></a><span class="lineno"> 1723</span>&#160;                <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01724"></a><span class="lineno"> 1724</span>&#160;            }</div>
-<div class="line"><a name="l01725"></a><span class="lineno"> 1725</span>&#160; </div>
-<div class="line"><a name="l01726"></a><span class="lineno"> 1726</span>&#160;            <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
-<div class="line"><a name="l01727"></a><span class="lineno"> 1727</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01728"></a><span class="lineno"> 1728</span>&#160;        <span class="keywordflow">case</span> IDLE:</div>
-<div class="line"><a name="l01729"></a><span class="lineno"> 1729</span>&#160;            session-&gt;state = <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>;</div>
-<div class="line"><a name="l01730"></a><span class="lineno"> 1730</span>&#160; </div>
-<div class="line"><a name="l01731"></a><span class="lineno"> 1731</span>&#160;            <span class="keywordflow">switch</span> (<a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>) {</div>
-<div class="line"><a name="l01732"></a><span class="lineno"> 1732</span>&#160;                <span class="keywordflow">case</span> WRITING:</div>
-<div class="line"><a name="l01733"></a><span class="lineno"> 1733</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling write event&quot;</span>);</div>
-<div class="line"><a name="l01734"></a><span class="lineno"> 1734</span>&#160;                    session-&gt;event = READ;</div>
-<div class="line"><a name="l01735"></a><span class="lineno"> 1735</span>&#160;                    <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(server, session);</div>
-<div class="line"><a name="l01736"></a><span class="lineno"> 1736</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01737"></a><span class="lineno"> 1737</span>&#160;                <span class="keywordflow">case</span> CLOSING:</div>
-<div class="line"><a name="l01738"></a><span class="lineno"> 1738</span>&#160;                    session-&gt;closing = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01739"></a><span class="lineno"> 1739</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling close event&quot;</span>);</div>
-<div class="line"><a name="l01740"></a><span class="lineno"> 1740</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01741"></a><span class="lineno"> 1741</span>&#160;                <span class="keywordflow">case</span> READING:</div>
-<div class="line"><a name="l01742"></a><span class="lineno"> 1742</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling read event&quot;</span>);</div>
-<div class="line"><a name="l01743"></a><span class="lineno"> 1743</span>&#160;                    <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
+<div class="line"><a name="l01703"></a><span class="lineno"> 1703</span>&#160;        <span class="keywordflow">case</span> CONNECTING:</div>
+<div class="line"><a name="l01704"></a><span class="lineno"> 1704</span>&#160;<span class="preprocessor">#ifdef USE_OPENSSL</span></div>
+<div class="line"><a name="l01705"></a><span class="lineno"> 1705</span>&#160;            <span class="keywordflow">if</span> (NULL != server-&gt;ssl_ctx) {</div>
+<div class="line"><a name="l01706"></a><span class="lineno"> 1706</span>&#160;                ssl_handshake(server, session);</div>
+<div class="line"><a name="l01707"></a><span class="lineno"> 1707</span>&#160;                <a class="code" href="session_8c.html#ae99ec2926a161aea6f0a2be6ad4fbd59">WSS_session_jobs_dec</a>(session);</div>
+<div class="line"><a name="l01708"></a><span class="lineno"> 1708</span>&#160;                pthread_mutex_unlock(&amp;session-&gt;lock);</div>
+<div class="line"><a name="l01709"></a><span class="lineno"> 1709</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l01710"></a><span class="lineno"> 1710</span>&#160;            }</div>
+<div class="line"><a name="l01711"></a><span class="lineno"> 1711</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l01712"></a><span class="lineno"> 1712</span>&#160;            <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
+<div class="line"><a name="l01713"></a><span class="lineno"> 1713</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01714"></a><span class="lineno"> 1714</span>&#160;        <span class="keywordflow">case</span> READING:</div>
+<div class="line"><a name="l01715"></a><span class="lineno"> 1715</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>);</div>
+<div class="line"><a name="l01716"></a><span class="lineno"> 1716</span>&#160;            ms = (((<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>.tv_sec - session-&gt;alive.tv_sec)*1000)+(<a class="code" href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a>.tv_nsec/1000000)) - (session-&gt;alive.tv_nsec/1000000);</div>
+<div class="line"><a name="l01717"></a><span class="lineno"> 1717</span>&#160;            <span class="keywordflow">if</span> ( unlikely(server-&gt;config-&gt;timeout_read &gt;= 0 &amp;&amp; ms &gt;= (<span class="keywordtype">long</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)server-&gt;config-&gt;timeout_read) ) {</div>
+<div class="line"><a name="l01718"></a><span class="lineno"> 1718</span>&#160;                WSS_log_trace(<span class="stringliteral">&quot;Read timeout detected for session %d&quot;</span>, fd);</div>
+<div class="line"><a name="l01719"></a><span class="lineno"> 1719</span>&#160;                session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01720"></a><span class="lineno"> 1720</span>&#160;                <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01721"></a><span class="lineno"> 1721</span>&#160;            }</div>
+<div class="line"><a name="l01722"></a><span class="lineno"> 1722</span>&#160; </div>
+<div class="line"><a name="l01723"></a><span class="lineno"> 1723</span>&#160;            <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
+<div class="line"><a name="l01724"></a><span class="lineno"> 1724</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01725"></a><span class="lineno"> 1725</span>&#160;        <span class="keywordflow">case</span> IDLE:</div>
+<div class="line"><a name="l01726"></a><span class="lineno"> 1726</span>&#160;            session-&gt;state = <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>;</div>
+<div class="line"><a name="l01727"></a><span class="lineno"> 1727</span>&#160; </div>
+<div class="line"><a name="l01728"></a><span class="lineno"> 1728</span>&#160;            <span class="keywordflow">switch</span> (<a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>) {</div>
+<div class="line"><a name="l01729"></a><span class="lineno"> 1729</span>&#160;                <span class="keywordflow">case</span> WRITING:</div>
+<div class="line"><a name="l01730"></a><span class="lineno"> 1730</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling write event&quot;</span>);</div>
+<div class="line"><a name="l01731"></a><span class="lineno"> 1731</span>&#160;                    session-&gt;event = READ;</div>
+<div class="line"><a name="l01732"></a><span class="lineno"> 1732</span>&#160;                    <a class="code" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a>(server, session);</div>
+<div class="line"><a name="l01733"></a><span class="lineno"> 1733</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01734"></a><span class="lineno"> 1734</span>&#160;                <span class="keywordflow">case</span> CLOSING:</div>
+<div class="line"><a name="l01735"></a><span class="lineno"> 1735</span>&#160;                    session-&gt;closing = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01736"></a><span class="lineno"> 1736</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling close event&quot;</span>);</div>
+<div class="line"><a name="l01737"></a><span class="lineno"> 1737</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01738"></a><span class="lineno"> 1738</span>&#160;                <span class="keywordflow">case</span> READING:</div>
+<div class="line"><a name="l01739"></a><span class="lineno"> 1739</span>&#160;                    WSS_log_trace(<span class="stringliteral">&quot;Handling read event&quot;</span>);</div>
+<div class="line"><a name="l01740"></a><span class="lineno"> 1740</span>&#160;                    <a class="code" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">WSS_read</a>(server, session);</div>
+<div class="line"><a name="l01741"></a><span class="lineno"> 1741</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01742"></a><span class="lineno"> 1742</span>&#160;                <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l01743"></a><span class="lineno"> 1743</span>&#160;                    WSS_log_error(<span class="stringliteral">&quot;State that should not be possible at this point was encountered %s&quot;</span>, <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>);</div>
 <div class="line"><a name="l01744"></a><span class="lineno"> 1744</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01745"></a><span class="lineno"> 1745</span>&#160;                <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l01746"></a><span class="lineno"> 1746</span>&#160;                    WSS_log_error(<span class="stringliteral">&quot;State that should not be possible at this point was encountered %s&quot;</span>, <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>);</div>
-<div class="line"><a name="l01747"></a><span class="lineno"> 1747</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01748"></a><span class="lineno"> 1748</span>&#160;            }</div>
-<div class="line"><a name="l01749"></a><span class="lineno"> 1749</span>&#160;    }</div>
+<div class="line"><a name="l01745"></a><span class="lineno"> 1745</span>&#160;            }</div>
+<div class="line"><a name="l01746"></a><span class="lineno"> 1746</span>&#160;    }</div>
+<div class="line"><a name="l01747"></a><span class="lineno"> 1747</span>&#160; </div>
+<div class="line"><a name="l01748"></a><span class="lineno"> 1748</span>&#160;    <a class="code" href="session_8c.html#ae99ec2926a161aea6f0a2be6ad4fbd59">WSS_session_jobs_dec</a>(session);</div>
+<div class="line"><a name="l01749"></a><span class="lineno"> 1749</span>&#160;    pthread_mutex_unlock(&amp;session-&gt;lock);</div>
 <div class="line"><a name="l01750"></a><span class="lineno"> 1750</span>&#160; </div>
-<div class="line"><a name="l01751"></a><span class="lineno"> 1751</span>&#160;    <a class="code" href="session_8c.html#ae99ec2926a161aea6f0a2be6ad4fbd59">WSS_session_jobs_dec</a>(session);</div>
-<div class="line"><a name="l01752"></a><span class="lineno"> 1752</span>&#160;    pthread_mutex_unlock(&amp;session-&gt;lock);</div>
-<div class="line"><a name="l01753"></a><span class="lineno"> 1753</span>&#160; </div>
-<div class="line"><a name="l01754"></a><span class="lineno"> 1754</span>&#160;    <span class="keywordflow">if</span> (session-&gt;closing) {</div>
-<div class="line"><a name="l01755"></a><span class="lineno"> 1755</span>&#160;        <a class="code" href="worker_8c.html#a411eb028137918a185d0d83c9e697b7b">WSS_disconnect</a>(server, session);</div>
-<div class="line"><a name="l01756"></a><span class="lineno"> 1756</span>&#160;    }</div>
-<div class="line"><a name="l01757"></a><span class="lineno"> 1757</span>&#160; </div>
-<div class="line"><a name="l01758"></a><span class="lineno"> 1758</span>&#160;    <span class="keywordflow">switch</span> (session-&gt;event) {</div>
-<div class="line"><a name="l01759"></a><span class="lineno"> 1759</span>&#160;        <span class="keywordflow">case</span> WRITE: </div>
-<div class="line"><a name="l01760"></a><span class="lineno"> 1760</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;session-&gt;alive);</div>
-<div class="line"><a name="l01761"></a><span class="lineno"> 1761</span>&#160;            WSS_poll_set_write(server, session-&gt;fd);</div>
-<div class="line"><a name="l01762"></a><span class="lineno"> 1762</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01763"></a><span class="lineno"> 1763</span>&#160;        <span class="keywordflow">case</span> READ: </div>
-<div class="line"><a name="l01764"></a><span class="lineno"> 1764</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;session-&gt;alive);</div>
-<div class="line"><a name="l01765"></a><span class="lineno"> 1765</span>&#160;            WSS_poll_set_read(server, session-&gt;fd);</div>
-<div class="line"><a name="l01766"></a><span class="lineno"> 1766</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01767"></a><span class="lineno"> 1767</span>&#160;        <span class="keywordflow">case</span> NONE: </div>
-<div class="line"><a name="l01768"></a><span class="lineno"> 1768</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l01769"></a><span class="lineno"> 1769</span>&#160;    }</div>
-<div class="line"><a name="l01770"></a><span class="lineno"> 1770</span>&#160;}</div>
+<div class="line"><a name="l01751"></a><span class="lineno"> 1751</span>&#160;    <span class="keywordflow">if</span> (session-&gt;closing) {</div>
+<div class="line"><a name="l01752"></a><span class="lineno"> 1752</span>&#160;        <a class="code" href="worker_8c.html#a411eb028137918a185d0d83c9e697b7b">WSS_disconnect</a>(server, session);</div>
+<div class="line"><a name="l01753"></a><span class="lineno"> 1753</span>&#160;    }</div>
+<div class="line"><a name="l01754"></a><span class="lineno"> 1754</span>&#160; </div>
+<div class="line"><a name="l01755"></a><span class="lineno"> 1755</span>&#160;    <span class="keywordflow">switch</span> (session-&gt;event) {</div>
+<div class="line"><a name="l01756"></a><span class="lineno"> 1756</span>&#160;        <span class="keywordflow">case</span> WRITE: </div>
+<div class="line"><a name="l01757"></a><span class="lineno"> 1757</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;session-&gt;alive);</div>
+<div class="line"><a name="l01758"></a><span class="lineno"> 1758</span>&#160;            WSS_poll_set_write(server, session-&gt;fd);</div>
+<div class="line"><a name="l01759"></a><span class="lineno"> 1759</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01760"></a><span class="lineno"> 1760</span>&#160;        <span class="keywordflow">case</span> READ: </div>
+<div class="line"><a name="l01761"></a><span class="lineno"> 1761</span>&#160;            clock_gettime(CLOCK_MONOTONIC, &amp;session-&gt;alive);</div>
+<div class="line"><a name="l01762"></a><span class="lineno"> 1762</span>&#160;            WSS_poll_set_read(server, session-&gt;fd);</div>
+<div class="line"><a name="l01763"></a><span class="lineno"> 1763</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01764"></a><span class="lineno"> 1764</span>&#160;        <span class="keywordflow">case</span> NONE: </div>
+<div class="line"><a name="l01765"></a><span class="lineno"> 1765</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l01766"></a><span class="lineno"> 1766</span>&#160;    }</div>
+<div class="line"><a name="l01767"></a><span class="lineno"> 1767</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <div class="ttc" id="astr_8c_html_a6bd992d2ae167843a28953d0e37cc0b6"><div class="ttname"><a href="str_8c.html#a6bd992d2ae167843a28953d0e37cc0b6">bin2hex</a></div><div class="ttdeci">char * bin2hex(const unsigned char *bin, size_t len)</div><div class="ttdoc">Function that converts a binary representation into a hexidecimal one.</div><div class="ttdef"><b>Definition:</b> <a href="str_8c_source.html#l00018">str.c:18</a></div></div>
@@ -1749,14 +1746,14 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="ttc" id="asha1_8c_html_aa2aeb4494829b30064b8ec6fa4f9c41e"><div class="ttname"><a href="sha1_8c.html#aa2aeb4494829b30064b8ec6fa4f9c41e">SHA1Input</a></div><div class="ttdeci">void SHA1Input(SHA1Context *context, const unsigned char *message_array, unsigned length)</div><div class="ttdef"><b>Definition:</b> <a href="sha1_8c_source.html#l00153">sha1.c:153</a></div></div>
 <div class="ttc" id="aheader_8c_html_aaa625dc3959e3334db439657c72b5a7c"><div class="ttname"><a href="header_8c.html#aaa625dc3959e3334db439657c72b5a7c">WSS_parse_header</a></div><div class="ttdeci">enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config)</div><div class="ttdoc">Parses a HTTP header into a header structure and returns the status code appropriate.</div><div class="ttdef"><b>Definition:</b> <a href="header_8c_source.html#l00109">header.c:109</a></div></div>
 <div class="ttc" id="aheader_8c_html_ae2dc0d4b81efb9ead0a0097f7ca156d2"><div class="ttname"><a href="header_8c.html#ae2dc0d4b81efb9ead0a0097f7ca156d2">WSS_upgrade_header</a></div><div class="ttdeci">enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t *config, bool ssl, int port)</div><div class="ttdoc">Upgrades a HTTP header, that is returns switching protocols response if the header contains the requi...</div><div class="ttdef"><b>Definition:</b> <a href="header_8c_source.html#l00539">header.c:539</a></div></div>
-<div class="ttc" id="asubprotocols_8c_html_a913fcff262fef4c2ab09586c3f12db20"><div class="ttname"><a href="subprotocols_8c.html#a913fcff262fef4c2ab09586c3f12db20">WSS_find_subprotocol</a></div><div class="ttdeci">wss_subprotocol_t * WSS_find_subprotocol(char *name)</div><div class="ttdoc">Function that looks for a subprotocol implementation of the name given.</div><div class="ttdef"><b>Definition:</b> <a href="subprotocols_8c_source.html#l00147">subprotocols.c:147</a></div></div>
+<div class="ttc" id="asubprotocols_8c_html_a913fcff262fef4c2ab09586c3f12db20"><div class="ttname"><a href="subprotocols_8c.html#a913fcff262fef4c2ab09586c3f12db20">WSS_find_subprotocol</a></div><div class="ttdeci">wss_subprotocol_t * WSS_find_subprotocol(char *name)</div><div class="ttdoc">Function that looks for a subprotocol implementation of the name given.</div><div class="ttdef"><b>Definition:</b> <a href="subprotocols_8c_source.html#l00163">subprotocols.c:163</a></div></div>
 <div class="ttc" id="aalloc_8c_html_aafc61d568f2f093f1f72238f51fbdba4"><div class="ttname"><a href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">WSS_malloc</a></div><div class="ttdeci">void * WSS_malloc(size_t size)</div><div class="ttdoc">Function that allocates memory.</div><div class="ttdef"><b>Definition:</b> <a href="alloc_8c_source.html#l00032">alloc.c:32</a></div></div>
 <div class="ttc" id="asession_8c_html_afc2c95cb48396ed56ae592b260cb0485"><div class="ttname"><a href="session_8c.html#afc2c95cb48396ed56ae592b260cb0485">WSS_session_jobs_inc</a></div><div class="ttdeci">wss_error_t WSS_session_jobs_inc(wss_session_t *session)</div><div class="ttdoc">Function that increments the job counter atomically.</div><div class="ttdef"><b>Definition:</b> <a href="session_8c_source.html#l00338">session.c:338</a></div></div>
 <div class="ttc" id="aworker_8c_html_a22051812bb95c45df69de0e733b2ad3c"><div class="ttname"><a href="worker_8c.html#a22051812bb95c45df69de0e733b2ad3c">handshake_response</a></div><div class="ttdeci">static wss_message_t * handshake_response(wss_header_t *header, enum HttpStatus_Code code)</div><div class="ttdoc">Function that generates a handshake response, used to authorize a websocket session.</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l00060">worker.c:60</a></div></div>
 <div class="ttc" id="aframe_8c_html_a5892cf46fba829eb0c8bc67b8162288d"><div class="ttname"><a href="frame_8c.html#a5892cf46fba829eb0c8bc67b8162288d">WSS_closing_frame</a></div><div class="ttdeci">wss_frame_t * WSS_closing_frame(wss_close_t reason, char *message)</div><div class="ttdoc">Creates a closing frame given a reason for the closure.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00566">frame.c:566</a></div></div>
 <div class="ttc" id="astructringbuf_html"><div class="ttname"><a href="structringbuf.html">ringbuf</a></div><div class="ttdef"><b>Definition:</b> <a href="ringbuf_8c_source.html#l00095">ringbuf.c:95</a></div></div>
 <div class="ttc" id="asession_8c_html_a432642f29762ba93bee41bfa8f0c1cd6"><div class="ttname"><a href="session_8c.html#a432642f29762ba93bee41bfa8f0c1cd6">WSS_session_jobs_wait</a></div><div class="ttdeci">wss_error_t WSS_session_jobs_wait(wss_session_t *session)</div><div class="ttdoc">Function that waits for all jobs to be done.</div><div class="ttdef"><b>Definition:</b> <a href="session_8c_source.html#l00387">session.c:387</a></div></div>
-<div class="ttc" id="aworker_8c_html_a38013429dcfbeb663cdb94eaec9f2465"><div class="ttname"><a href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">WSS_work</a></div><div class="ttdeci">void WSS_work(void *args)</div><div class="ttdoc">Function that performs and distributes the IO work.</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l01656">worker.c:1656</a></div></div>
+<div class="ttc" id="aworker_8c_html_a38013429dcfbeb663cdb94eaec9f2465"><div class="ttname"><a href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">WSS_work</a></div><div class="ttdeci">void WSS_work(void *args)</div><div class="ttdoc">Function that performs and distributes the IO work.</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l01653">worker.c:1653</a></div></div>
 <div class="ttc" id="aframe_8c_html_a110cbe657181858c43bad1f86453915f"><div class="ttname"><a href="frame_8c.html#a110cbe657181858c43bad1f86453915f">WSS_free_frame</a></div><div class="ttdeci">void WSS_free_frame(wss_frame_t *frame)</div><div class="ttdoc">Releases memory used by a frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00714">frame.c:714</a></div></div>
 <div class="ttc" id="asession_8c_html_a28b6106e2bececec3e6ecbecaa6852c6"><div class="ttname"><a href="session_8c.html#a28b6106e2bececec3e6ecbecaa6852c6">WSS_session_is_disconnecting</a></div><div class="ttdeci">wss_error_t WSS_session_is_disconnecting(wss_session_t *session, bool *dc)</div><div class="ttdoc">Function that determines atomically if session is already disconnecting.</div><div class="ttdef"><b>Definition:</b> <a href="session_8c_source.html#l00415">session.c:415</a></div></div>
 <div class="ttc" id="aframe_8c_html_a572b61ed22e15ac196f279f0446fc8bd"><div class="ttname"><a href="frame_8c.html#a572b61ed22e15ac196f279f0446fc8bd">WSS_parse_frame</a></div><div class="ttdeci">wss_frame_t * WSS_parse_frame(char *payload, size_t length, size_t *offset)</div><div class="ttdoc">Parses a payload of data into a websocket frame.</div><div class="ttdef"><b>Definition:</b> <a href="frame_8c_source.html#l00255">frame.c:255</a></div></div>
@@ -1775,8 +1772,9 @@ $(document).ready(function(){initNavTree('worker_8c_source.html',''); initResiza
 <div class="ttc" id="aringbuf_8c_html_a182f3c73c0542eeddbf72bee55e39f85"><div class="ttname"><a href="ringbuf_8c.html#a182f3c73c0542eeddbf72bee55e39f85">ringbuf_get_sizes</a></div><div class="ttdeci">void ringbuf_get_sizes(unsigned nworkers, unsigned ntempworkers, size_t *ringbuf_size, size_t *ringbuf_worker_size)</div><div class="ttdef"><b>Definition:</b> <a href="ringbuf_8c_source.html#l00138">ringbuf.c:138</a></div></div>
 <div class="ttc" id="aringbuf_8c_html_a6a0612a3bcd0cd3e2e49fa2207e14166"><div class="ttname"><a href="ringbuf_8c.html#a6a0612a3bcd0cd3e2e49fa2207e14166">ringbuf_release</a></div><div class="ttdeci">void ringbuf_release(ringbuf_t *rbuf, size_t nbytes)</div><div class="ttdef"><b>Definition:</b> <a href="ringbuf_8c_source.html#l00503">ringbuf.c:503</a></div></div>
 <div class="ttc" id="asession_8c_html_a807d1682c442cd87af892d5339e0a257"><div class="ttname"><a href="session_8c.html#a807d1682c442cd87af892d5339e0a257">WSS_session_add</a></div><div class="ttdeci">wss_session_t * WSS_session_add(int fd, char *ip, int port)</div><div class="ttdoc">Function that allocates and creates a new session.</div><div class="ttdef"><b>Definition:</b> <a href="session_8c_source.html#l00070">session.c:70</a></div></div>
+<div class="ttc" id="aserver_8c_html_a133013525fac7907e0baa31ec30f8b4b"><div class="ttname"><a href="server_8c.html#a133013525fac7907e0baa31ec30f8b4b">now</a></div><div class="ttdeci">struct timespec now</div><div class="ttdoc">Global variable holding current timestamp.</div><div class="ttdef"><b>Definition:</b> <a href="server_8c_source.html#l00039">server.c:39</a></div></div>
 <div class="ttc" id="aworker_8c_html_ae6ef1c0a3a3332ec645fe42b9e5f7bd0"><div class="ttname"><a href="worker_8c.html#ae6ef1c0a3a3332ec645fe42b9e5f7bd0">favicon_response</a></div><div class="ttdeci">static wss_message_t * favicon_response(wss_header_t *header, enum HttpStatus_Code code, wss_config_t *config)</div><div class="ttdoc">Function that generates a favicon response, used to present a favicon on the HTTP landing page of the...</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l00223">worker.c:223</a></div></div>
-<div class="ttc" id="aworker_8c_html_a0ed3fd758a91033e30dab4d17d376bcc"><div class="ttname"><a href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a></div><div class="ttdeci">void WSS_write(wss_server_t *server, wss_session_t *session)</div><div class="ttdoc">Function that writes information to a session and decides wether event poll should be rearmed and whe...</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l01517">worker.c:1517</a></div></div>
+<div class="ttc" id="aworker_8c_html_a0ed3fd758a91033e30dab4d17d376bcc"><div class="ttname"><a href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">WSS_write</a></div><div class="ttdeci">void WSS_write(wss_server_t *server, wss_session_t *session)</div><div class="ttdoc">Function that writes information to a session and decides wether event poll should be rearmed and whe...</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l01514">worker.c:1514</a></div></div>
 <div class="ttc" id="aringbuf_8c_html_af99c3721e4e8a547730426598f8654c9"><div class="ttname"><a href="ringbuf_8c.html#af99c3721e4e8a547730426598f8654c9">ringbuf_setup</a></div><div class="ttdeci">int ringbuf_setup(ringbuf_t *rbuf, unsigned nworkers, unsigned ntempworkers, size_t length)</div><div class="ttdef"><b>Definition:</b> <a href="ringbuf_8c_source.html#l00120">ringbuf.c:120</a></div></div>
 <div class="ttc" id="aworker_8c_html_a1a715db7b4403fe6c165e49a32f5fe3d"><div class="ttname"><a href="worker_8c.html#a1a715db7b4403fe6c165e49a32f5fe3d">SHA_DIGEST_LENGTH</a></div><div class="ttdeci">#define SHA_DIGEST_LENGTH</div><div class="ttdef"><b>Definition:</b> <a href="worker_8c_source.html#l00030">worker.c:30</a></div></div>
 <div class="ttc" id="asession_8c_html_aff2ca8a6e49794288553cb2c0b65dd16"><div class="ttname"><a href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">WSS_session_find</a></div><div class="ttdeci">wss_session_t * WSS_session_find(int fd)</div><div class="ttdoc">Function that finds a session using the filedescriptor of the session.</div><div class="ttdef"><b>Definition:</b> <a href="session_8c_source.html#l00469">session.c:469</a></div></div>

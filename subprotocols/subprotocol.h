@@ -23,13 +23,16 @@ typedef enum {
  * server.
  */
 typedef void (*WSS_send)(int fd, wss_opcode_t opcode, char *message, uint64_t message_length);
+typedef void *(*WSS_malloc_t)(size_t size);
+typedef void *(*WSS_realloc_t)(void *ptr, size_t size);
+typedef void (*WSS_free_t)(void *ptr);
 
 /**
  * The subprotocol API calls
  */
-typedef void (*subAlloc)(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));
+typedef void (*subAlloc)(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);
 typedef void (*subInit)(char *config, WSS_send send);
-typedef void (*subConnect)(int fd, char *path, char *cookies);
+typedef void (*subConnect)(int fd, char *ip, int port, char *path, char *cookies);
 typedef void (*subMessage)(int fd, wss_opcode_t opcode, char *message, size_t message_length);
 typedef void (*subWrite)(int fd, char *message, size_t message_length);
 typedef void (*subClose)(int fd);

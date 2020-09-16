@@ -42,16 +42,16 @@ extension. Read more about this implementation [here](#Permessage-Deflate).
 
 Furthermore it supports two subprotocols: [echo](#Echo) and [broadcast](#Broadcast). 
 The [echo](#Echo) subprotocol is a simple protocol that sends whatever message
-received, back to the same session. This is also the default protocol chosen,
-if no subprotocol is provided by the session. The [broadcast](#Broadcast) subprotocol
-is slightly more advanced. It sends a message from one session to all other
-connected sessions. The behaviour is basically as a public chat room.
+received, back to the same client. This is also the default protocol chosen,
+if no subprotocol is provided by the client. The [broadcast](#Broadcast) subprotocol
+is slightly more advanced. It sends a message from one client to all other
+connected clients. The behaviour is basically as a public chat room.
 
 The server can be configured by providing a `-c [path_to_config_file.json]`
 flag. If no configuration is provided, the server will run with a default
 configuration, that support WebSocket over HTTP on port 80. You can read more
 about the structure and description of the configuration file in the
-[Configuration](#Configuration) section.
+[configuration](#Configuration) section.
 
 ### Log
 
@@ -98,7 +98,7 @@ $ pkg install zlib
 No other dependencies are required with regards to building the server with the
 full feature set.
 
-If you want to run the Autobahn testsuite and the unit tests yourself, further
+If you want to run the [Autobahn testsuite](https://github.com/crossbario/autobahn-testsuite) and the unit tests yourself, further
 dependencies are required. These are [**docker**](https://www.docker.com/) and [**criterion**](https://github.com/Snaipe/Criterion).
 
 ##### Ubuntu
@@ -111,14 +111,14 @@ $ sudo apt-get install criterion-dev
 
 ##### Arch
 ```
-pacman -S docker
-pacman -S criterion
+$ pacman -S docker
+$ pacman -S criterion
 ```
 
 ##### MacOS
 ```
-brew install docker
-brew install snaipe/soft/criterion
+$ brew install docker
+$ brew install snaipe/soft/criterion
 ```
 
 ##### FreeBSD
@@ -179,6 +179,24 @@ version and the https (wss) should be listening to.
 A http (ws) version of the server will always be available. The https (wss)
 version requires further configuration of SSL.
 
+##### Extensions
+
+The `extensions` key of the `setup` object is used to define an array of
+supported extensions. Each entry in the array is an object itself containing 
+a `file` and `config` key. The `file` key should point to the location of the
+shared object representing the extension. The basename of the `file` key is 
+used as the extension name. The `config` key can be used to provide extra
+configuration to the extension.
+
+##### Subprotocols
+
+The `subprotocols` key of the `setup` object is used to define an array of
+supported subprotocols. Each entry in the array is an object itself containing 
+a `file` and `config` key. The `file` key should point to the location of the
+shared object representing the subprotocol. The basename of the `file` key is 
+used as the subprotocol name. The `config` key can be used to provide extra
+configuration to the subprotocol. 
+
 ##### Favicon
 
 The `favicon` key of the `setup` object is used to define a favicon to serve
@@ -208,49 +226,213 @@ The `client` key define a timeout for when the client was last active. By
 setting it to a positive **n** integer, the client will be disconnected if it
 has not been active the last **n** milliseconds.
 
+The `pings` key defines the amount of pings performed within the span of the
+`client` timeout key. If this value is set, it is recommended to use a value
+stricly higher than 1, as the internal timing of the server is not 100%
+accurate.
+
 ##### Size
 
-TODO
+A lot of different sizes can be adjusted for the WSServer. All sizes but the
+`ringbuffer` are defined in bytes.
+
+The `payload` size define how large a size of payload the server is willing to
+accept from the client.
+
+The `header` size define how large a HTTP header the server will accept from
+the client.
+
+The `uri` size define how large a URI the server will accept from the client.
+
+The `buffer` size define how large the internal read and write buffers should
+be. 
+
+The `thread` size define how large each thread of the WSServer can maximally be.
+
+The `ringbuffer` size define how many messages about to be written each client
+can store in their ringbuffer.
+
+The `frame` size define the maximal payload size of a single frame.
+
+The `fragmented` size define how many fragments (frames) one single message can
+consist of.
 
 ##### Pool
 
-TODO
+Internally the WSServer runs a threadpool to schedule IO work from the clients.
+
+The `worker` key define the amount of threads the threadpool shall consist of.
+Generally the rule of thumb is that the higher the load, the more threads.
+However the optimal amount of workers is probably system and hardware dependent.
 
 ##### SSL (WSS)
 
-TODO
+WSServer supports the *wss* scheme by the use of the OpenSSL library. In order
+to activate SSL some configuration must be made.
 
-OpenSSL
+The `key` key define the path to the SSL private key of the server. The private
+key must be in the PEM format.
 
-# Extensions {#Extensions}
-TODO
+The `cert` key define the path to the SSL server certificate. The certificate
+must be in the PEM format.
 
-### Permessage-deflate {#Permessage-Deflate}
-TODO
+The `ca_file` key define the path to the root CA certificate.
 
-# Subprotocols {#Subprotocols}
-TODO
+The `ca_path` key define the path to a folder containing the trusted root CA
+certifates.
 
-### Echo {#Echo}
-TODO
+The `dhparam` key define the path to the dhparam file. The dhparam file must be
+in the PEM format.
 
-### Broadcast {#Broadcast}
-TODO
+The `cipher_list` key define the ciphers that the server allows usage of.
+
+The `cipher_suites` key define the cipher suites that the server allows usage
+of.
+
+The `compression` key define whether compression should be used when
+communicating over SSL,
+
+The `peer_cert` key define whether a peer certificate is required by the
+client.
+
+# WebSocket Extensions
+
+The WSServer enables usage of an arbitrary number of extensions. Extensions
+provide a mechanism for implementations to opt-in to additional protocol
+features.
+
+The extensions themselves can be implemented in any language that is able to
+compile into a shared object (*.so* file) with the following public
+functions:
+
+```
+typedef void (*setAllocators)(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));
+typedef void (*onInit)(char *config);
+typedef void (*onOpen)(int fd, char *param, char **accepted, bool *valid);
+typedef void (*inFrame)(int fd, wss_frame_t *frame);
+typedef void (*inFrames)(int fd, wss_frame_t **frames, size_t len);
+typedef void (*outFrame)(int fd, wss_frame_t *frame);
+typedef void (*outFrames)(int fd, wss_frame_t **frames, size_t len);
+typedef void (*onClose)(int fd);
+typedef void (*onDestroy)();
+```
+
+Where the `wss_frame_t` is defined as:
+
+```
+typedef struct {
+    bool fin;
+    bool rsv1;
+    bool rsv2;
+    bool rsv3;
+    uint8_t opcode;
+    bool mask;
+    uint64_t payloadLength;
+    char maskingKey[4];
+    char *payload;
+    uint64_t extensionDataLength;
+    uint64_t applicationDataLength;
+} wss_frame_t;
+```
+
+For the server to be able to use a custom extension one has to configure the
+path to the shared object in the configuration file as described [above](#Extensions).
+
+You can have a look at the [extensions](https://github.com/mortzdk/websocket/blob/master/extensions) folder to see how to
+implement your own extension.
+
+### Permessage-deflate
+
+The WSServer comes with 1 build-in extension, namely the `permessage-deflate`
+extension defined in [RFC7692](https://tools.ietf.org/html/rfc7692). This
+extension enables compression and decompression of the frames between client
+and server.
+
+# WebSocket Subprotocols
+
+The WSServer also enables usage of an arbitrary number of subprotocols.
+Subprotocols are application-level protocol layered over the WebSocket Protocol
+that are used to define the behaviour of the websocket protocol.
+
+The subprotocols themselves can be implemented in any language that is able to
+compile into a shared object (*.so* file) with the following public
+functions:
+
+```
+typedef void (*setAllocator)(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);
+typedef void (*onInit)(char *config, WSS_send send);
+typedef void (*onConnect)(int fd, char *ip, int port, char *path, char *cookies);
+typedef void (*onMessage)(int fd, wss_opcode_t opcode, char *message, size_t message_length);
+typedef void (*onWrite)(int fd, char *message, size_t message_length);
+typedef void (*onClose)(int fd);
+typedef void (*onDestroy)();
+```
+
+Where `WSS_send`, `WSS_malloc_t`, `WSS_realloc_t`, and `WSS_free_t` are defined
+as:
+
+```
+typedef void (*WSS_send)(int fd, wss_opcode_t opcode, char *message, uint64_t message_length);
+typedef void *(*WSS_malloc_t)(size_t size);
+typedef void *(*WSS_realloc_t)(void *ptr, size_t size);
+typedef void (*WSS_free_t)(void *ptr);
+```
+
+and `wss_opcode_t` is defined as:
+
+```
+typedef enum {
+    CONTINUATION_FRAME = 0x0,
+    TEXT_FRAME         = 0x1,
+    BINARY_FRAME       = 0x2,
+    CLOSE_FRAME        = 0x8,
+    PING_FRAME         = 0x9,
+    PONG_FRAME         = 0xA,
+} wss_opcode_t;
+```
+
+You can have a look at the [subprotocols](https://github.com/mortzdk/websocket/blob/master/extensions) folder to see how to
+implement your own subprotocol.
 
 ### Client Authentication
 
-Notes: 
-Send query parameters using the path from the websocket connecting uri.
-The path and cookies are send through to the subprotocol in the `onConnect` call.
+Client authentication is not implemented directly in WSServer, but is
+supported through several means. The `onConnect` call of the subprotocol sends
+information about the connection to the subprotocol, this is information such
+as the *ip*, *port*, *path* and *cookies*. This can be used to do client
+authentication using [cookies](https://coletiv.com/blog/using-websockets-with-cookie-based-authentication/), using query parameters of the path 
+or simply by having an initial round of authentication messages between the
+client and server.
+
+As always it is strongly advised to use the (origins)[#Origins] array of the
+configuration to only allow for certain origins to use the server.
+
+### Echo
+
+The `echo` subprotocol is a very simple subprotocol that just echo's whatever
+the client send back to the client. This subprotocol is especially useful for
+testing and is used in the [Autobahn testsuite](https://github.com/crossbario/autobahn-testsuite).
+
+### Broadcast
+
+The `broadcast` subprotocol is slightly more advanced. It keeps track of when a
+client is connecting or closing in order to hold a map of those clients that
+should be broadcastet to. Whenever a client sends a message, the message is
+broadcastet to all other connected clients.
 
 # Documentation
 
-WSServer does not have anykg
-TODO
+WSServer automatically generates documentation based on the comments in the
+code. This documentation can be viewed [here](https://github.com/mortzdk/websocket/blob/master/doc).
+
+Furthermore one could take a look at the [RFC6455](http://tools.ietf.org/html/rfc6455) protocol and the
+[RFC7692](https://tools.ietf.org/html/rfc7692) protocol to understand how WebSockets and the permessage-deflate
+extension works.
 
 # Testing
 
-TODO
+WSServer has been heavily tested by the use of unit tests, the 
+[Autobahn testsuite](https://github.com/crossbario/autobahn-testsuite) and by having code coverage.
 
 ### Unit tests
 
@@ -264,7 +446,49 @@ TODO
 
 TODO
 
+# Further Work
+
+Here is a list of prioritized further work that currently can be done:
+
+1. Test on FreeBSD/MacOS
+2. Rate limiting
+    - Rate limiting connections
+        - Count-Min Sketch (Sliding window)
+            * Belongs to the server object
+            * Allocate 60 count-min sketches (one per minute)
+            * Reset sketch if rotated
+    - Rate limiting messages
+        - Can be done by the subprotocols per message?
+    - Rate limiting frames
+        - Counting using Sliding window
+            * Belongs to the session object
+            * Allocate 60 integers (one per minute)
+            * Reset sketch if rotated
+3. Automatical Documentation Creation
+    - gh-pages
+    - https://gist.github.com/francesco-romano/351a6ae457860c14ee7e907f2b0fc1a5
+4. Use Autoconf to check dependencies
+5. Unit testing (INPROGRESS)
+6. Fuzz testing
+7. Look at 'khash' or 'tommy_hashdyn' instead of 'uthash' since these hashes
+   seems to be faster
+8. Support HTTP2
+9. Performance Improvements
+    - Realloc the double size of the current
+    - Refactor `wss_frame_t` structure away. Use the frames as byte strings instead.
+    - Callgrind
+    - Cachegrind
+10. Backwards Specification Compability
+    - hybi-06
+    - hybi-05
+    - hybi-04
+    - hixie-76
+    - hixie-75
+11. Open donation - OpenCollective.com
+
 # Contributors
+
+Here is a list of the contributors of v2.0.0 and above of the WSServer.
 
 [Morten Houmøller Nygaard](https://github.com/mortzdk/)
 
@@ -273,15 +497,15 @@ TODO
 WSServer makes use of other Open-Source libraries and code snippets. The links
 listed below have all been used in some way.
 
-*[Fast Validation of UTF-8](https://github.com/lemire/fastvalidate-utf-8/)
-*[UTF-8 Decoder](http://bjoern.hoehrmann.de/utf-8/decoder/dfa/)
-*[SHA1](https://tools.ietf.org/html/rfc3174)
-*[Ringbuf](https://github.com/rmind/ringbuf)
-*[Log.c](https://github.com/rxi/log.c)
-*[B64.c](https://github.com/littlstar/b64.c)
-*[rpmalloc](https://github.com/mjansson/rpmalloc)
-*[Threadpool](https://github.com/mbrossard/threadpool)
-*[json-parser](https://github.com/udp/json-parser)
+* [Fast Validation of UTF-8](https://github.com/lemire/fastvalidate-utf-8/)
+* [UTF-8 Decoder](http://bjoern.hoehrmann.de/utf-8/decoder/dfa/)
+* [SHA1](https://tools.ietf.org/html/rfc3174)
+* [Ringbuf](https://github.com/rmind/ringbuf)
+* [log.c](https://github.com/rxi/log.c)
+* [b64.c](https://github.com/littlstar/b64.c)
+* [rpmalloc](https://github.com/mjansson/rpmalloc)
+* [Threadpool](https://github.com/mbrossard/threadpool)
+* [json-parser](https://github.com/udp/json-parser)
 
 # License
 
