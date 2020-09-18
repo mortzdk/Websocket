@@ -109,7 +109,8 @@ static inline void header_set_version(wss_header_t *header, char *v) {
 enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t *config) {
     bool valid, in_use, double_clrf = false;
     size_t i, line_length;
-    char *tokenptr, *lineptr, *sepptr, *paramptr, *temp, *line, *sep, *accepted;
+    char *tokenptr, *lineptr, *temp, *line, *sep, *accepted;
+    char *sepptr = NULL, *paramptr = NULL;
     char *token, *name; 
     wss_subprotocol_t *proto;
     wss_extension_t *ext;
