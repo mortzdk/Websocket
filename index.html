@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="Morten Houmøller Nygaard">
+        <title>WSServer - A C WebSocket Server</title>
+
+        <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+        <link rel="manifest" href="images/site.webmanifest">
+        <link rel="mask-icon" href="images/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="images/favicon.ico">
+        <meta name="apple-mobile-web-app-title" content="WSServer">
+        <meta name="application-name" content="WSServer">
+        <meta name="msapplication-TileColor" content="#ffc40d">
+        <meta name="msapplication-config" content="images/browserconfig.xml">
+        <meta name="theme-color" content="#ffffff">
+
+        <!-- Bootstrap core CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <header>
+            <div class="collapse bg-dark" id="navbarHeader">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-8 col-md-7 py-4">
+                            <h4 class="text-white">About</h4>
+                            <p class="text-muted">WSServer is a WebSocket server written in C.</p>
+                        </div>
+                        <div class="col-sm-4 offset-md-1 py-4">
+                            <h4 class="text-white">Contact</h4>
+                            <ul class="list-unstyled">
+                                <li><a href="https://github.com/mortzdk/Websocket/issues" class="text-white">Issues</a></li>
+                                <li><a href="#" class="text-white">Donate</a></li>
+                                <li><a href="#" class="text-white">Email me</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navbar navbar-dark bg-dark shadow-sm">
+                <div class="container d-flex justify-content-between">
+                    <a href="#" class="navbar-brand d-flex align-items-center">
+                        <img width="20" height="20" aria-hidden="true" class="mr-2" src="images/logo.png" />
+                        <strong>WSServer</strong>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main role="main">
+
+            <section class="jumbotron text-center">
+                <div class="container">
+                    <h1>WSServer</h1>
+                    <p class="lead text-muted">A small, fast, configurable, extendable WebSocket server.</p>
+                    <p>
+                    <iframe src="https://ghbtns.com/github-btn.html?user=mortzdk&repo=websocket&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+                    </p>
+                </div>
+            </section>
+
+            <div class="wsserver py-5 bg-light">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/tools.png" />
+                                <div class="card-body">
+                                    <p class="card-text">The newest version of the server was released at: <i class="release-time">2020-09-18</i>. The current version of the WSServer is 2.0.0.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/websocket">View</a>
+                                        </div>
+                                        <small class="text-muted">Version</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/gear.png" />
+                                <div class="card-body">
+                                    <p class="card-text">WSServer is configurable using a JSON configuration file. The server can be configured in a vast number of ways.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/Websocket/blob/master/conf/wss.json">View</a>
+                                        </div>
+                                        <small class="text-muted">GitHub</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/approved.png" />
+                                <div class="card-body">
+                                    <p class="card-text">Extensively tested using the Autobahn Testsuite and unit tests written with Criterion.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="testsuite/">Testsuite</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/crossbario/autobahn-testsuite">Autobahn</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/crossbario/autobahn-testcrsuite">Criterion</a>
+                                        </div>
+                                        <small class="text-muted">Testsuite</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/code.png" />
+                                <div class="card-body">
+                                    <p class="card-text"> We further strive to have as much code covered as possible.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="coverage/">Coverage</a>
+                                        </div>
+                                        <small class="text-muted">Code Coverage</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/note.png" />
+                                <div class="card-body">
+                                    <p class="card-text">We strive to keep the source code well commented. Moreover we autogenerate documentation of the source code.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="documentation/">View</a>
+                                        </div>
+                                        <small class="text-muted">Documentation</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/brick.png" />
+                                <div class="card-body">
+                                    <p class="card-text">WSServer is highly extendable. You can add your own extensions and subprotocols as long as they adhere to a simple API.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/Websocket/tree/develop#websocket-extensions">Extension</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/Websocket/tree/master#websocket-subprotocols">Subprotocol</a>
+                                        </div>
+                                        <small class="text-muted">Extendability</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/chain.png" />
+                                <div class="card-body">
+                                    <p class="card-text">WSServer runs out of the box with no dependencies. However to enable features such as WebSockets over TLS (wss://) and compression (permessage-deflate extension), OpenSSL and zlib must be installed.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://www.openssl.org/">OpenSSL</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://zlib.net/">zlib</a>
+                                        </div>
+                                        <small class="text-muted">Dependencies</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <footer class="text-muted">
+            <div class="container">
+                <p class="float-right">
+                <a href="#">Back to top</a>
+                </p>
+                <p>Copyright &copy; WSServer - Morten Houmøller Nygaard</p>
+            </div>
+        </footer>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+</html>
