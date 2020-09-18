@@ -298,7 +298,6 @@ test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NA
 	mkdir -p $(REPORTS_FOLDER)/gcov
 	gcovr --object-directory $(BUILD_FOLDER) -r . --html --html-details --html-title $(NAME) -o $(REPORTS_FOLDER)/gcov/index.html
 
-
 #make run_test_* 
 ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
 	@echo ================ [Running test ${patsubst run_%,%,$@}] ================
