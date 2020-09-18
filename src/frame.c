@@ -107,25 +107,25 @@ static void unmask(wss_frame_t *frame) {
 #if defined(__AVX512F__)
     uint64_t i = 0;
     __m512i masked_data;
-    int mask = (frame->maskingKey[0] << 24) | (frame->maskingKey[1] << 16) | (frame->maskingKey[2] << 8) | frame->maskingKey[3]
-        __m512i maskingKey = _mm512_setr_epi8(
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask,
-                mask
-                );
+    int mask = (frame->maskingKey[0] << 24) | (frame->maskingKey[1] << 16) | (frame->maskingKey[2] << 8) | frame->maskingKey[3];
+    __m512i maskingKey = _mm512_setr_epi8(
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask,
+            mask
+            );
 
     if ( frame->applicationDataLength > 64 ) {
         for (; likely(i <= frame->applicationDataLength - 64); i += 64) {
@@ -139,8 +139,8 @@ static void unmask(wss_frame_t *frame) {
         char buffer[64];
         memset(buffer, '\0', 64);
         memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
-        masked_data = _mm256_loadu_si256((const __m256i *)buffer);
-        _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));
+        masked_data = _mm512_loadu_si512((const __m512i *)buffer);
+        _mm512_storeu_si512((__m512i *)buffer, _mm512_xor_si512 (masked_data, maskingKey));
         memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__AVX2__) && defined(__AVX__)
