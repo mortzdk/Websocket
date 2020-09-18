@@ -109,7 +109,7 @@ endif
 .PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
-all: clean version bin build docs log subprotocols extensions $(NAME)
+all: clean version bin build log subprotocols extensions $(NAME)
 
 build:
 	if [[ ! -e $(BUILD_FOLDER) ]]; then mkdir -p $(BUILD_FOLDER); fi
