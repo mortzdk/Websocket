@@ -7,7 +7,7 @@ As of version 2.0.0 the WSServer has been completely rewritten with many new
 features, better support, better extendability and generally as a more stable
 WebSocket server.
 
-Current Version: **v1.0.0**
+Current Version: **v2.0.0**
 
 ### Early history
 

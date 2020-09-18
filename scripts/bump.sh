@@ -117,7 +117,8 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 last_version=`git describe --abbrev=0 --tags`
-new_version=`increment_version $last_version $position`
+new_version=`increment_version ${last_version#?} $position`
+new_version="v${new_version}"
 
 sed -i "/Current Version: /{s/\*\*$last_version\*\*/\*\*$new_version\*\*/g}" README.md
 sed -i "/PROJECT_NUMBER\s*=/{s/$last_version/$new_version/g}" conf/doxyfile.conf
