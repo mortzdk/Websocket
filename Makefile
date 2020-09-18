@@ -33,6 +33,10 @@ CFLAGS = $(EXEC) \
 		 -W \
 		 -Wall \
 		 -Werror \
+		 -Wno-unused-parameter \
+		 -Wno-unused-function \
+		 -Wno-strict-aliasing \
+		 -Wno-overlength-strings \
 		 -Wformat \
 		 -Wformat-security \
 		 -Wformat-nonliteral \
@@ -41,11 +45,6 @@ CFLAGS = $(EXEC) \
 		 -Wl,-z,relro \
 		 -Wl,-z,now \
 		 -Wmultichar \
-		 -Wno-unused-parameter \
-		 -Wno-unused-function \
-		 -Wno-unused-label \
-		 -Wno-deprecated \
-		 -Wno-strict-aliasing \
 		 -Wpointer-arith \
 		 -Wreturn-type \
 	     -Wsign-compare \
