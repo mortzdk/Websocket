@@ -383,7 +383,7 @@ static void WSS_server_interrupt(int sig) {
  *
  * @return 	        [int]        "EXIT_SUCCESS if successfull or EXIT_FAILURE on error"
  */
-static inline int WSS_server_free(wss_server_t *server) {
+static int WSS_server_free(wss_server_t *server) {
     int result = EXIT_SUCCESS;
 
     if ( unlikely(WSS_SUCCESS != WSS_http_server_free(server)) ) {
