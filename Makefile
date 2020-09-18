@@ -174,7 +174,7 @@ $(BUILD_FOLDER)/%.o: $(TEST_FOLDER)/%.c
 	@echo
 
 # Link test objects
-${TEST_NAMES}: clean debug_mode bin build doc log ${SRC_OBJ} ${TEST_OBJ}
+${TEST_NAMES}: clean debug_mode bin build log ${SRC_OBJ} ${TEST_OBJ}
 	@echo
 	@echo ================ [Linking Tests] ================
 	@echo
