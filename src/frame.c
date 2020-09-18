@@ -108,7 +108,7 @@ static void unmask(wss_frame_t *frame) {
     uint64_t i = 0;
     __m512i masked_data;
     int mask = (frame->maskingKey[0] << 24) | (frame->maskingKey[1] << 16) | (frame->maskingKey[2] << 8) | frame->maskingKey[3];
-    __m512i maskingKey = _mm512_setr_epi8(
+    __m512i maskingKey = _mm512_setr_epi32(
             mask,
             mask,
             mask,
