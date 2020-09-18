@@ -93,7 +93,7 @@ ifeq ($(BUMP),)
 	BUMP = default
 endif
 
-
+ifndef TRAVIS
 $(shell pkg-config --exists openssl)
 ifeq ($(.SHELLSTATUS), 0)
 	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
@@ -104,6 +104,12 @@ $(shell pkg-config --exists criterion)
 ifeq ($(.SHELLSTATUS), 0)
 	FLAGS_TEST += $(shell pkg-config --libs criterion)
 endif
+else
+	FLAGS_EXTRA += -lssl -lcrypto
+	CFLAGS += -DUSE_OPENSSL
+	FLAGS_TEST += -lcriterion
+endif
+
 
 .PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
