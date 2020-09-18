@@ -323,7 +323,5 @@ space: space_mode all
 
 #make bump
 bump:
-	$(eval VER = $(shell ./$(SCRIPTS_FOLDER/bump.sh --$(BUMP)))
-	make test VER=$(VER)
-	make autobahn VER=$(VER)
+	$(eval VER = $(shell $(SCRIPTS_FOLDER)/bump.sh --$(BUMP)))
 	make release VER=$(VER)
