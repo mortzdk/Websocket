@@ -104,7 +104,7 @@ static inline uint64_t htons16(uint64_t value) {
 
 static void unmask(wss_frame_t *frame) {
     char *applicationData = frame->payload+frame->extensionDataLength;
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && false
     uint64_t i = 0;
     __m512i masked_data;
     int mask = (frame->maskingKey[3] << 24) | (frame->maskingKey[2] << 16) | (frame->maskingKey[1] << 8) | frame->maskingKey[0];
