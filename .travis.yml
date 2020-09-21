@@ -1,8 +1,6 @@
-language: C
-dist: bionic
-
-# This will run on Travis' 'new' container-based infrastructure
-sudo: false 
+language: c
+os: linux
+dist: focal
 
 # Blacklist
 branches:
@@ -16,7 +14,7 @@ services:
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:snaipewastaken/ppa'
+      - sourceline: 'deb http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu/ cosmic main'
     packages:
       - pkg-config
       - doxygen
@@ -26,16 +24,16 @@ addons:
       - criterion-dev
       - gcovr
       - graphviz
-      - valgrind
 
 # Build your code e.g. by calling make
 script:
   - make test
   - make docs
-  - make autobahn_debug
+  - make autobahn
 
 # Generate and deploy documentation
 deploy:
+  strategy: git
   provider: pages
   skip_cleanup: true
   github_token: $GH_REPO_TOKEN
