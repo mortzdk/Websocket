@@ -107,7 +107,10 @@ static void unmask(wss_frame_t *frame) {
 #if defined(__AVX512F__) && false
     uint64_t i = 0;
     __m512i masked_data;
-    int mask = (frame->maskingKey[3] << 24) | (frame->maskingKey[2] << 16) | (frame->maskingKey[1] << 8) | frame->maskingKey[0];
+    int mask = ((unsigned)frame->maskingKey[0] << 24) | 
+               ((unsigned)frame->maskingKey[1] << 16) | 
+               ((unsigned)frame->maskingKey[2] << 8)  | 
+               ((unsigned)frame->maskingKey[3]);
     __m512i maskingKey = _mm512_setr_epi32(
             mask,
             mask,
