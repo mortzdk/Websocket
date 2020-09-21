@@ -1,5 +1,4 @@
-/* vim: set et ts=3 sw=3 sts=3 ft=c:
- *
+/* vim: set et ts=3 sw=3 sts=3 ft=c: *
  * Copyright (C) 2012, 2013, 2014 James McLaughlin et al.  All rights reserved.
  * https://github.com/udp/json-parser
  *
@@ -499,7 +498,10 @@ if ((uchar & 0xF800) == 0xD800) {
 
             switch (b)
             {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
                whitespace:
+#pragma GCC diagnostic pop
                   continue;
 
                default:
@@ -515,7 +517,10 @@ if ((uchar & 0xF800) == 0xD800) {
          {
             switch (b)
             {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
                whitespace:
+#pragma GCC diagnostic pop
                   continue;
 
                case ']':
@@ -694,8 +699,11 @@ if ((uchar & 0xF800) == 0xD800) {
 
                switch (b)
                {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
                   whitespace:
                      continue;
+#pragma GCC diagnostic pop
 
                   case '"':
 
