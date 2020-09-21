@@ -10,6 +10,12 @@ branches:
 services:
     - docker
 
+compiler:
+    - gcc
+
+before_install:
+    - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com CE6500E9003E6E24
+
 # Install dependencies
 addons:
   apt:
