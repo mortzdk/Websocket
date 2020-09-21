@@ -26,12 +26,13 @@ addons:
       - criterion-dev
       - gcovr
       - graphviz
+      - valgrind
 
 # Build your code e.g. by calling make
 script:
   - make test
   - make docs
-  - make autobahn
+  - make autobahn_debug
 
 # Generate and deploy documentation
 deploy:
