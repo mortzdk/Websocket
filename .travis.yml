@@ -20,10 +20,22 @@ before_install:
     - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
 
 # Build your code e.g. by calling make
-script:
-  - make test
-  - make docs
-  - make autobahn
+jobs:
+    include:
+        -stage: criterion 
+        name: "Criterion Unit Tests"
+        script: make test
+        -stage: autobahn
+        name: "Unit and performance Tests"
+        script: make autobahn
+        -stage: documentation
+        name: "HTML Documentation of source code"
+        script: make docs
+
+stages:
+    -criterion
+    -autobahn
+    -documentation
 
 # Generate and deploy documentation
 deploy:
