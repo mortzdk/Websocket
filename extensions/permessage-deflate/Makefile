@@ -47,7 +47,7 @@ CFLAGS = $(EXEC) \
 		 -Wuninitialized \
 		 -D_DEFAULT_SOURCE
 
-CVER = -std=c99
+CVER = -std=c11
 
 # Flags
 FLAGS_EXTRA = -lz
