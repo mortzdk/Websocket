@@ -71,7 +71,7 @@ INCLUDE_FOLDER = $(ROOT)/include
 DOCS_FOLDER = $(ROOT)/docs
 TEST_FOLDER = $(ROOT)/test
 CONF_FOLDER = $(ROOT)/conf
-REPORTS_FOLDER = $(ROOT)/reports
+GEN_FOLDER = $(ROOT)/generated
 RESOURCES_FOLDER = $(ROOT)/resources
 EXTENSIONS_FOLDER = $(ROOT)/extensions
 SUBPROTOCOLS_FOLDER = $(ROOT)/subprotocols
@@ -236,14 +236,14 @@ count:
 
 #make autobahn
 autobahn: release
-	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
 	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
-    -v ${REPORTS_FOLDER}:/reports \
+    -v ${GEN_FOLDER}:/generated \
     -p 9001:9001 \
     --name fuzzingclient \
     wsserver/autobahn
@@ -251,7 +251,7 @@ autobahn: release
 
 #make autobahn
 autobahn_debug: debug
-	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
 	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 3
@@ -259,7 +259,7 @@ autobahn_debug: debug
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
-    -v ${REPORTS_FOLDER}:/reports \
+    -v ${GEN_FOLDER}:/generated \
     -p 9001:9001 \
     --name fuzzingclient \
     wsserver/autobahn
@@ -267,14 +267,14 @@ autobahn_debug: debug
 
 #make autobahn_call
 autobahn_call: profiling
-	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
-    -v ${REPORTS_FOLDER}:/reports \
+    -v ${GEN_FOLDER}:/generated \
     -p 9001:9001 \
     --name fuzzingclient \
     wsserver/autobahn
@@ -282,14 +282,14 @@ autobahn_call: profiling
 
 #make autobahn_cache
 autobahn_cache: profiling
-	if [[ ! -e $(REPORTS_FOLDER) ]]; then mkdir -p $(REPORTS_FOLDER); fi
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
 	docker build -t wsserver/autobahn -f Dockerfile .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
-    -v ${REPORTS_FOLDER}:/reports \
+    -v ${GEN_FOLDER}:/generated \
     -p 9001:9001 \
     --name fuzzingclient \
     wsserver/autobahn
@@ -300,8 +300,8 @@ criterion:
 
 #make test
 test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}} 
-	mkdir -p $(REPORTS_FOLDER)/gcov
-	gcovr --object-directory $(BUILD_FOLDER) -r . --html --html-details --html-title $(NAME) -o $(REPORTS_FOLDER)/gcov/index.html
+	mkdir -p $(GEN_FOLDER)/gcov
+	gcovr --object-directory $(BUILD_FOLDER) -r . --html --html-details --html-title $(NAME) -o $(GEN_FOLDER)/gcov/index.html
 
 #make run_test_* 
 ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
