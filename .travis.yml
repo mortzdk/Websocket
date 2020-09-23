@@ -21,25 +21,16 @@ before_install:
 
 
 stages:
-    -name: criterion
-    if: branch = master
-    -name: autobahn
-    if: branch = master
-    -name: documentation
-    if: branch = master
-    -name: deploy
-    if: branch = master
+    criterion
+    autobahn
+    documentation
+    deploy
 
 jobs:
     include:
-        -stage: criterion 
-        name: "Criterion Unit Tests"
+        -stage: generate 
         script: make test
-        -stage: autobahn
-        name: "Unit and performance Tests"
         script: make autobahn
-        -stage: documentation
-        name: "HTML Documentation of source code"
         script: make docs
         -stage: deploy
         deploy:

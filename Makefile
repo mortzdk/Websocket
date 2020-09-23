@@ -68,7 +68,6 @@ BUILD_FOLDER = $(ROOT)/build
 BIN_FOLDER = $(ROOT)/bin
 SRC_FOLDER = $(ROOT)/src
 INCLUDE_FOLDER = $(ROOT)/include
-DOCS_FOLDER = $(ROOT)/docs
 TEST_FOLDER = $(ROOT)/test
 CONF_FOLDER = $(ROOT)/conf
 GEN_FOLDER = $(ROOT)/generated
@@ -126,6 +125,7 @@ log:
 	if [[ ! -e $(LOG_FOLDER) ]]; then mkdir -p $(LOG_FOLDER); fi
 
 docs: $(SRC)
+	mkdir -p $(GEN_FOLDER)/documentation
 	doxygen $(CONF_FOLDER)/doxyfile.conf
 
 release_mode:
