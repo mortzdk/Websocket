@@ -19,7 +19,17 @@ before_install:
     - sudo apt-get -q update
     - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
 
-# Build your code e.g. by calling make
+
+stages:
+    -name: criterion
+    if: branch = master
+    -name: autobahn
+    if: branch = master
+    -name: documentation
+    if: branch = master
+    -name: deploy
+    if: branch = master
+
 jobs:
     include:
         -stage: criterion 
@@ -31,17 +41,12 @@ jobs:
         -stage: documentation
         name: "HTML Documentation of source code"
         script: make docs
-
-stages:
-    -criterion
-    -autobahn
-    -documentation
-
-# Generate and deploy documentation
-deploy:
-  strategy: git
-  provider: pages
-  skip_cleanup: true
-  github_token: $GH_REPO_TOKEN
-  on:
-    branch: master
+        -stage: deploy
+        deploy:
+          strategy: git
+          provider: pages
+          skip_cleanup: true
+          local_dir: generated
+          github_token: $GH_REPO_TOKEN
+          on:
+            branch: master
