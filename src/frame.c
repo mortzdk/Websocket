@@ -116,7 +116,7 @@ static void unmask(wss_frame_t *frame) {
             (int)mask,
             (int)mask,
             (int)mask,
-            (int)mask
+            (int)mask,
             (int)mask,
             (int)mask,
             (int)mask,
