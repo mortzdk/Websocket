@@ -84,10 +84,10 @@ static inline uint64_t htonl64(uint64_t value) {
  * Converts the unsigned 16 bit integer from host byte order to network byte
  * order.
  *
- * @param   value  [uint64_t]   "A 16 bit unsigned integer"
- * @return 		   [uint64_t]   "The 16 bit unsigned integer in network byte order"
+ * @param   value  [uint16_t]   "A 16 bit unsigned integer"
+ * @return 		   [uint16_t]   "The 16 bit unsigned integer in network byte order"
  */
-static inline uint64_t htons16(uint64_t value) {
+static inline uint16_t htons16(uint16_t value) {
 	static const int num = 42;
 
 	/**
@@ -104,50 +104,49 @@ static inline uint64_t htons16(uint64_t value) {
 
 static void unmask(wss_frame_t *frame) {
     char *applicationData = frame->payload+frame->extensionDataLength;
-#if defined(__AVX512F__) && false
     uint64_t i = 0;
+#if defined(__AVX512F__)
     __m512i masked_data;
-    int mask = ((unsigned)frame->maskingKey[0] << 24) | 
-               ((unsigned)frame->maskingKey[1] << 16) | 
-               ((unsigned)frame->maskingKey[2] << 8)  | 
-               ((unsigned)frame->maskingKey[3]);
+    uint32_t mask;
+    memcpy(&mask, frame->maskingKey, sizeof(uint32_t));
     __m512i maskingKey = _mm512_setr_epi32(
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask,
-            mask
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask,
+            (int)mask
             );
 
-    if ( frame->applicationDataLength > 64 ) {
-        for (; likely(i <= frame->applicationDataLength - 64); i += 64) {
-            masked_data = _mm512_loadu_si512((const __m512i *)(applicationData+i));
-            _mm512_storeu_si512((__m512i *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));
+    uint64_t size = sizeof(__m512i);
+
+    if ( frame->applicationDataLength > size ) {
+        for (; likely(i <= frame->applicationDataLength - size); i += size) {
+            masked_data = _mm512_loadu_si512((const void *)(applicationData+i));
+            _mm512_storeu_si512((void *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));
         }
     }
 
     // last part
     if ( likely(i < frame->applicationDataLength) ) {
-        char buffer[64];
-        memset(buffer, '\0', 64);
+        char buffer[size];
+        memset(buffer, '\0', size);
         memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
-        masked_data = _mm512_loadu_si512((const __m512i *)buffer);
-        _mm512_storeu_si512((__m512i *)buffer, _mm512_xor_si512 (masked_data, maskingKey));
+        masked_data = _mm512_loadu_si512((const void *)buffer);
+        _mm512_storeu_si512((void *)buffer, _mm512_xor_si512 (masked_data, maskingKey));
         memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__AVX2__) && defined(__AVX__)
-    uint64_t i = 0;
     __m256i masked_data;
     __m256i maskingKey = _mm256_setr_epi8(
             frame->maskingKey[0],
@@ -184,8 +183,10 @@ static void unmask(wss_frame_t *frame) {
             frame->maskingKey[3]
                 );
 
-    if ( frame->applicationDataLength > 32 ) {
-        for (; likely(i <= frame->applicationDataLength - 32); i += 32) {
+    uint64_t size = sizeof(__m256i);
+
+    if ( frame->applicationDataLength > size ) {
+        for (; likely(i <= frame->applicationDataLength - size); i += size) {
             masked_data = _mm256_loadu_si256((const __m256i *)(applicationData+i));
             _mm256_storeu_si256((__m256i *)(applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));
         }
@@ -193,15 +194,14 @@ static void unmask(wss_frame_t *frame) {
 
     // last part
     if ( likely(i < frame->applicationDataLength) ) {
-        char buffer[32];
-        memset(buffer, '\0', 32);
+        char buffer[size];
+        memset(buffer, '\0', size);
         memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
         masked_data = _mm256_loadu_si256((const __m256i *)buffer);
         _mm256_storeu_si256((__m256i *)buffer, _mm256_xor_si256 (masked_data, maskingKey));
         memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #elif defined(__SSE2__)
-    uint64_t i = 0;
     __m128i masked_data;
     __m128i maskingKey = _mm_setr_epi8(
             frame->maskingKey[0],
@@ -222,24 +222,26 @@ static void unmask(wss_frame_t *frame) {
             frame->maskingKey[3]
             );
 
-    if ( frame->applicationDataLength > 16 ) {
-        for (; likely(i <= frame->applicationDataLength - 16); i += 16) {
+    uint64_t size = sizeof(__m128i);
+
+    if ( frame->applicationDataLength > size ) {
+        for (; likely(i <= frame->applicationDataLength - size); i += size) {
             masked_data = _mm_loadu_si128((const __m128i *)(applicationData+i));
             _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
         }
     }
 
     if ( likely(i < frame->applicationDataLength) ) {
-        char buffer[16];
-        memset(buffer, '\0', 16);
+        char buffer[size];
+        memset(buffer, '\0', size);
         memcpy(buffer, applicationData + i, frame->applicationDataLength - i);
         masked_data = _mm_loadu_si128((const __m128i *)buffer);
         _mm_storeu_si128((__m128i *)buffer, _mm_xor_si128 (masked_data, maskingKey));
         memcpy(applicationData + i, buffer, (frame->applicationDataLength - i));
     }
 #else
-    uint64_t i, j;
-    for (i = 0, j = 0; likely(i < frame->applicationDataLength); i++, j++){
+    uint64_t j;
+    for (j = 0; likely(i < frame->applicationDataLength); i++, j++){
         applicationData[j] = applicationData[i] ^ frame->maskingKey[j % 4];
     }
 #endif
