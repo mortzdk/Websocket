@@ -13,9 +13,9 @@ RUN ln -s /usr/local/bin/pypy /usr/local/bin/python
 # install Autobahn|Testsuite
 RUN pip install -U pip && pip install autobahntestsuite
 
-# make volumes for input configuration and output reports
+# make volumes for input configuration and output generated
 VOLUME /config
-VOLUME /reports
+VOLUME /generated
 
 WORKDIR /
 EXPOSE 9001 9001
