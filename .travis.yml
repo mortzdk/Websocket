@@ -1,42 +1,37 @@
 language: c
 os: linux
 dist: focal
-
-# Blacklist
 branches:
   only:
     - master
-
 services:
     - docker
-
 compiler:
     - gcc
-
 before_install:
     - echo "deb http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu cosmic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
     - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com CE6500E9003E6E24
     - sudo apt-get -q update
     - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
-
-
+    - docker build -t wsserver/autobahn -f Dockerfile .
 stages:
     - generate
     - deploy
 jobs:
     include:
-        -stage: generate 
-        script: 
-            - make test
-            - make autobahn
-            - make docs
-        -stage: deploy
+        - stage: generate 
+        - script: ./scripts/travis.sh
+        - script: make test
+        - script: make autobahn
+        - script: make jobs 
+        - stage: deploy
         deploy:
             strategy: git
             provider: pages
             skip_cleanup: true
             local_dir: generated
-            keep_history: true
             github_token: $GH_REPO_TOKEN
+            keep_history: true
+            project_name: WSServer
             on:
                 branch: master
