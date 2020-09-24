@@ -19,12 +19,12 @@ stages:
     - deploy
 jobs:
     include:
-        - stage: generate 
-        - script: ./scripts/travis.sh
-        - script: make test
-        - script: make autobahn
-        - script: make jobs 
-        - stage: deploy
+        stage: generate 
+        script: ./scripts/travis.sh
+        script: make test
+        script: make autobahn
+        script: make jobs 
+        stage: deploy
         deploy:
             strategy: git
             provider: pages
