@@ -125,6 +125,7 @@ log:
 	if [[ ! -e $(LOG_FOLDER) ]]; then mkdir -p $(LOG_FOLDER); fi
 
 docs: $(SRC)
+	rm -rf $(GEN_FOLDER)/documentation
 	mkdir -p $(GEN_FOLDER)/documentation
 	doxygen $(CONF_FOLDER)/doxyfile.conf
 
@@ -236,6 +237,7 @@ count:
 
 #make autobahn
 autobahn: release
+	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
 	sleep 1
@@ -251,6 +253,7 @@ autobahn: release
 
 #make autobahn
 autobahn_debug: debug
+	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
 	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
@@ -267,6 +270,7 @@ autobahn_debug: debug
 
 #make autobahn_call
 autobahn_call: profiling
+	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
@@ -282,6 +286,7 @@ autobahn_call: profiling
 
 #make autobahn_cache
 autobahn_cache: profiling
+	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 1
@@ -300,6 +305,7 @@ criterion:
 
 #make test
 test: criterion subprotocols extensions $(TEST_NAMES) ${addprefix run_,${TEST_NAMES}} 
+	rm -rf $(GEN_FOLDER)/gcov
 	mkdir -p $(GEN_FOLDER)/gcov
 	gcovr --object-directory $(BUILD_FOLDER) -r . --html --html-details --html-title $(NAME) -o $(GEN_FOLDER)/gcov/index.html
 
