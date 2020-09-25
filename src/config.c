@@ -541,6 +541,13 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 config->pool_workers =
                                     (unsigned int)temp->u.integer;
                             }
+
+                            // Getting amount of retries
+                            temp = json_value_find(val, "retries");
+                            if ( temp != NULL && likely(temp->type == json_integer) ) {
+                                config->pool_retries =
+                                    (unsigned int)temp->u.integer;
+                            }
                         }
                     }
                 }

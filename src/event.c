@@ -45,7 +45,7 @@ static inline void rearm(wss_server_t *server) {
 
     WSS_log_trace("Notify about rearm");
 
-    if (server->rearm_pipefd[0] != -1 && server->rearm_pipefd[1] != -1) {
+    if ( likely(server->rearm_pipefd[0] != -1 && server->rearm_pipefd[1] != -1) ) {
         do {
             errno = 0;
             n = write(server->rearm_pipefd[1], "ARM", 3);
@@ -70,7 +70,7 @@ static inline void handle_rearm(wss_server_t *server) {
 
     WSS_log_trace("Handle rearm");
 
-    if (server->rearm_pipefd[0] != -1 && server->rearm_pipefd[1] != -1) {
+    if ( likely(server->rearm_pipefd[0] != -1 && server->rearm_pipefd[1] != -1) ) {
         do {
             n = read(server->rearm_pipefd[0], buf, server->config->size_buffer);
             if ( unlikely(n < 0) ) {
@@ -96,8 +96,9 @@ static inline void handle_rearm(wss_server_t *server) {
  * @return 			[wss_error_t]       "The error status"
  */
 wss_error_t WSS_add_to_threadpool(wss_server_t *server, void (*func)(void *), void *args) {
-    int err, retries = 0;
+    int err;
     struct timespec tim;
+    unsigned int retries = 0;
 
     tim.tv_sec = 0;
     tim.tv_nsec = 100000000;
@@ -112,7 +113,7 @@ wss_error_t WSS_add_to_threadpool(wss_server_t *server, void (*func)(void *), vo
                     WSS_log_fatal("Locking in thread failed");
                     return WSS_THREADPOOL_LOCK_ERROR;
                 case threadpool_queue_full:
-                    if (retries < 5) {
+                    if ( likely(retries < server->config->pool_retries) ) {
                         retries += 1;
                         WSS_log_trace("Threadpool full, will retry shortly. Retry number: %d", retries);
                         nanosleep(&tim, NULL);
@@ -219,11 +220,11 @@ wss_error_t WSS_poll_init(wss_server_t *server) {
         return WSS_POLL_PIPE_ERROR;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS) ) {
         return err;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS ) ) {
         return err;
     }
 
@@ -613,11 +614,11 @@ wss_error_t WSS_poll_init(wss_server_t *server) {
         return WSS_POLL_PIPE_ERROR;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS ) ) {
         return err;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS ) ) {
         return err;
     }
 
@@ -927,17 +928,17 @@ wss_error_t WSS_poll_init(wss_server_t *server) {
         return WSS_POLL_PIPE_ERROR;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[0])) != WSS_SUCCESS) ) {
         return err;
     }
 
-    if ( (err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->rearm_pipefd[1])) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Arms arm pipe file descriptor to poll instance");
 
-    if ((err = WSS_poll_set_read(server, server->rearm_pipefd[0])) != WSS_SUCCESS) {
+    if ( unlikely((err = WSS_poll_set_read(server, server->rearm_pipefd[0])) != WSS_SUCCESS)) {
         return err;
     }
 

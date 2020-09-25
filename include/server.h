@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <sys/socket.h>         /* socket, setsockopt, inet_ntoa, accept, shutdown */
 #include <netinet/in.h>         /* sockaddr_in, inet_ntoa */
+#include <regex.h>              /* regex_t, regcomp, regexec */
 
 #ifdef USE_OPENSSL
 #include <openssl/ssl.h>
@@ -55,6 +56,7 @@ typedef struct {
     pthread_t cleanup_thread_id;
     pthread_mutex_t lock;
     int rearm_pipefd[2];
+    regex_t *re;
 } wss_server_t;
 
 typedef struct {

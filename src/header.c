@@ -5,7 +5,6 @@
                                    strtok, strtok_r */
 
 #include <sys/types.h>
-#include <regex.h>              /* regex_t, regcomp, regexec */
 #include <ctype.h>              /* isspace */
 
 #include "header.h"
@@ -416,132 +415,18 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
 }
 
 /**
- * Generates a regular expression pattern to match the request uri of the header.
- *
- * @param   config    [wss_config_t *]  "The configuration of the server"
- * @param   ssl       [bool]            "Whether server uses SSL"
- * @param   port      [int]             "The server port"
- * @return            [char *]          "The request uri regex pattern"
- */
-static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
-    int i, j, k;
-    size_t iw = 0, jw = 0, kw = 0;
-    size_t request_uri_length = 0;
-    size_t sum_host_length = 0; 
-    size_t sum_path_length = 0; 
-    size_t sum_query_length = 0; 
-    char *request_uri;
-    char *host = "";
-    char *path = "";
-    char *query = "";
-    char *s = "";
-
-    for (i = 0; i < config->hosts_length; i++) {
-        sum_host_length += strlen(config->hosts[i]); 
-    }
-    sum_host_length += MAX(config->hosts_length-1, 0);
-
-    for (j = 0; j < config->paths_length; j++) {
-        sum_path_length += strlen(config->paths[j]); 
-    }
-    sum_path_length += MAX(config->paths_length-1, 0);
-
-    for (k = 0; k < config->queries_length; k++) {
-        sum_query_length += strlen(config->queries[k]); 
-    }
-    sum_query_length += MAX(config->queries_length-1, 0);
-
-    if (sum_host_length+sum_path_length+sum_query_length == 0) {
-        return NULL;
-    }
-
-    request_uri_length += strlen(REQUEST_URI)*sizeof(char)-12*sizeof(char);
-    request_uri_length += ssl*sizeof(char);
-    request_uri_length += (log10(port)+1)*sizeof(char);
-    request_uri_length += sum_host_length*sizeof(char);
-    request_uri_length += sum_path_length*sizeof(char);
-    request_uri_length += sum_query_length*sizeof(char);
-    request_uri_length += sum_query_length*sizeof(char);
-    request_uri = (char *) WSS_malloc(request_uri_length+1*sizeof(char));
-
-    if (ssl) {
-        s = "s";
-    }
-
-    if ( unlikely(sum_host_length > 0 && NULL == (host = WSS_malloc(sum_host_length+1))) ) {
-        return NULL;
-    }
-
-    if ( unlikely(sum_path_length > 0 && NULL == (path = WSS_malloc(sum_path_length+1))) ) {
-        return NULL;
-    }
-
-    if ( unlikely(sum_query_length > 0 && NULL == (query = WSS_malloc(sum_query_length+1))) ) {
-        return NULL;
-    }
-
-    for (i = 0; likely(i < config->hosts_length); i++) {
-        if ( unlikely(i+1 == config->hosts_length) ) {
-            sprintf(host+iw, "%s", config->hosts[i]);
-        } else {
-            sprintf(host+iw, "%s|", config->hosts[i]);
-            iw++;
-        }
-        iw += strlen(config->hosts[i]);
-    }
-
-    for (j = 0; likely(j < config->paths_length); j++) {
-        if ( unlikely(j+1 == config->paths_length) ) {
-            sprintf(path+jw, "%s", config->paths[j]);
-        } else {
-            sprintf(path+jw, "%s|", config->paths[j]);
-            jw++;
-        }
-        jw += strlen(config->paths[j]);
-    }
-
-    for (k = 0; likely(k < config->queries_length); k++) {
-        if ( unlikely(k+1 == config->queries_length) ) {
-            sprintf(query+kw, "%s", config->queries[k]);
-        } else {
-            sprintf(query+kw, "%s|", config->queries[k]);
-            kw++;
-        }
-        kw += strlen(config->queries[k]);
-    }
-
-    sprintf(request_uri, REQUEST_URI, s, host, port, path, query, query);
-
-    if ( likely(strlen(host) > 0) ) {
-        WSS_free((void **) &host);
-    }
-
-    if ( likely(strlen(path) > 0) ) {
-        WSS_free((void **) &path);
-    }
-
-    if ( likely(strlen(query) > 0) ) {
-        WSS_free((void **) &query);
-    }
-
-    return request_uri;
-}
-
-/**
  * Upgrades a HTTP header, that is returns switching protocols response if
  * the header contains the required options.
  *
  * @param   header    [wss_header_t *]         "The header structure to fill"
  * @param   config    [wss_config_t *]         "The configuration of the server"
- * @param   ssl       [bool]                   "Whether server uses SSL"
- * @param   port      [int]                    "The server port"
+ * @param   re        [regex_t *]              "The regex to validate path"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * config, bool ssl, int port) {
+enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * config, regex_t *re) {
     int err;
-    regex_t re;
     char msg[1024];
-    char *request_uri, *sep;
+    char *sep;
     char *sepptr = NULL;
     unsigned char *key = NULL;
     unsigned long key_length;
@@ -556,32 +441,19 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 
     WSS_log_trace("Validating request_uri");
     
-    // It is recommended to specify paths in the config file
-    request_uri = generate_request_uri(config, ssl, port);
-    if ( likely(request_uri != NULL) ) {
-        if ( unlikely((err = regcomp(&re, request_uri, REG_EXTENDED|REG_NOSUB)) != 0) ) {
-            regerror(err, &re, msg, 1024);
-            WSS_log_error("Unable to compile regex: %s", msg);
-            WSS_free((void **) &request_uri);
-            return HttpStatus_InternalServerError;
-        }
-
-        err = regexec(&re, header->path, 0, NULL, 0);
-        regfree(&re);
+    if (re != NULL) {
+        // It is recommended to specify paths in the config file
+        err = regexec(re, header->path, 0, NULL, 0);
         if ( unlikely(err == REG_NOMATCH) ) {
             WSS_log_trace("Path is not allowed: %s", header->path);
-            WSS_free((void **) &request_uri);
             return HttpStatus_NotFound;
         }
 
         if ( unlikely(err != 0) ) {
-            regerror(err, &re, msg, 1024);
+            regerror(err, re, msg, 1024);
             WSS_log_error("Unable to exec regex: %s", msg);
-            WSS_free((void **) &request_uri);
             return HttpStatus_InternalServerError;
         }
-
-        WSS_free((void **) &request_uri);
     }
 
     WSS_log_trace("Validating host");

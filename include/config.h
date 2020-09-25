@@ -30,6 +30,7 @@ typedef struct {
     unsigned int size_frame;
     unsigned int max_frames;
     unsigned int pool_workers;
+    unsigned int pool_retries;
     unsigned int timeout_pings;
     int timeout_poll;
     int timeout_read;
