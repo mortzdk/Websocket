@@ -20,30 +20,47 @@ before_install:
 before_cache:
   - docker save -o docker_images/images.tar $(docker images -a -q)
 stages:
-  - cleanup
   - docs
   - criterion
   - autobahn
-  - deploy
 jobs:
   include:
-    - stage: cleanup 
-      script: 
-        - ./scripts/travis.sh
-
     - stage: docs 
       script: 
+        - ./scripts/travis.sh
         - make docs 
+      deploy:
+        strategy: git
+        provider: pages
+        cleanup: false
+        skip_cleanup: true
+        local_dir: generated
+        github_token: $GH_REPO_TOKEN
+        keep_history: true
+        project_name: WSServer
+        on:
+          branch: master
 
     - stage: criterion
       script: 
+        - ./scripts/travis.sh
         - make test
+      deploy:
+        strategy: git
+        provider: pages
+        cleanup: false
+        skip_cleanup: true
+        local_dir: generated
+        github_token: $GH_REPO_TOKEN
+        keep_history: true
+        project_name: WSServer
+        on:
+          branch: master
 
     - stage: autobahn 
       script: 
+        - ./scripts/travis.sh
         - make autobahn
-
-    - stage: deploy
       deploy:
         strategy: git
         provider: pages
