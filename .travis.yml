@@ -5,40 +5,53 @@ branches:
   only:
     - master
 services:
-    - docker
+  - docker
 compiler:
-    - gcc
+  - gcc
 cache:
-    directories:
-        - docker_images
+  directories:
+    - docker_images
 before_install:
-    - echo "deb http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu cosmic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
-    - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com CE6500E9003E6E24
-    - sudo apt-get -q update
-    - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
-    - docker load -i docker_images/images.tar || true
+  - echo "deb http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu cosmic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
+  - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com CE6500E9003E6E24
+  - sudo apt-get -q update
+  - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
+  - docker load -i docker_images/images.tar || true
 before_cache:
-    - docker save -o docker_images/images.tar $(docker images -a -q)
+  - docker save -o docker_images/images.tar $(docker images -a -q)
 stages:
-    - generate
-    - deploy
+  - cleanup
+  - docs
+  - criterion
+  - autobahn
+  - deploy
 jobs:
-    include:
-        stage: generate 
-        script: 
-            - ./scripts/travis.sh
-            - make docs 
-            - make test
-            - make autobahn
-        stage: deploy
-        deploy:
-            strategy: git
-            provider: pages
-            cleanup: false
-            skip_cleanup: true
-            local_dir: generated
-            github_token: $GH_REPO_TOKEN
-            keep_history: true
-            project_name: WSServer
-            on:
-                branch: master
+  include:
+    - stage: cleanup 
+      script: 
+        - ./scripts/travis.sh
+
+    - stage: docs 
+      script: 
+        - make docs 
+
+    - stage: criterion
+      script: 
+        - make test
+
+    - stage: autobahn 
+      script: 
+        - make autobahn
+
+    - stage: deploy
+      deploy:
+        strategy: git
+        provider: pages
+        cleanup: false
+        skip_cleanup: true
+        local_dir: generated
+        github_token: $GH_REPO_TOKEN
+        keep_history: true
+        project_name: WSServer
+        on:
+          branch: master
