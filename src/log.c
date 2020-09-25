@@ -47,8 +47,6 @@ static int minutes;
 static int seconds;
 static int usec;
 
-char time_string[100];
-
 static struct timeval tv;
 static struct tm *tm;
 
@@ -96,13 +94,13 @@ static inline void time_to_str(char *buf) {
 }
 
 static inline void lock(void) {
-    if (L.lock) {
+    if ( likely(L.lock) ) {
         L.lock(L.udata, 1);
     }
 }
 
 static inline void unlock(void) {
-    if (L.lock) {
+    if ( likely(L.lock) ) {
         L.lock(L.udata, 0);
     }
 }
@@ -133,6 +131,8 @@ void log_log(int level, const char *file, int line, const char *fmt, ...) {
     } else if ( unlikely(L.quiet && !L.fp) ) {
         return;
     }
+
+    char time_string[100];
 
     /* Acquire lock */
     lock();

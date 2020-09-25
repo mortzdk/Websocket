@@ -151,6 +151,9 @@ typedef enum {
 
     // Cleanup thread failed
     WSS_CLEANUP_ERROR                = -56,
+
+    // Regex creation failed
+    WSS_REGEX_ERROR                  = -57,
 } wss_error_t;
 
 #endif

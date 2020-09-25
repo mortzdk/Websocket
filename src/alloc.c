@@ -142,7 +142,7 @@ void *WSS_realloc_normal(void *ptr, size_t newSize) {
  * @return 		    [void]
  */
 void WSS_free(void **ptr) {
-    if (NULL != *ptr) {
+    if ( likely(NULL != *ptr) ) {
 #ifdef USE_RPMALLOC
         rpfree(*ptr);
 #else

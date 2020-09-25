@@ -110,7 +110,7 @@ else
 endif
 
 
-.PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+.PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn massconnect autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
 all: clean version bin build log subprotocols extensions $(NAME)
@@ -241,7 +241,7 @@ autobahn: release
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
 	sleep 1
-	docker build -t wsserver/autobahn -f Dockerfile .
+	docker build -t wsserver/autobahn -f Dockerfile.test .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
@@ -251,14 +251,14 @@ autobahn: release
     wsserver/autobahn
 	pkill $(NAME) || true
 
-#make autobahn
+#make autobahn_debug
 autobahn_debug: debug
 	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind -v --leak-check=full --log-file="$(LOG_FOLDER)/valgrind.log" --track-origins=yes \
 	--show-reachable=yes $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
 	sleep 3
-	docker build -t wsserver/autobahn -f Dockerfile .
+	docker build -t wsserver/autobahn -f Dockerfile.test .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
@@ -273,8 +273,8 @@ autobahn_call: profiling
 	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=callgrind --simulate-cache=yes --branch-sim=yes --callgrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
-	sleep 1
-	docker build -t wsserver/autobahn -f Dockerfile .
+	sleep 3
+	docker build -t wsserver/autobahn -f Dockerfile.test .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
@@ -289,14 +289,44 @@ autobahn_cache: profiling
 	rm -rf $(GEN_FOLDER)/autobahn
 	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
 	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.debug.json &
-	sleep 1
-	docker build -t wsserver/autobahn -f Dockerfile .
+	sleep 3
+	docker build -t wsserver/autobahn -f Dockerfile.test .
 	docker run -it --rm \
 	--network="host" \
     -v ${CONF_FOLDER}:/config \
     -v ${GEN_FOLDER}:/generated \
     -p 9001:9001 \
     --name fuzzingclient \
+    wsserver/autobahn
+	pkill -SIGINT memcheck
+
+#make massconnect
+massconnect: release
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
+	$(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	sleep 1
+	docker build -t wsserver/autobahn -f Dockerfile.massconnect .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${GEN_FOLDER}:/generated \
+    -p 9001:9001 \
+    --name massconnect \
+    wsserver/autobahn
+	pkill $(NAME) || true
+
+#make autobahn_cache
+massconnect_cache: profiling
+	if [[ ! -e $(GEN_FOLDER) ]]; then mkdir -p $(GEN_FOLDER); fi
+	valgrind --tool=cachegrind --trace-children=yes --cachegrind-out-file=$(LOG_FOLDER)/$(NAME).callgrind.log $(BIN_FOLDER)/$(NAME) -c $(CONF_FOLDER)/autobahn.json &
+	sleep 3
+	docker build -t wsserver/autobahn -f Dockerfile.massconnect .
+	docker run -it --rm \
+	--network="host" \
+    -v ${CONF_FOLDER}:/config \
+    -v ${GEN_FOLDER}:/generated \
+    -p 9001:9001 \
+    --name massconnect \
     wsserver/autobahn
 	pkill -SIGINT memcheck
 

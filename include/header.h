@@ -2,14 +2,12 @@
 #define wss_header_h
 
 #include <stdbool.h>
+#include <regex.h>              /* regex_t, regcomp, regexec */
 
 #include "config.h"
 #include "httpstatuscodes.h"
 #include "subprotocols.h"
 #include "extensions.h"
-
-#define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)(&(%s))*)?$"
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 #define WEBSOCKET_STRING "websocket"
 #define WEBSOCKET_UPPERCASE_STRING "WebSocket"
@@ -80,11 +78,10 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
  *
  * @param   header    [wss_header_t *]         "The header structure to fill"
  * @param   config    [wss_config_t *]         "The configuration of the server"
- * @param   ssl       [bool]                   "Whether server uses SSL"
- * @param   port      [int]                    "The server port"
+ * @param   re        [regex_t *]              "The regex to validate path"
  * @return            [enum HttpStatus_Code]   "The status code to return to the client"
  */
-enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t *config, bool ssl, int port);
+enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t *config, regex_t *re);
 
 /**
  * Frees a HTTP header structure

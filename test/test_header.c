@@ -1,9 +1,12 @@
 #include <signal.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <regex.h>
 #include <criterion/criterion.h>
 
 #include "alloc.h"
+#include "server.h"
+#include "http.h"
 #include "header.h"
 #include "config.h"
 #include "subprotocols.h"
@@ -947,6 +950,7 @@ Test(WSS_parse_header, valid_hixie75_with_no_protocol) {
 TestSuite(WSS_upgrade_header, .init = setup, .fini = teardown);
 
 Test(WSS_upgrade_header, upgrade_required_for_http_path) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTPS_HTTP_PATH);
@@ -965,8 +969,15 @@ Test(WSS_upgrade_header, upgrade_required_for_http_path) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
+
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
 
     WSS_config_free(conf);
 
@@ -975,6 +986,7 @@ Test(WSS_upgrade_header, upgrade_required_for_http_path) {
 }
 
 Test(WSS_upgrade_header, unsupported_http_path) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_WRONG_HTTP_PATH);
@@ -993,11 +1005,18 @@ Test(WSS_upgrade_header, unsupported_http_path) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotFound);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotFound);
+
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
 
     WSS_config_free(conf);
 
@@ -1006,6 +1025,7 @@ Test(WSS_upgrade_header, unsupported_http_path) {
 }
 
 Test(WSS_upgrade_header, unsupported_http_path_query) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_WRONG_HTTP_PATH_QUERY);
@@ -1024,12 +1044,18 @@ Test(WSS_upgrade_header, unsupported_http_path_query) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotFound);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotFound);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1037,6 +1063,7 @@ Test(WSS_upgrade_header, unsupported_http_path_query) {
 }
 
 Test(WSS_upgrade_header, supported_http_path_missing_host) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP_PATH);
@@ -1055,12 +1082,18 @@ Test(WSS_upgrade_header, supported_http_path_missing_host) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1068,6 +1101,7 @@ Test(WSS_upgrade_header, supported_http_path_missing_host) {
 }
 
 Test(WSS_upgrade_header, supported_http_path_query_missing_host) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP_PATH_QUERY);
@@ -1086,12 +1120,18 @@ Test(WSS_upgrade_header, supported_http_path_query_missing_host) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1099,6 +1139,7 @@ Test(WSS_upgrade_header, supported_http_path_query_missing_host) {
 }
 
 Test(WSS_upgrade_header, wrong_host) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1118,12 +1159,18 @@ Test(WSS_upgrade_header, wrong_host) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_BadRequest);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1131,6 +1178,7 @@ Test(WSS_upgrade_header, wrong_host) {
 }
 
 Test(WSS_upgrade_header, supported_host_missing_upgrade) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1150,12 +1198,18 @@ Test(WSS_upgrade_header, supported_host_missing_upgrade) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1163,6 +1217,7 @@ Test(WSS_upgrade_header, supported_host_missing_upgrade) {
 }
 
 Test(WSS_upgrade_header, too_short_upgrade) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1183,12 +1238,18 @@ Test(WSS_upgrade_header, too_short_upgrade) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1196,6 +1257,7 @@ Test(WSS_upgrade_header, too_short_upgrade) {
 }
 
 Test(WSS_upgrade_header, supported_upgrade_missing_connection) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1216,12 +1278,18 @@ Test(WSS_upgrade_header, supported_upgrade_missing_connection) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1229,6 +1297,7 @@ Test(WSS_upgrade_header, supported_upgrade_missing_connection) {
 }
 
 Test(WSS_upgrade_header, too_short_connection) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1250,12 +1319,18 @@ Test(WSS_upgrade_header, too_short_connection) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1263,6 +1338,7 @@ Test(WSS_upgrade_header, too_short_connection) {
 }
 
 Test(WSS_upgrade_header, connection_comma) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1284,12 +1360,18 @@ Test(WSS_upgrade_header, connection_comma) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1297,6 +1379,7 @@ Test(WSS_upgrade_header, connection_comma) {
 }
 
 Test(WSS_upgrade_header, wrong_connection) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1319,12 +1402,18 @@ Test(WSS_upgrade_header, wrong_connection) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1333,6 +1422,7 @@ Test(WSS_upgrade_header, wrong_connection) {
 }
 
 Test(WSS_upgrade_header, supported_connection_missing_origin) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1355,12 +1445,18 @@ Test(WSS_upgrade_header, supported_connection_missing_origin) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_Forbidden);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1369,6 +1465,7 @@ Test(WSS_upgrade_header, supported_connection_missing_origin) {
 }
 
 Test(WSS_upgrade_header, wrong_origin) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1392,12 +1489,18 @@ Test(WSS_upgrade_header, wrong_origin) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_Forbidden);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1406,6 +1509,7 @@ Test(WSS_upgrade_header, wrong_origin) {
 }
 
 Test(WSS_upgrade_header, supported_origin_missing_type) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1429,12 +1533,18 @@ Test(WSS_upgrade_header, supported_origin_missing_type) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1443,6 +1553,7 @@ Test(WSS_upgrade_header, supported_origin_missing_type) {
 }
 
 Test(WSS_upgrade_header, wrong_type) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1467,12 +1578,18 @@ Test(WSS_upgrade_header, wrong_type) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1481,6 +1598,7 @@ Test(WSS_upgrade_header, wrong_type) {
 }
 
 Test(WSS_upgrade_header, supported_type_missing_key) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1505,12 +1623,18 @@ Test(WSS_upgrade_header, supported_type_missing_key) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1519,6 +1643,7 @@ Test(WSS_upgrade_header, supported_type_missing_key) {
 }
 
 Test(WSS_upgrade_header, wrong_key_length) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1544,12 +1669,18 @@ Test(WSS_upgrade_header, wrong_key_length) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1558,6 +1689,7 @@ Test(WSS_upgrade_header, wrong_key_length) {
 }
 
 Test(WSS_upgrade_header, supported_key_switching_protocols) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HTTP);
@@ -1583,12 +1715,18 @@ Test(WSS_upgrade_header, supported_key_switching_protocols) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1597,6 +1735,7 @@ Test(WSS_upgrade_header, supported_key_switching_protocols) {
 }
 
 Test(WSS_upgrade_header, valid_rfc6455) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_RFC6455);
@@ -1622,12 +1761,18 @@ Test(WSS_upgrade_header, valid_rfc6455) {
     cr_assert(NULL != header->ws_extensions);
     cr_assert(NULL != header->ws_protocol);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_destroy_extensions();
     WSS_config_free(conf);
@@ -1637,6 +1782,7 @@ Test(WSS_upgrade_header, valid_rfc6455) {
 }
 
 Test(WSS_upgrade_header, valid_hybi10) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HYBI10);
@@ -1658,12 +1804,18 @@ Test(WSS_upgrade_header, valid_hybi10) {
     cr_assert(code == HttpStatus_OK);
     cr_assert(NULL != header->ws_protocol);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
 
@@ -1672,6 +1824,7 @@ Test(WSS_upgrade_header, valid_hybi10) {
 }
 
 Test(WSS_upgrade_header, valid_hybi07) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HYBI07);
@@ -1693,12 +1846,18 @@ Test(WSS_upgrade_header, valid_hybi07) {
     cr_assert(code == HttpStatus_OK);
     cr_assert(NULL != header->ws_protocol);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
 
@@ -1707,6 +1866,7 @@ Test(WSS_upgrade_header, valid_hybi07) {
 }
 
 Test(WSS_upgrade_header, valid_hybi06) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HYBI06);
@@ -1728,12 +1888,18 @@ Test(WSS_upgrade_header, valid_hybi06) {
     cr_assert(code == HttpStatus_OK);
     cr_assert(NULL != header->ws_protocol);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
 
@@ -1742,6 +1908,7 @@ Test(WSS_upgrade_header, valid_hybi06) {
 }
 
 Test(WSS_upgrade_header, valid_hybi05) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HYBI05);
@@ -1760,12 +1927,18 @@ Test(WSS_upgrade_header, valid_hybi05) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1773,6 +1946,7 @@ Test(WSS_upgrade_header, valid_hybi05) {
 }
 
 Test(WSS_upgrade_header, valid_hybi04) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HYBI04);
@@ -1791,12 +1965,18 @@ Test(WSS_upgrade_header, valid_hybi04) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1804,6 +1984,7 @@ Test(WSS_upgrade_header, valid_hybi04) {
 }
 
 Test(WSS_upgrade_header, valid_hixie76) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HIXIE76);
@@ -1822,12 +2003,18 @@ Test(WSS_upgrade_header, valid_hixie76) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
@@ -1835,6 +2022,7 @@ Test(WSS_upgrade_header, valid_hixie76) {
 }
 
 Test(WSS_upgrade_header, valid_hixie75) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HIXIE75);
@@ -1856,12 +2044,18 @@ Test(WSS_upgrade_header, valid_hixie75) {
     cr_assert(code == HttpStatus_OK);
     cr_assert(NULL != header->ws_protocol);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_destroy_subprotocols();
@@ -1870,6 +2064,7 @@ Test(WSS_upgrade_header, valid_hixie75) {
 }
 
 Test(WSS_upgrade_header, valid_hixie75_reverse_protocol) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HIXIE75_REVERSE_PROTOCOL);
@@ -1890,12 +2085,18 @@ Test(WSS_upgrade_header, valid_hixie75_reverse_protocol) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
 
@@ -1904,6 +2105,7 @@ Test(WSS_upgrade_header, valid_hixie75_reverse_protocol) {
 }
 
 Test(WSS_upgrade_header, valid_hixie75_with_no_protocol_not_impletented) {
+    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     wss_header_t *header = (wss_header_t *) WSS_malloc(sizeof(wss_header_t));
     size_t l = strlen(HEADER_HIXIE75_NO_PROTOCOL);
@@ -1922,12 +2124,18 @@ Test(WSS_upgrade_header, valid_hixie75_with_no_protocol_not_impletented) {
     
     cr_assert(code == HttpStatus_OK);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_http);
+    server->config = conf;
+    server->port = conf->port_http;
+    WSS_http_regex_init(server);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, true, conf->port_https);
+    code = WSS_upgrade_header(header, conf, server->re);
     cr_assert(code == HttpStatus_NotImplemented);
 
+    regfree(server->re);
+    WSS_free((void **)&server->re);
+    WSS_free((void **)&server);
     WSS_config_free(conf);
 
     WSS_free((void**) &conf);
