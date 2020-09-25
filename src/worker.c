@@ -533,7 +533,7 @@ static void ssl_handshake(wss_server_t *server, wss_session_t *session) {
     err = SSL_get_error(session->ssl, ret);
 
     // If something more needs to be read in order for the handshake to finish
-    if (err == SSL_ERROR_WANT_READ) {
+    if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
         WSS_log_trace("Need to wait for further reads");
 
         clock_gettime(CLOCK_MONOTONIC, &session->alive);
@@ -544,7 +544,7 @@ static void ssl_handshake(wss_server_t *server, wss_session_t *session) {
     }
 
     // If something more needs to be written in order for the handshake to finish
-    if (err == SSL_ERROR_WANT_WRITE) {
+    if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
         WSS_log_trace("Need to wait for further writes");
 
         clock_gettime(CLOCK_MONOTONIC, &session->alive);
@@ -751,12 +751,12 @@ static int read_internal(wss_server_t *server, wss_session_t *session, char *buf
         err = SSL_get_error(session->ssl, n);
 
         // There's no more to read from the kernel
-        if (err == SSL_ERROR_WANT_READ) {
+        if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
             n = 0;
         } else
             
         // There's no space to write to the kernel, wait for filedescriptor.
-        if (err == SSL_ERROR_WANT_WRITE) {
+        if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
             WSS_log_debug("SSL_ERROR_WANT_WRITE");
 
             n = -2;
@@ -788,6 +788,7 @@ static int read_internal(wss_server_t *server, wss_session_t *session, char *buf
                     continue;
                 } else if ( unlikely(errno != EAGAIN && errno != EWOULDBLOCK) ) {
                     WSS_log_error("Read failed: %s", strerror(errno));
+                    session->closing = true;
                 } else {
                     n = 0;
                 }
@@ -812,16 +813,12 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     wss_header_t *header;
     wss_message_t *message;
     enum HttpStatus_Code code;
-    char buffer[server->config->size_buffer];
-    bool ssl = false;
+    char *buffer;
 
-    memset(buffer, '\0', server->config->size_buffer);
-
-#ifdef USE_OPENSSL
-    if (NULL != server->ssl_ctx) {
-        ssl = true;
+    if ( unlikely(NULL == (buffer = WSS_malloc(server->config->size_buffer)))) {
+        WSS_log_fatal("Unable to allocate buffer");
+        return;
     }
-#endif
 
     WSS_log_trace("Preparing client header");
 
@@ -830,6 +827,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
         session->header = NULL;
     } else {
         if ( unlikely(NULL == (header = WSS_malloc(sizeof(wss_header_t)))) ) {
+            WSS_log_fatal("Unable to allocate header");
             return;
         }
 
@@ -915,6 +913,8 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
         }
     } while ( likely(n != 0) );
 
+    WSS_free((void **)&buffer);
+
     WSS_log_debug("Client header: \n%s", header->content);
 
     WSS_log_trace("Starting parsing header received from client");
@@ -971,7 +971,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     WSS_log_trace("Header successfully parsed");
 
     // Create Upgrade HTTP header based on clients header
-    code = WSS_upgrade_header(header, server->config, ssl, server->port);
+    code = WSS_upgrade_header(header, server->config, server->re);
     switch (code) {
         case HttpStatus_UpgradeRequired:
             WSS_log_trace("Rejecting HTTP request as the service requires use of the Websocket protocol.");
@@ -1064,6 +1064,7 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
     size_t msg_offset = 0;
     size_t starting_frame = 0;
     bool fragmented = false;
+    char *buffer;
 
     // If no initial header has been seen for the session, the websocket
     // handshake is yet to be made.
@@ -1075,8 +1076,11 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
 
     WSS_log_trace("Starting initial steps to read from client");
 
-    char buffer[server->config->size_buffer];
-    memset(buffer, '\0', server->config->size_buffer);
+    if ( unlikely(NULL == (buffer = WSS_malloc(server->config->size_buffer)))) {
+        WSS_log_error("Unable to allocate buffer");
+        session->closing = true;
+        return;
+    }
 
     // Use earlier payload
     payload = session->payload;
@@ -1146,6 +1150,9 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
 
         }
     } while ( likely(n != 0) );
+
+    // Release memory used for buffer
+    WSS_free((void **) &buffer);
 
     WSS_log_trace("Payload from client was read. Continues flow by parsing frames.");
 
@@ -1490,7 +1497,7 @@ void WSS_read(wss_server_t *server, wss_session_t *session) {
         }
     }
 
-    if (frames_length > 0) {
+    if ( likely(frames_length > 0) ) {
         for (i = 0; likely(i < frames_length); i++) {
             WSS_free_frame(frames[i]);
         }
@@ -1549,7 +1556,7 @@ void WSS_write(wss_server_t *server, wss_session_t *session) {
                     err = SSL_get_error(session->ssl, n);
 
                     // If something more needs to be read in order for the handshake to finish
-                    if (err == SSL_ERROR_WANT_READ) {
+                    if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
                         WSS_log_trace("Needs to wait for further reads");
 
                         session->written = bytes_sent;
@@ -1561,7 +1568,7 @@ void WSS_write(wss_server_t *server, wss_session_t *session) {
                     }
 
                     // If something more needs to be written in order for the handshake to finish
-                    if (err == SSL_ERROR_WANT_WRITE) {
+                    if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
                         WSS_log_trace("Needs to wait for further writes");
 
                         session->written = bytes_sent;
@@ -1749,6 +1756,7 @@ void WSS_work(void *args) {
     pthread_mutex_unlock(&session->lock);
 
     if (session->closing) {
+        session->event = NONE;
         WSS_disconnect(server, session);
     }
 

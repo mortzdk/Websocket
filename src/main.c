@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
     config.size_frame           = 1048576;
     config.max_frames           = 1048576;
     config.pool_workers         = 4;
+    config.pool_retries         = 5;
     config.timeout_pings        = 1;     // Times that a client will be pinged before timeout occurs
     config.timeout_poll         = -1;    // Infinite
     config.timeout_read         = 1000;  // 1 Second

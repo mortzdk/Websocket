@@ -2,8 +2,10 @@
 #include <stdio.h> 				/* printf, fflush, fprintf, fopen, fclose */
 #include <string.h>             /* strerror, memset, strncpy, memcpy, strlen */
 #include <stdlib.h>             /* atoi, malloc, free, realloc */
+#include <stdbool.h>            
 #include <math.h> 				/* log10 */
 #include <unistd.h> 			/* close */
+#include <regex.h>              /* regex_t, regcomp, regexec */
 
 #ifdef USE_OPENSSL
 #include <openssl/ssl.h>
@@ -19,6 +21,7 @@
 
 #include "http.h"
 #include "alloc.h"
+#include "config.h"
 #include "error.h"
 #include "log.h"
 #include "socket.h"
@@ -152,8 +155,154 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
 #endif
 
 /**
- * Function initialized a http server instance and creating thread where the
- * instance is being run.
+ * Generates a regular expression pattern to match the request uri of the header.
+ *
+ * @param   config    [wss_config_t *]  "The configuration of the server"
+ * @param   ssl       [bool]            "Whether server uses SSL"
+ * @param   port      [int]             "The server port"
+ * @return            [char *]          "The request uri regex pattern"
+ */
+static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
+    int i, j, k;
+    size_t iw = 0, jw = 0, kw = 0;
+    size_t request_uri_length = 0;
+    size_t sum_host_length = 0; 
+    size_t sum_path_length = 0; 
+    size_t sum_query_length = 0; 
+    char *request_uri;
+    char *host = "";
+    char *path = "";
+    char *query = "";
+    char *s = "";
+
+    for (i = 0; i < config->hosts_length; i++) {
+        sum_host_length += strlen(config->hosts[i]); 
+    }
+    sum_host_length += MAX(config->hosts_length-1, 0);
+
+    for (j = 0; j < config->paths_length; j++) {
+        sum_path_length += strlen(config->paths[j]); 
+    }
+    sum_path_length += MAX(config->paths_length-1, 0);
+
+    for (k = 0; k < config->queries_length; k++) {
+        sum_query_length += strlen(config->queries[k]); 
+    }
+    sum_query_length += MAX(config->queries_length-1, 0);
+
+    if (sum_host_length+sum_path_length+sum_query_length == 0) {
+        return NULL;
+    }
+
+    request_uri_length += strlen(REQUEST_URI)*sizeof(char)-12*sizeof(char);
+    request_uri_length += ssl*sizeof(char);
+    request_uri_length += (log10(port)+1)*sizeof(char);
+    request_uri_length += sum_host_length*sizeof(char);
+    request_uri_length += sum_path_length*sizeof(char);
+    request_uri_length += sum_query_length*sizeof(char);
+    request_uri_length += sum_query_length*sizeof(char);
+    request_uri = (char *) WSS_malloc(request_uri_length+1*sizeof(char));
+
+    if (ssl) {
+        s = "s";
+    }
+
+    if ( unlikely(sum_host_length > 0 && NULL == (host = WSS_malloc(sum_host_length+1))) ) {
+        return NULL;
+    }
+
+    if ( unlikely(sum_path_length > 0 && NULL == (path = WSS_malloc(sum_path_length+1))) ) {
+        return NULL;
+    }
+
+    if ( unlikely(sum_query_length > 0 && NULL == (query = WSS_malloc(sum_query_length+1))) ) {
+        return NULL;
+    }
+
+    for (i = 0; likely(i < config->hosts_length); i++) {
+        if ( unlikely(i+1 == config->hosts_length) ) {
+            sprintf(host+iw, "%s", config->hosts[i]);
+        } else {
+            sprintf(host+iw, "%s|", config->hosts[i]);
+            iw++;
+        }
+        iw += strlen(config->hosts[i]);
+    }
+
+    for (j = 0; likely(j < config->paths_length); j++) {
+        if ( unlikely(j+1 == config->paths_length) ) {
+            sprintf(path+jw, "%s", config->paths[j]);
+        } else {
+            sprintf(path+jw, "%s|", config->paths[j]);
+            jw++;
+        }
+        jw += strlen(config->paths[j]);
+    }
+
+    for (k = 0; likely(k < config->queries_length); k++) {
+        if ( unlikely(k+1 == config->queries_length) ) {
+            sprintf(query+kw, "%s", config->queries[k]);
+        } else {
+            sprintf(query+kw, "%s|", config->queries[k]);
+            kw++;
+        }
+        kw += strlen(config->queries[k]);
+    }
+
+    sprintf(request_uri, REQUEST_URI, s, host, port, path, query, query);
+
+    if ( likely(strlen(host) > 0) ) {
+        WSS_free((void **) &host);
+    }
+
+    if ( likely(strlen(path) > 0) ) {
+        WSS_free((void **) &path);
+    }
+
+    if ( likely(strlen(query) > 0) ) {
+        WSS_free((void **) &query);
+    }
+
+    return request_uri;
+}
+
+/**
+ * Function that initializes a regex for the server instance that can be used 
+ * to validate the connecting path of the client.
+ *
+ * @param   server	[wss_server_t *] 	"The server instance"
+ * @return 			[wss_error_t]       "The error status"
+ */
+wss_error_t WSS_http_regex_init(wss_server_t *server) {
+    int err;
+    char *request_uri;
+    bool ssl = false;
+
+#ifdef USE_OPENSSL
+    if (NULL != server->ssl_ctx) {
+        ssl = true;
+    }
+#endif
+
+    request_uri = generate_request_uri(server->config, ssl, server->port);
+    if ( likely(request_uri != NULL) ) {
+        if ( NULL == (server->re = WSS_malloc(sizeof(regex_t)))) {
+            return WSS_MEMORY_ERROR;
+        }
+
+        if ( unlikely((err = regcomp(server->re, request_uri, REG_EXTENDED|REG_NOSUB)) != 0) ) {
+            return WSS_REGEX_ERROR;
+        }
+
+        WSS_free((void **) &request_uri);
+    }
+
+    return WSS_SUCCESS;
+}
+
+/**
+ * Function that initializes a http server instance and creating thread where
+ * the instance is being run.
  *
  * @param   server	[wss_server_t *] 	"The server instance"
  * @return 			[wss_error_t]       "The error status"
@@ -182,17 +331,17 @@ wss_error_t WSS_http_server(wss_server_t *server) {
     server->poll_fd = -1;
 
     WSS_log_trace("Creating socket filedescriptor");
-    if ( unlikely((err = WSS_socket_create(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_create(server)) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Allowing reuse of socket");
-    if ( unlikely((err = WSS_socket_reuse(server->fd)) != 0) ) {
+    if ( unlikely((err = WSS_socket_reuse(server->fd)) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Creating socket structure for instance");
-    if ( unlikely((err = WSS_socket_bind(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_bind(server)) != WSS_SUCCESS) ) {
         return err;
     }
 
@@ -201,17 +350,22 @@ wss_error_t WSS_http_server(wss_server_t *server) {
     }
 
     WSS_log_trace("Making server socket non-blocking");
-    if ( unlikely((err = WSS_socket_non_blocking(server->fd)) != 0) ) {
+    if ( unlikely((err = WSS_socket_non_blocking(server->fd)) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Starts listening to the server socket");
-    if ( unlikely((err = WSS_socket_listen(server->fd)) != 0) ) {
+    if ( unlikely((err = WSS_socket_listen(server->fd)) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Creating threadpool");
-    if ( unlikely((err = WSS_socket_threadpool(server)) != 0) ) {
+    if ( unlikely((err = WSS_socket_threadpool(server)) != WSS_SUCCESS) ) {
+        return err;
+    }
+
+    WSS_log_trace("Initializing server regexp");
+    if ( unlikely((err = WSS_http_regex_init(server)) != WSS_SUCCESS) ) {
         return err;
     }
 
@@ -274,6 +428,11 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
                         break;
                 }
             }
+        }
+
+        if ( NULL != server->re ) {
+            regfree(server->re);
+            WSS_free((void **) &server->re);
         }
 
         /**

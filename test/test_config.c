@@ -186,6 +186,7 @@ Test(WSS_config_load, valid_config_empty_arrays) {
 
     // Pool
     cr_expect(conf->pool_workers == 4); 
+    cr_expect(conf->pool_retries == 5); 
 
     // Subprotocols
     cr_expect(conf->subprotocols_length == 0); 
@@ -261,6 +262,7 @@ Test(WSS_config_load, valid_config) {
 
     // Pool
     cr_expect(conf->pool_workers == 4); 
+    cr_expect(conf->pool_retries == 5); 
 
     // Subprotocols
     cr_expect(conf->subprotocols_length == 2); 

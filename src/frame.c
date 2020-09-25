@@ -130,7 +130,7 @@ static void unmask(wss_frame_t *frame) {
 
     uint64_t size = sizeof(__m512i);
 
-    if ( frame->applicationDataLength > size ) {
+    if ( likely(frame->applicationDataLength > size) ) {
         for (; likely(i <= frame->applicationDataLength - size); i += size) {
             masked_data = _mm512_loadu_si512((const void *)(applicationData+i));
             _mm512_storeu_si512((void *)(applicationData+i), _mm512_xor_si512 (masked_data, maskingKey));
@@ -185,7 +185,7 @@ static void unmask(wss_frame_t *frame) {
 
     uint64_t size = sizeof(__m256i);
 
-    if ( frame->applicationDataLength > size ) {
+    if ( likely(frame->applicationDataLength > size) ) {
         for (; likely(i <= frame->applicationDataLength - size); i += size) {
             masked_data = _mm256_loadu_si256((const __m256i *)(applicationData+i));
             _mm256_storeu_si256((__m256i *)(applicationData+i), _mm256_xor_si256 (masked_data, maskingKey));
@@ -224,7 +224,7 @@ static void unmask(wss_frame_t *frame) {
 
     uint64_t size = sizeof(__m128i);
 
-    if ( frame->applicationDataLength > size ) {
+    if ( likely(frame->applicationDataLength > size) ) {
         for (; likely(i <= frame->applicationDataLength - size); i += size) {
             masked_data = _mm_loadu_si128((const __m128i *)(applicationData+i));
             _mm_storeu_si128((__m128i *)(applicationData+i), _mm_xor_si128 (masked_data, maskingKey));
