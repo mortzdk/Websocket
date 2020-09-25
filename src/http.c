@@ -263,8 +263,6 @@ static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
         WSS_free((void **) &query);
     }
 
-    WSS_log_error("Require_uri: %s", request_uri);
-
     return request_uri;
 }
 
