@@ -38,8 +38,8 @@
                             <h4 class="text-white">Contact</h4>
                             <ul class="list-unstyled">
                                 <li><a href="https://github.com/mortzdk/Websocket/issues" class="text-white">Issues</a></li>
-                                <li><a href="#" class="text-white">Donate</a></li>
-                                <li><a href="#" class="text-white">Email me</a></li>
+                                <li><a href="https://opencollective.com/websocket/" class="text-white">Donate</a></li>
+                                <li><a href="mailto:wsserver@mortz.dk" class="text-white">Email me</a></li>
                             </ul>
                         </div>
                     </div>
@@ -77,10 +77,12 @@
                             <div class="card mb-4 shadow-sm">
                                 <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/tools.png" />
                                 <div class="card-body">
-                                    <p class="card-text">The newest version of the server was released at: <i class="release-time">2020-09-18</i>. The current version of the WSServer is v2.0.5.</p>
+                                    <p class="card-text">The newest version of the server was released at: <i class="release-time">2020-09-25</i>. The current version of the WSServer is v2.0.5.</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="btn-group">
                                             <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/websocket">View</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/Websocket/archive/v2.0.5.zip">Download</a>
+                                            <a class="btn btn-sm btn-outline-secondary" id="clone" data-clipboard-text="git@github.com:mortzdk/Websocket.git" data-toggle="tooltip" data-placement="bottom" data-trigger="click" title="Copied">Clone</a>
                                         </div>
                                         <small class="text-muted">Version</small>
                                     </div>
@@ -97,7 +99,7 @@
                                         <div class="btn-group">
                                             <a class="btn btn-sm btn-outline-secondary" href="https://github.com/mortzdk/Websocket/blob/master/conf/wss.json">View</a>
                                         </div>
-                                        <small class="text-muted">GitHub</small>
+                                        <small class="text-muted">Configuration</small>
                                     </div>
                                 </div>
                             </div>
@@ -181,6 +183,23 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="bd-placeholder-img card-img-top" width="300" height="300" src="images/os.png" />
+                                <div class="card-body">
+                                    <p class="card-text">WSServer strive to support Linux, MacOS and FreeBSD.</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://linux.org">Linux</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://www.apple.com/macos/catalina/">MacOS</a>
+                                            <a class="btn btn-sm btn-outline-secondary" href="https://www.freebsd.org/">FreeBSD</a>
+                                        </div>
+                                        <small class="text-muted">Operating System</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,4 +216,11 @@
         </footer>
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+        <script type="text/javascript">
+$(function () {
+    new ClipboardJS('#clone');
+    $('[data-toggle="tooltip"]').tooltip()
+})
+        </script>
 </html>
