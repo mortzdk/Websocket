@@ -44,10 +44,14 @@ typedef struct {
     uint64_t applicationDataLength;
 } wss_frame_t;
 
+typedef void *(*WSS_malloc_t)(size_t size);
+typedef void *(*WSS_realloc_t)(void *ptr, size_t size);
+typedef void (*WSS_free_t)(void *ptr);
+
 /**
  * The extension API calls
  */
-typedef void (*extAlloc)(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));
+typedef void (*extAlloc)(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree);
 typedef void (*extInit)(char *config);
 typedef void (*extOpen)(int fd, char *param, char **accepted, bool *valid);
 typedef void (*extInFrame)(int fd, wss_frame_t *frame);
