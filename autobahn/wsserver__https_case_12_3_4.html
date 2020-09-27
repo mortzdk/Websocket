@@ -202,7 +202,7 @@ pre.wirelog_tcp_closed_by_peer {color: #fff; margin: 0; background-color: #000; 
       <center><a href="http://autobahn.ws/testsuite" title="Autobahn WebSocket Testsuite"><img src="http://autobahn.ws/static/img/ws_protocol_test_report.png"          border="0" width="820" height="46" alt="Autobahn WebSocket Testsuite Report"></img></a></center>
       <center><a href="http://autobahn.ws"           title="Autobahn WebSocket">          <img src="http://autobahn.ws/static/img/ws_protocol_test_report_autobahn.png" border="0" width="300" height="68" alt="Autobahn WebSocket">                 </img></a></center>
       <br/>
-      <p class="case case_ok">WSServer (HTTPS) - <span style="font-size: 1.3em;"><b>Case 12.3.4</b></span> : Pass - <span style="font-size: 0.9em;"><b>814</b> ms @ 2020-09-25T11:40:08.163Z</a></p>
+      <p class="case case_ok">WSServer (HTTPS) - <span style="font-size: 1.3em;"><b>Case 12.3.4</b></span> : Pass - <span style="font-size: 0.9em;"><b>681</b> ms @ 2020-09-27T08:18:10.931Z</a></p>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send 1000 compressed messages each of payload size 1024, auto-fragment to 0 octets. Use default permessage-deflate offer.</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Receive echo'ed messages (with payload as sent). Timeout case after 240 secs.</p>
 
@@ -221,15 +221,15 @@ Upgrade: WebSocket
 Connection: Upgrade
 Pragma: no-cache
 Cache-Control: no-cache
-Sec-WebSocket-Key: QG8wBSDs/451tcV6n+J6ZQ==
+Sec-WebSocket-Key: xt10peRGLaeR48+RqE6Ljg==
 Sec-WebSocket-Extensions: permessage-deflate; client_no_context_takeover; client_max_window_bits
 Sec-WebSocket-Version: 13</pre>
       <pre class="http_dump">HTTP/1.1 101 Switching Protocols
 Sec-Websocket-Extensions: permessage-deflate;client_no_context_takeover;client_max_window_bits=15;server_max_window_bits=15
-Sec-Websocket-Accept: 0pfxDrYH5dQiFeN3jPlqFba/YJc=
+Sec-Websocket-Accept: xqd8gKcUmNfPT35V+Fxr0KgaLoo=
 Upgrade: websocket
 Connection: Upgrade
-Server: WSServer/v2.0.4</pre>
+Server: WSServer/v2.0.5</pre>
       <br/><hr/>
       <h2>Closing Behavior</h2>
       <table>
@@ -564,9 +564,9 @@ Server: WSServer/v2.0.4</pre>
          <pre class="wirelog_delay">002 WIRELOG DISABLED</pre>
          <pre class="wirelog_kill_after">003 CLOSE CONNECTION AFTER 240.000000 sec</pre>
          <pre class="wirelog_delay">004 WIRELOG ENABLED</pre>
-         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=02e65fa6, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=1a2b028d, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               0x03e8</pre>
-         <pre class="wirelog_tx_octets">006 TX OCTETS: 888202e65fa6010e</pre>
+         <pre class="wirelog_tx_octets">006 TX OCTETS: 88821a2b028d19c3</pre>
          <pre class="wirelog_rx_octets">007 RX OCTETS: 880203e8</pre>
          <pre class="wirelog_rx_frame">008 RX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               0x03e8</pre>
