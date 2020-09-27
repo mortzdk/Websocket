@@ -31,15 +31,15 @@ void onInit(char *config, WSS_send s) {
 /**
  * Sets the allocators to use instead of the default ones
  *
- * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
- * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
- * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @param 	submalloc	[WSS_malloc_t]     "The malloc function"
+ * @param 	subrealloc	[WSS_realloc_t]    "The realloc function"
+ * @param 	subfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *)) {
-    allocs.malloc = f_malloc;
-    allocs.realloc = f_realloc;
-    allocs.free = f_free;
+void setAllocators(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree) {
+    allocs.malloc = submalloc;
+    allocs.realloc = subrealloc;
+    allocs.free = subfree;
 }
 
 /**
