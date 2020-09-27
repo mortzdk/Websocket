@@ -26,12 +26,12 @@ void __attribute__((visibility("default"))) onInit(char *config, WSS_send send);
 /**
  * Sets the allocators to use instead of the default ones
  *
- * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
- * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
- * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @param 	submalloc	[WSS_malloc_t]     "The malloc function"
+ * @param 	subrealloc	[WSS_realloc_t]    "The realloc function"
+ * @param 	subfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));
+void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);
 
 /**
  * Event called when a new client has handshaked and hence connects to the WSS server.

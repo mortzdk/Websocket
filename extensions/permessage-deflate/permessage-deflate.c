@@ -382,15 +382,15 @@ void onInit(char *config) {
 /**
  * Sets the allocators to use instead of the default ones
  *
- * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
- * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
- * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @param 	extmalloc	[WSS_malloc_t]     "The malloc function"
+ * @param 	extrealloc	[WSS_realloc_t]    "The realloc function"
+ * @param 	extfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *)) {
-    allocs.malloc = f_malloc;
-    allocs.realloc = f_realloc;
-    allocs.free = f_free;
+void setAllocators(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree) {
+    allocs.malloc = extmalloc;
+    allocs.realloc = extrealloc;
+    allocs.free = extfree;
 }
 
 /**

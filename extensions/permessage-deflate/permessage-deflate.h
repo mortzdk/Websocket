@@ -20,12 +20,12 @@ void __attribute__((visibility("default"))) onInit(char *config);
 /**
  * Sets the allocators to use instead of the default ones
  *
- * @param 	f_malloc	[void *(*f_malloc)(size_t)]             "The malloc function"
- * @param 	f_realloc	[void *(*f_realloc)(void *, size_t)]    "The realloc function"
- * @param 	f_free	    [void *(*f_free)(void *)]               "The free function"
+ * @param 	extmalloc	[WSS_malloc_t]     "The malloc function"
+ * @param 	extrealloc	[WSS_realloc_t]    "The realloc function"
+ * @param 	extfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) setAllocators(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));
+void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree);
 
 /**
  * Event called when parameters are available for the pcme i.e. when the
