@@ -595,8 +595,6 @@ void inFrames(int fd, wss_frame_t **frames, size_t len) {
     }
 
     // Decompress data
-    comp->compressor.avail_in = payload_length;
-    comp->compressor.next_in = (unsigned char *)payload;
     do {
         if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) ) {
             allocs.free(message);
