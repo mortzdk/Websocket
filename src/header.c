@@ -218,9 +218,9 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         }
 
         line = strtok_r(token, ":", &lineptr);
-        line_length = strlen(line);
 
         if ( likely(line != NULL) ) {
+            line_length = strlen(line);
             if ( line_length == strlen(SEC_WEBSOCKET_VERSION) && 
                 strncasecmp(SEC_WEBSOCKET_VERSION, line, line_length) == 0 ) {
                 // The |Sec-WebSocket-Version| header field MUST NOT appear more than once in an HTTP request.
