@@ -286,13 +286,13 @@ void onInit(char *config) {
     regex_t re;
     size_t nmatch = 8;
     regmatch_t matches[nmatch];
-    size_t params_length = strlen(config);
-    char buffer[params_length+1];
     const char *reg_str = "^(\\s*((server_no_context_takeover)|(server_max_window_bits\\s*=\\s*[0-9]+)|(client_max_window_bits\\s*=\\s*[0-9]+)|(memory_level\\s*=\\s*[0-9]+)|(chunk_size\\s*=\\s*[0-9]+))\\s*;?\\s*)*$";
 
     if ( NULL == config ) {
         return;
     }
+    size_t params_length = strlen(config);
+    char buffer[params_length+1];
 
     if ( unlikely((err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) ) {
         return;
@@ -410,9 +410,7 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
     regex_t re;
     size_t nmatch = 7;
     regmatch_t matches[nmatch];
-    size_t params_length = strlen(param);
     wss_comp_t *comp;
-    char buffer[params_length+1];
     const char *reg_str = "^(\\s*((server_no_context_takeover)|(client_no_context_takeover)|(server_max_window_bits\\s*=\\s*[0-9]+)|(client_max_window_bits(\\s*=\\s*[0-9]+)?))*\\s*;?\\s*)*$";
 
     if ( NULL == param ) {
@@ -445,6 +443,8 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
         *valid = true;
         return;
     }
+    size_t params_length = strlen(param);
+    char buffer[params_length+1];
 
     if ( unlikely((err = regcomp(&re, reg_str, REG_EXTENDED)) != 0) ) {
         *valid = false;
