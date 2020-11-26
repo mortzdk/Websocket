@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.5</span>
+   &#160;<span id="projectnumber">v2.0.6</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -345,7 +345,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;         <span class="keywordflow">if</span> (flags &amp; <a class="code" href="json_8c.html#a8428d31fa31e97df998f4889a1a63504">flag_string</a>)</div>
 <div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;         {</div>
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;            <span class="keywordflow">if</span> (!b)</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            {  sprintf (error, <span class="stringliteral">&quot;Unexpected EOF in string (at %d:%d)&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            {  sprintf (error, <span class="stringliteral">&quot;Unexpected EOF in string (at %u:%u)&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;               <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;            }</div>
 <div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160; </div>
@@ -371,7 +371,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;                        (uc_b3 = <a class="code" href="json_8c.html#ac42804398f86ef55615424d19816618b">hex_value</a> (*++ <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.ptr)) == 0xFF ||</div>
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;                        (uc_b4 = <a class="code" href="json_8c.html#ac42804398f86ef55615424d19816618b">hex_value</a> (*++ <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.ptr)) == 0xFF)</div>
 <div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;                    {</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;Invalid character value `%c` (at %d:%d)&quot;</span>, b, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;Invalid character value `%c` (at %u:%u)&quot;</span>, b, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                        <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;                    }</div>
 <div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160; </div>
@@ -387,7 +387,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                            (uc_b3 = <a class="code" href="json_8c.html#ac42804398f86ef55615424d19816618b">hex_value</a> (*++ <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.ptr)) == 0xFF ||</div>
 <div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;                            (uc_b4 = <a class="code" href="json_8c.html#ac42804398f86ef55615424d19816618b">hex_value</a> (*++ <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.ptr)) == 0xFF)</div>
 <div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;                        {</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;                            sprintf (error, <span class="stringliteral">&quot;Invalid character value `%c` (at %d:%d)&quot;</span>, b, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;                            sprintf (error, <span class="stringliteral">&quot;Invalid character value `%c` (at %u:%u)&quot;</span>, b, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;                            <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;                        }</div>
 <div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
@@ -516,7 +516,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;               <span class="keywordflow">if</span> (flags &amp; <a class="code" href="json_8c.html#a82d7363de99e35339becb235c52e86e1">flag_block_comment</a>)</div>
 <div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;               {</div>
 <div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;                  <span class="keywordflow">if</span> (!b)</div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected EOF in block comment&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected EOF in block comment&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;                  }</div>
 <div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160; </div>
@@ -532,12 +532,12 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == <span class="charliteral">&#39;/&#39;</span>)</div>
 <div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            {</div>
 <div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;               <span class="keywordflow">if</span> (! (flags &amp; (<a class="code" href="json_8c.html#a893e3173fd945c3e8608742bd170ab98">flag_seek_value</a> | <a class="code" href="json_8c.html#a249c3d8e84ac67a5ea36c1467be09788">flag_done</a>)) &amp;&amp; top-&gt;<a class="code" href="struct__json__value.html#a3a3106e0e259510de33b4718208be4d3">type</a> != <a class="code" href="json_8h.html#ac75c61993722a9b8aaa44704072ec06caf8d903dfde0a869f0a2f9b8c35f60128">json_object</a>)</div>
-<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;               {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Comment not allowed here&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;               {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Comment not allowed here&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;                  <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;               }</div>
 <div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160; </div>
 <div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;               <span class="keywordflow">if</span> (++ <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.ptr == end)</div>
-<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;               {  sprintf (error, <span class="stringliteral">&quot;%d:%d: EOF unexpected&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;               {  sprintf (error, <span class="stringliteral">&quot;%u:%u: EOF unexpected&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;                  <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;               }</div>
 <div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160; </div>
@@ -552,7 +552,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;                     <span class="keywordflow">continue</span>;</div>
 <div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160; </div>
 <div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;                  <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected `%c` in comment opening sequence&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected `%c` in comment opening sequence&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
 <div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;               };</div>
 <div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;            }</div>
@@ -573,7 +573,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160; </div>
 <div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;               <span class="keywordflow">default</span>:</div>
 <div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160; </div>
-<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;                  sprintf (error, <span class="stringliteral">&quot;%d:%d: Trailing garbage: `%c`&quot;</span>,</div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;                  sprintf (error, <span class="stringliteral">&quot;%u:%u: Trailing garbage: `%c`&quot;</span>,</div>
 <div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;                           <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_line, <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_col, b);</div>
 <div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160; </div>
 <div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;                  <span class="keywordflow">goto</span> e_failed;</div>
@@ -595,7 +595,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;                  <span class="keywordflow">if</span> (top &amp;&amp; top-&gt;<a class="code" href="struct__json__value.html#a3a3106e0e259510de33b4718208be4d3">type</a> == <a class="code" href="json_8h.html#ac75c61993722a9b8aaa44704072ec06ca8ccef4d5729e8ce79b2316c8f7e7c9de">json_array</a>)</div>
 <div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;                     flags = (flags &amp; ~ (<a class="code" href="json_8c.html#ab30e8e610c6c2fe6f2178d12f7f0f6a9">flag_need_comma</a> | <a class="code" href="json_8c.html#a893e3173fd945c3e8608742bd170ab98">flag_seek_value</a>)) | <a class="code" href="json_8c.html#aa606c8aaa3d203e35dcc6b406649c4ab">flag_next</a>;</div>
 <div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;                  <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected ]&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected ]&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;                  }</div>
 <div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160; </div>
@@ -611,7 +611,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;                     }</div>
 <div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;                     <span class="keywordflow">else</span></div>
 <div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;                     {</div>
-<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected , before %c&quot;</span>,</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected , before %c&quot;</span>,</div>
 <div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;                                 <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_line, <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_col, b);</div>
 <div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160; </div>
 <div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;                        <span class="keywordflow">goto</span> e_failed;</div>
@@ -626,7 +626,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;                     }</div>
 <div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;                     <span class="keywordflow">else</span></div>
 <div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;                     {</div>
-<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected : before %c&quot;</span>,</div>
+<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;                        sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected : before %c&quot;</span>,</div>
 <div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;                                 <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_line, <a class="code" href="server_8c.html#aa1633b4924f6e8653002962dd7dc12be">state</a>.cur_col, b);</div>
 <div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160; </div>
 <div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;                        <span class="keywordflow">goto</span> e_failed;</div>
@@ -752,7 +752,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;                           <span class="keywordflow">continue</span>;</div>
 <div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;                        }</div>
 <div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;                        <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;                        {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected %c when seeking value&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;                        {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected %c when seeking value&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
 <div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;                           <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;                        }</div>
 <div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160;                  };</div>
@@ -775,7 +775,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;                  <span class="keywordflow">case</span> <span class="charliteral">&#39;&quot;&#39;</span>:</div>
 <div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160; </div>
 <div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                     <span class="keywordflow">if</span> (flags &amp; <a class="code" href="json_8c.html#ab30e8e610c6c2fe6f2178d12f7f0f6a9">flag_need_comma</a>)</div>
-<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;                     {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected , before \&quot;&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;                     {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected , before \&quot;&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                        <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;                     }</div>
 <div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160; </div>
@@ -799,10 +799,10 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;                        <span class="keywordflow">break</span>;</div>
 <div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;                     }</div>
 <div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160; </div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected `%c` in object&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected `%c` in object&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
 <div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;                  <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected `%c` in object&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
+<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;                     sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected `%c` in object&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
 <div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;               };</div>
 <div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160; </div>
@@ -820,7 +820,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;                     <span class="keywordflow">if</span> (! (flags &amp; <a class="code" href="json_8c.html#a5fcbef586ed6822016292175f43f1375">flag_num_e</a>))</div>
 <div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;                     {</div>
 <div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;                        <span class="keywordflow">if</span> (flags &amp; <a class="code" href="json_8c.html#ad6f0c07ac37d89a66972479b5d9eef5e">flag_num_zero</a>)</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;                        {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Unexpected `0` before `%c`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;                        {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Unexpected `0` before `%c`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>, b);</div>
 <div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;                           <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;                        }</div>
 <div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160; </div>
@@ -857,7 +857,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;               <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == <span class="charliteral">&#39;.&#39;</span> &amp;&amp; top-&gt;<a class="code" href="struct__json__value.html#a3a3106e0e259510de33b4718208be4d3">type</a> == <a class="code" href="json_8h.html#ac75c61993722a9b8aaa44704072ec06cad991a820e8b7e29cffcaab2d780e3efa">json_integer</a>)</div>
 <div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;               {</div>
 <div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;                  <span class="keywordflow">if</span> (!num_digits)</div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected digit before `.`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected digit before `.`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;                  }</div>
 <div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160; </div>
@@ -873,7 +873,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;                  <span class="keywordflow">if</span> (top-&gt;<a class="code" href="struct__json__value.html#a3a3106e0e259510de33b4718208be4d3">type</a> == <a class="code" href="json_8h.html#ac75c61993722a9b8aaa44704072ec06ca5bf5f8070d04dcd1afdad9f363711fe1">json_double</a>)</div>
 <div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;                  {</div>
 <div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;                     <span class="keywordflow">if</span> (!num_digits)</div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;                     {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected digit after `.`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;                     {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected digit after `.`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;                        <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;                     }</div>
 <div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160; </div>
@@ -899,7 +899,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;               <span class="keywordflow">else</span></div>
 <div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;               {</div>
 <div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;                  <span class="keywordflow">if</span> (!num_digits)</div>
-<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%d:%d: Expected digit after `e`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;                  {  sprintf (error, <span class="stringliteral">&quot;%u:%u: Expected digit after `e`&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;                     <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;                  }</div>
 <div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160; </div>
@@ -985,7 +985,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160; </div>
 <div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;e_unknown_value:</div>
 <div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160; </div>
-<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;   sprintf (error, <span class="stringliteral">&quot;%d:%d: Unknown value&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;   sprintf (error, <span class="stringliteral">&quot;%u:%u: Unknown value&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;   <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160; </div>
 <div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;e_alloc_failure:</div>
@@ -995,7 +995,7 @@ $(document).ready(function(){initNavTree('json_8c_source.html',''); initResizabl
 <div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160; </div>
 <div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;e_overflow:</div>
 <div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160; </div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;   sprintf (error, <span class="stringliteral">&quot;%d:%d: Too long (caught overflow)&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
+<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;   sprintf (error, <span class="stringliteral">&quot;%u:%u: Too long (caught overflow)&quot;</span>, <a class="code" href="json_8c.html#aedc06db3e0b6c8780acb47bcbf3dc1da">line_and_col</a>);</div>
 <div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;   <span class="keywordflow">goto</span> e_failed;</div>
 <div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160; </div>
 <div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;e_failed:</div>

@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.5</span>
+   &#160;<span id="projectnumber">v2.0.6</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -68,7 +68,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="textblock"><p><a href="https://travis-ci.org/mortzdk/Websocket"><object type="image/svg+xml" data="https://travis-ci.org/mortzdk/Websocket.svg?branch=master" style="pointer-events: none;">Build Status</object></a> <a href="https://opencollective.com/websocket/"><object type="image/svg+xml" data="https://opencollective.com/websocket/tiers/badge.svg" style="pointer-events: none;">Financial Contributors</object></a></p>
 <p>WSServer is a fast, configurable, and extendable WebSocket Server for UNIX systems written in C (C11).</p>
 <p>As of version 2.0.0 the WSServer has been completely rewritten with many new features, better support, better extendability and generally as a more stable WebSocket server.</p>
-<p>Current Version: <b>v2.0.5</b></p>
+<p>Current Version: <b>v2.0.6</b></p>
 <h2>Early history</h2>
 <p>The original WebSocket server (v1.0.0 and before) started out as a hobby project in 2012. The idea at the time, was to learn the C language and understand the basics of WebSockets. The initial version of the server worked for some but not all aspects of the protocols present at that time. At that time, different browsers implemented different versions of the WebSocket Protocol, which made it difficult to support all browsers. Today all major browsers support the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol, which has been stable for many years.</p>
 <h2>Present (2020)</h2>
@@ -82,7 +82,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>The server can be configured by providing a <code>-c [path_to_config_file.json]</code> flag. If no configuration is provided, the server will run with a default configuration, that support WebSocket over HTTP on port 80. You can read more about the structure and description of the configuration file in the <a href="#Configuration">configuration</a> section.</p>
 <h3>Log</h3>
 <p>WSServer keeps a log file at <code>logs/WSServer.log</code>. The detail of the log is defined by the <code>log_level</code> value in the configuration. Default for a release build is 3 (FATAL, ERROR, WARN, INFO). Default for a test build is 5 (FATAL, ERROR, WARN, INFO, DEBUG, TRACE).</p>
-<p>The log file is a good tool for discovering misbehavior of the server, such as when the server isn't able to start, since port 80 is already occupied by anotherrserver instance.</p>
+<p>The log file is a good tool for discovering misbehavior of the server, such as when the server isn't able to start, since port 80 is already occupied by another server instance.</p>
 <h3>Dependencies</h3>
 <p>WSServer does in principle not rely on any third-party libraries in order to serve as a WebSocket server. However if you want the complete feature set the <a href="https://zlib.net/"><b>zlib</b></a> and <a href="https://www.openssl.org/"><b>openssl</b></a> library must be installed on your system in order to support the <code>permessage-deflate</code> extension and SSL (WSS).</p>
 <h5>Ubuntu</h5>
@@ -227,7 +227,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div><!-- fragment --><p>You can have a look at the <a href="https://github.com/mortzdk/websocket/blob/master/extensions">subprotocols</a> folder to see how to implement your own subprotocol.</p>
 <h3>Client Authentication</h3>
 <p>Client authentication is not implemented directly in WSServer, but is supported through several means. The <code>onConnect</code> call of the subprotocol sends information about the connection to the subprotocol, this is information such as the <em>ip</em>, <em>port</em>, <em>path</em> and <em>cookies</em>. This can be used to do client authentication using <a href="https://coletiv.com/blog/using-websockets-with-cookie-based-authentication/">cookies</a>, using query parameters of the path or simply by having an initial round of authentication messages between the client and server.</p>
-<p>As always it is strongly advised to use the (origins)[#Origins] array of the configuration to only allow for certain origins to use the server.</p>
+<p>As always it is strongly advised to use the <a href="#Origins">origins</a> array of the configuration to only allow for certain origins to use the server.</p>
 <h3>Echo</h3>
 <p>The <code>echo</code> subprotocol is a very simple subprotocol that just echo's whatever the client send back to the client. This subprotocol is especially useful for testing and is used in the <a href="https://github.com/crossbario/autobahn-testsuite">Autobahn testsuite</a>.</p>
 <h3>Broadcast</h3>
@@ -297,7 +297,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </ol>
 <h1>Contributors</h1>
 <p>Here is a list of the contributors of v2.0.0 and above of the WSServer.</p>
-<p><a href="https://github.com/mortzdk/">Morten Houmøller Nygaard</a></p>
+<p><a href="https://github.com/mortzdk/">Morten Houmøller Nygaard</a> <a href="https://github.com/babelouest/">Nicolas Mora</a></p>
 <h3>Libraries</h3>
 <p>WSServer makes use of other Open-Source libraries and code snippets. The links listed below have all been used in some way.</p>
 <ul>
