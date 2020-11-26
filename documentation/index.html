@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.5</span>
+   &#160;<span id="projectnumber">v2.0.6</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -65,15 +65,16 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="title">WSServer a C WebSocket Server </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>WSServer is a fast, configurable, and extendable WebSocket Server for UNIX systems written in C (C11).</p>
+<div class="textblock"><p><a href="https://travis-ci.org/mortzdk/Websocket"><object type="image/svg+xml" data="https://travis-ci.org/mortzdk/Websocket.svg?branch=master" style="pointer-events: none;">Build Status</object></a> <a href="https://opencollective.com/websocket/"><object type="image/svg+xml" data="https://opencollective.com/websocket/tiers/badge.svg" style="pointer-events: none;">Financial Contributors</object></a></p>
+<p>WSServer is a fast, configurable, and extendable WebSocket Server for UNIX systems written in C (C11).</p>
 <p>As of version 2.0.0 the WSServer has been completely rewritten with many new features, better support, better extendability and generally as a more stable WebSocket server.</p>
-<p>Current Version: <b>v2.0.5</b></p>
+<p>Current Version: <b>v2.0.6</b></p>
 <h2>Early history</h2>
 <p>The original WebSocket server (v1.0.0 and before) started out as a hobby project in 2012. The idea at the time, was to learn the C language and understand the basics of WebSockets. The initial version of the server worked for some but not all aspects of the protocols present at that time. At that time, different browsers implemented different versions of the WebSocket Protocol, which made it difficult to support all browsers. Today all major browsers support the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol, which has been stable for many years.</p>
 <h2>Present (2020)</h2>
 <p>WSServer now supports all aspects of the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol, including the <a href="https://tools.ietf.org/html/rfc7692">RFC7692</a> that enables the <code>permessage-deflate</code> extension. The implementation is verified by the <a href="https://github.com/crossbario/autobahn-testsuite">Autobahn testsuite</a> and by a lot of unit tests. It furthermore support the older protocols <a href="https://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10">HYBI10</a> and <a href="https://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-07">HYBI07</a> as there are no noteable difference between those and the current stable one. Currently there are no support for older versions of the protocol.</p>
 <h2>Donate</h2>
-<p>OpenCollective.com</p>
+<p>To support further development on this project and financially support the developer having a nice cup of coffee, you can make a donation of your choice <a href="https://opencollective.com/websocket">here</a>.</p>
 <h1>How to get started</h1>
 <p>To build the WSServer for your UNIX system, simply run: <code>make release</code>. This will compile extensions, subprotocols, and the binary that will be available from: <code>./bin/WSServer</code>.</p>
 <p>Currently the WSServer support only one extension namely the <code>permessage-deflate</code> extension. Read more about this implementation <a href="#Permessage-Deflate">here</a>.</p>
@@ -81,7 +82,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>The server can be configured by providing a <code>-c [path_to_config_file.json]</code> flag. If no configuration is provided, the server will run with a default configuration, that support WebSocket over HTTP on port 80. You can read more about the structure and description of the configuration file in the <a href="#Configuration">configuration</a> section.</p>
 <h3>Log</h3>
 <p>WSServer keeps a log file at <code>logs/WSServer.log</code>. The detail of the log is defined by the <code>log_level</code> value in the configuration. Default for a release build is 3 (FATAL, ERROR, WARN, INFO). Default for a test build is 5 (FATAL, ERROR, WARN, INFO, DEBUG, TRACE).</p>
-<p>The log file is a good tool for discovering misbehavior of the server, such as when the server isn't able to start, since port 80 is already occupied by anotherrserver instance.</p>
+<p>The log file is a good tool for discovering misbehavior of the server, such as when the server isn't able to start, since port 80 is already occupied by another server instance.</p>
 <h3>Dependencies</h3>
 <p>WSServer does in principle not rely on any third-party libraries in order to serve as a WebSocket server. However if you want the complete feature set the <a href="https://zlib.net/"><b>zlib</b></a> and <a href="https://www.openssl.org/"><b>openssl</b></a> library must be installed on your system in order to support the <code>permessage-deflate</code> extension and SSL (WSS).</p>
 <h5>Ubuntu</h5>
@@ -168,7 +169,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <h1>WebSocket Extensions</h1>
 <p>The WSServer enables usage of an arbitrary number of extensions. Extensions provide a mechanism for implementations to opt-in to additional protocol features.</p>
 <p>The extensions themselves can be implemented in any language that is able to compile into a shared object (*.so* file) with the following public functions:</p>
-<div class="fragment"><div class="line">typedef void (*setAllocators)(void *(*f_malloc)(size_t), void *(*f_realloc)(void *, size_t), void (*f_free)(void *));</div>
+<div class="fragment"><div class="line">typedef void (*setAllocators)(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree);</div>
 <div class="line">typedef void (*onInit)(char *config);</div>
 <div class="line">typedef void (*onOpen)(int fd, char *param, char **accepted, bool *valid);</div>
 <div class="line">typedef void (*inFrame)(int fd, wss_frame_t *frame);</div>
@@ -177,7 +178,11 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="line">typedef void (*outFrames)(int fd, wss_frame_t **frames, size_t len);</div>
 <div class="line">typedef void (*onClose)(int fd);</div>
 <div class="line">typedef void (*onDestroy)();</div>
-</div><!-- fragment --><p>Where the <code>wss_frame_t</code> is defined as:</p>
+</div><!-- fragment --><p>Where <code>WSS_malloc_t</code>, <code>WSS_realloc_t</code>, and <code>WSS_free_t</code> are defined as:</p>
+<div class="fragment"><div class="line">typedef void *(*WSS_malloc_t)(size_t size);</div>
+<div class="line">typedef void *(*WSS_realloc_t)(void *ptr, size_t size);</div>
+<div class="line">typedef void (*WSS_free_t)(void *ptr);</div>
+</div><!-- fragment --><p>and <code>wss_frame_t</code> is defined as:</p>
 <div class="fragment"><div class="line">typedef struct {</div>
 <div class="line">    bool fin;</div>
 <div class="line">    bool rsv1;</div>
@@ -198,7 +203,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <h1>WebSocket Subprotocols</h1>
 <p>The WSServer also enables usage of an arbitrary number of subprotocols. Subprotocols are application-level protocol layered over the WebSocket Protocol that are used to define the behaviour of the websocket protocol.</p>
 <p>The subprotocols themselves can be implemented in any language that is able to compile into a shared object (*.so* file) with the following public functions:</p>
-<div class="fragment"><div class="line">typedef void (*setAllocator)(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);</div>
+<div class="fragment"><div class="line">typedef void (*setAllocators)(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);</div>
 <div class="line">typedef void (*onInit)(char *config, WSS_send send);</div>
 <div class="line">typedef void (*onConnect)(int fd, char *ip, int port, char *path, char *cookies);</div>
 <div class="line">typedef void (*onMessage)(int fd, wss_opcode_t opcode, char *message, size_t message_length);</div>
@@ -222,13 +227,13 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div><!-- fragment --><p>You can have a look at the <a href="https://github.com/mortzdk/websocket/blob/master/extensions">subprotocols</a> folder to see how to implement your own subprotocol.</p>
 <h3>Client Authentication</h3>
 <p>Client authentication is not implemented directly in WSServer, but is supported through several means. The <code>onConnect</code> call of the subprotocol sends information about the connection to the subprotocol, this is information such as the <em>ip</em>, <em>port</em>, <em>path</em> and <em>cookies</em>. This can be used to do client authentication using <a href="https://coletiv.com/blog/using-websockets-with-cookie-based-authentication/">cookies</a>, using query parameters of the path or simply by having an initial round of authentication messages between the client and server.</p>
-<p>As always it is strongly advised to use the (origins)[#Origins] array of the configuration to only allow for certain origins to use the server.</p>
+<p>As always it is strongly advised to use the <a href="#Origins">origins</a> array of the configuration to only allow for certain origins to use the server.</p>
 <h3>Echo</h3>
 <p>The <code>echo</code> subprotocol is a very simple subprotocol that just echo's whatever the client send back to the client. This subprotocol is especially useful for testing and is used in the <a href="https://github.com/crossbario/autobahn-testsuite">Autobahn testsuite</a>.</p>
 <h3>Broadcast</h3>
 <p>The <code>broadcast</code> subprotocol is slightly more advanced. It keeps track of when a client is connecting or closing in order to hold a map of those clients that should be broadcastet to. Whenever a client sends a message, the message is broadcastet to all other connected clients.</p>
 <h1>Documentation</h1>
-<p>WSServer automatically generates documentation based on the comments in the code. This documentation can be viewed <a href="https://github.com/mortzdk/websocket/blob/master/doc">here</a>.</p>
+<p>WSServer automatically generates documentation based on the comments in the code. This documentation can be viewed <a href="https://mortzdk.github.io/Websocket/documentation/">here</a>.</p>
 <p>Furthermore one could take a look at the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol and the <a href="https://tools.ietf.org/html/rfc7692">RFC7692</a> protocol to understand how WebSockets and the permessage-deflate extension works.</p>
 <h1>Testing</h1>
 <p>WSServer has been heavily tested by the use of unit tests, the <a href="https://github.com/crossbario/autobahn-testsuite">Autobahn testsuite</a> and by having code coverage.</p>
@@ -238,9 +243,9 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <h3>Autobahn Testsuite</h3>
 <p>The Autobahn Testsuite is used to verify that the WSServer complies to the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol. These tests can be used as both verification and as a measure of performance as a lot of the tests actually times the execution of a successful test.</p>
 <p>The tests can be run by running <code>make autobahn</code>.</p>
-<p>You can further see the current results of the tests <a href="https://github.com/mortzdk/websocket/blob/gh-pages/results/autobahn">here</a>.</p>
+<p>You can further see the current results of the tests <a href="https://mortzdk.github.io/Websocket/autobahn/">here</a>.</p>
 <h3>Code coverage</h3>
-<p>The coverage report can be generated by running <code>make test</code>.</p>
+<p>The coverage report can be generated by running <code>make test</code> and the latest can be seen <a href="https://mortzdk.github.io/Websocket/gcov/">here</a>.</p>
 <h1>Further Work</h1>
 <p>Here is a list of prioritized further work that currently can be done:</p>
 <ol type="1">
@@ -292,7 +297,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </ol>
 <h1>Contributors</h1>
 <p>Here is a list of the contributors of v2.0.0 and above of the WSServer.</p>
-<p><a href="https://github.com/mortzdk/">Morten Houmøller Nygaard</a></p>
+<p><a href="https://github.com/mortzdk/">Morten Houmøller Nygaard</a> <a href="https://github.com/babelouest/">Nicolas Mora</a></p>
 <h3>Libraries</h3>
 <p>WSServer makes use of other Open-Source libraries and code snippets. The links listed below have all been used in some way.</p>
 <ul>
