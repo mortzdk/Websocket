@@ -68,7 +68,7 @@ ERROR, WARN, INFO, DEBUG, TRACE).
 
 The log file is a good tool for discovering misbehavior of the server, such as
 when the server isn't able to start, since port 80 is already occupied by
-anotherrserver instance.
+another server instance.
 
 ### Dependencies
 
@@ -419,7 +419,7 @@ authentication using [cookies](https://coletiv.com/blog/using-websockets-with-co
 or simply by having an initial round of authentication messages between the
 client and server.
 
-As always it is strongly advised to use the (origins)[#Origins] array of the
+As always it is strongly advised to use the [origins](#Origins) array of the
 configuration to only allow for certain origins to use the server.
 
 ### Echo
@@ -512,6 +512,7 @@ Here is a list of prioritized further work that currently can be done:
 Here is a list of the contributors of v2.0.0 and above of the WSServer.
 
 [Morten Houmøller Nygaard](https://github.com/mortzdk/)
+[Nicolas Mora](https://github.com/babelouest/)
 
 ### Libraries 
 
