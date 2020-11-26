@@ -275,7 +275,7 @@
           </tr>
           <tr>
             <td class="headerName">Date:</td>
-            <td class="headerValue">2020-09-27 07:51:34</td>
+            <td class="headerValue">2020-11-26 09:17:07</td>
             <td></td>
             <td class="headerName">Branches:</td>
             <td class="headerTableEntry">219</td>
@@ -1108,7 +1108,7 @@
     <td align="right" class="lineno"><pre>116</pre></td>
     <td align="right" class="linebranch"></td>
     <td align="right" class="linecount coveredLine"><pre>60</pre></td>
-    <td align="left" class="src coveredLine"><pre>    char *extensions = NULL;</pre></td>
+    <td align="left" class="src coveredLine"><pre>    char *exts = NULL;</pre></td>
     </tr>
 
     <tr>
@@ -1842,22 +1842,22 @@
     <tr>
     <td align="right" class="lineno"><pre>221</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>142</pre></td>
-    <td align="left" class="src coveredLine"><pre>        line_length = strlen(line);</pre></td>
-    </tr>
-
-    <tr>
-    <td align="right" class="lineno"><pre>222</pre></td>
-    <td align="right" class="linebranch"></td>
     <td align="right" class="linecount "><pre></pre></td>
     <td align="left" class="src "><pre></pre></td>
     </tr>
 
     <tr>
-    <td align="right" class="lineno"><pre>223</pre></td>
+    <td align="right" class="lineno"><pre>222</pre></td>
     <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 142 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
     <td align="right" class="linecount coveredLine"><pre>142</pre></td>
     <td align="left" class="src coveredLine"><pre>        if ( likely(line != NULL) ) {</pre></td>
+    </tr>
+
+    <tr>
+    <td align="right" class="lineno"><pre>223</pre></td>
+    <td align="right" class="linebranch"></td>
+    <td align="right" class="linecount coveredLine"><pre>142</pre></td>
+    <td align="left" class="src coveredLine"><pre>            line_length = strlen(line);</pre></td>
     </tr>
 
     <tr>
@@ -2256,7 +2256,7 @@
     <td align="right" class="lineno"><pre>280</pre></td>
     <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span><span class="takenBranch" title="Branch 2 taken 8 times">&check;</span></td>
     <td align="right" class="linecount coveredLine"><pre>8</pre></td>
-    <td align="left" class="src coveredLine"><pre>                if ( NULL == (extensions = WSS_realloc((void **)&amp;extensions, extensions_length, (extensions_length+line_length+1)*sizeof(char))) ) {</pre></td>
+    <td align="left" class="src coveredLine"><pre>                if ( NULL == (exts = WSS_realloc((void **)&amp;exts, extensions_length, (extensions_length+line_length+1)*sizeof(char))) ) {</pre></td>
     </tr>
 
     <tr>
@@ -2291,7 +2291,7 @@
     <td align="right" class="lineno"><pre>285</pre></td>
     <td align="right" class="linebranch"></td>
     <td align="right" class="linecount coveredLine"><pre>8</pre></td>
-    <td align="left" class="src coveredLine"><pre>                memcpy(extensions+extensions_length, line, line_length);</pre></td>
+    <td align="left" class="src coveredLine"><pre>                memcpy(exts+extensions_length, line, line_length);</pre></td>
     </tr>
 
     <tr>
@@ -2767,14 +2767,14 @@
     <td align="right" class="lineno"><pre>353</pre></td>
     <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 2 times">&check;</span><span class="takenBranch" title="Branch 1 taken 39 times">&check;</span></td>
     <td align="right" class="linecount coveredLine"><pre>41</pre></td>
-    <td align="left" class="src coveredLine"><pre>    if ( NULL != extensions ) {</pre></td>
+    <td align="left" class="src coveredLine"><pre>    if ( NULL != exts ) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>354</pre></td>
     <td align="right" class="linebranch"></td>
     <td align="right" class="linecount coveredLine"><pre>2</pre></td>
-    <td align="left" class="src coveredLine"><pre>        sep = trim(strtok_r(extensions, ",", &amp;sepptr));</pre></td>
+    <td align="left" class="src coveredLine"><pre>        sep = trim(strtok_r(exts, ",", &amp;sepptr));</pre></td>
     </tr>
 
     <tr>
@@ -3054,7 +3054,7 @@
     <td align="right" class="lineno"><pre>394</pre></td>
     <td align="right" class="linebranch"></td>
     <td align="right" class="linecount coveredLine"><pre>2</pre></td>
-    <td align="left" class="src coveredLine"><pre>        WSS_free((void **)&amp;extensions);</pre></td>
+    <td align="left" class="src coveredLine"><pre>        WSS_free((void **)&amp;exts);</pre></td>
     </tr>
 
     <tr>
