@@ -15,7 +15,7 @@ before_install:
   - echo "deb http://ppa.launchpad.net/snaipewastaken/ppa/ubuntu cosmic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
   - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com CE6500E9003E6E24
   - sudo apt-get -q update
-  - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz
+  - sudo apt-get -y install pkg-config doxygen openssl zlib1g-dev build-essential criterion-dev gcovr graphviz cppcheck
   - docker load -i docker_images/images.tar || true
 before_cache:
   - docker save -o docker_images/images.tar $(docker images -a -q)
