@@ -20,11 +20,16 @@ before_install:
 before_cache:
   - docker save -o docker_images/images.tar $(docker images -a -q)
 stages:
+  - cppcheck
   - docs
   - criterion
   - autobahn
 jobs:
   include:
+    - stage: cppcheck
+      script: 
+        - cppcheck --language=c -f -q --enable=warning,performance,portability --std=c11 --error-exitcode=1 -itest -Iinclude -Iextensions -Isubprotocols . >build.log 2>&1 || (cat build.log && rm build.log && exit 1)
+
     - stage: docs 
       script: 
         - ./scripts/travis.sh

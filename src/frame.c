@@ -452,7 +452,6 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
             WSS_log_error("Unable to allocate message string");
             *message = NULL;
             WSS_free((void **)&f);
-            WSS_free((void **)&msg);
             return 0;
         }
 

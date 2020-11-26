@@ -104,7 +104,7 @@ wss_error_t WSS_add_to_threadpool(wss_server_t *server, void (*func)(void *), vo
     tim.tv_nsec = 100000000;
 
     do {
-        if ( unlikely((err = threadpool_add(server->pool, func, args, 0) != 0) < 0) ) {
+        if ( unlikely((err = threadpool_add(server->pool, func, args, 0)) != 0) ) {
             switch (err) {
                 case threadpool_invalid:
                     WSS_log_fatal("Threadpool was served with invalid data");
@@ -429,7 +429,8 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
             args->fd = fd;
             args->state = CLOSING
 
-            if ( unlikely((err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)) != WSS_SUCCESS) ) {
+            err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)
+            if ( unlikely(err != WSS_SUCCESS) ) {
                 WSS_log_fatal("Failed adding disconnect job to worker pool");
                 WSS_free((void **)&args);
                 return err;
@@ -448,7 +449,8 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
             /**
              * If new session has connected
              */
-            if ( unlikely((err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)) != WSS_SUCCESS) ) {
+            err = WSS_add_to_threadpool(server, &WSS_work, (void *)args);
+            if ( unlikely(err != WSS_SUCCESS) ) {
                 WSS_log_fatal("Failed adding connect job to worker pool");
                 return err;
             }
@@ -474,7 +476,8 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
                 args->fd = fd;
                 args->state = READING
 
-                if ( unlikely((err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)) != WSS_SUCCESS) ) {
+                err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)
+                if ( unlikely(err != WSS_SUCCESS) ) {
                     WSS_log_fatal("Failed adding read job to worker pool");
                     WSS_free((void **)&args);
                     return err;
@@ -496,7 +499,8 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
                 args->fd = fd;
                 args->state = WRITING
 
-                if ( unlikely((err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)) != WSS_SUCCESS) ) {
+                err = WSS_add_to_threadpool(server, &WSS_work, (void *)args)
+                if ( unlikely(err != WSS_SUCCESS) ) {
                     WSS_log_fatal("Failed adding write job to worker pool");
                     WSS_free((void **)&args);
                     return err;
@@ -875,7 +879,6 @@ wss_error_t WSS_poll_init(wss_server_t *server) {
     struct rlimit limits;
     struct pollfd event;
     struct pollfd *events;
-    wss_server_t *server = (wss_server_t *) s;
 
     if ( unlikely(getrlimit(RLIMIT_NOFILE, &limits) < 0) ) {
         return WSS_RLIMIT_ERROR;

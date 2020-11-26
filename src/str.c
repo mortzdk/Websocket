@@ -77,10 +77,11 @@ int strinarray(const char *needle, const char **haystack, size_t size) {
  * @return 	      	[size_t]    "The length of the string in memory"
  */
 size_t strload(char *path, char **str) {
+    int n;
     long size;
-    FILE *file = fopen(path, "rb");
+    FILE *file;
 
-    if ( unlikely(NULL == file) ) {
+    if ( unlikely(NULL == (file = fopen(path, "rb"))) ) {
         WSS_log_error("Unable to open file: %s", strerror(errno));
         *str = NULL;
         return 0;
@@ -88,6 +89,7 @@ size_t strload(char *path, char **str) {
 
     if ( unlikely(fseek(file, 0, SEEK_END) != 0) ) {
         WSS_log_error("Unable to seek to the end of file: %s", strerror(errno));
+        fclose(file);
         *str = NULL;
         return 0;
     }
@@ -96,6 +98,7 @@ size_t strload(char *path, char **str) {
 
     if ( unlikely(fseek(file, 0, SEEK_SET)) ) {
         WSS_log_error("Unable to seek back to the start of file: %s", strerror(errno));
+        fclose(file);
         *str = NULL;
         return 0;
     }
@@ -103,17 +106,20 @@ size_t strload(char *path, char **str) {
 
     if ( unlikely(NULL == (*str = (char *)WSS_malloc(size + 1))) ) {
         WSS_log_error("Unable to allocate for string");
+        fclose(file);
         *str = NULL;
         return 0;
     }
 
     if ( unlikely(fread(*str, sizeof(char), size, file) != (unsigned long)size) ) {
         WSS_log_error("Didn't read what was expected");
+        fclose(file);
         WSS_free((void **) &str);
         return 0;
     }
 
-    if ( unlikely(fclose(file) != 0) ) {
+    n = fclose(file);
+    if ( unlikely(n != 0) ) {
         WSS_log_error("Unable to close file: %s", strerror(errno));
         WSS_free((void **) &str);
         return 0;

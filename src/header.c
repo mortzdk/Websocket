@@ -113,7 +113,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
     char *token, *name; 
     wss_subprotocol_t *proto;
     wss_extension_t *ext;
-    char *extensions = NULL;
+    char *exts = NULL;
     unsigned int header_size = 0;
     size_t extensions_length = 0;
 
@@ -218,9 +218,9 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         }
 
         line = strtok_r(token, ":", &lineptr);
-        line_length = strlen(line);
 
         if ( likely(line != NULL) ) {
+            line_length = strlen(line);
             if ( line_length == strlen(SEC_WEBSOCKET_VERSION) && 
                 strncasecmp(SEC_WEBSOCKET_VERSION, line, line_length) == 0 ) {
                 // The |Sec-WebSocket-Version| header field MUST NOT appear more than once in an HTTP request.
@@ -277,12 +277,12 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
                         strncasecmp(SEC_WEBSOCKET_EXTENSIONS, line, line_length) == 0 ) {
                 line = trim(strtok_r(NULL, "", &lineptr));
                 line_length = strlen(line);
-                if ( NULL == (extensions = WSS_realloc((void **)&extensions, extensions_length, (extensions_length+line_length+1)*sizeof(char))) ) {
+                if ( NULL == (exts = WSS_realloc((void **)&exts, extensions_length, (extensions_length+line_length+1)*sizeof(char))) ) {
                     WSS_log_error("Unable to allocate space for extensions string");
                     return HttpStatus_InternalServerError;
                 }
 
-                memcpy(extensions+extensions_length, line, line_length);
+                memcpy(exts+extensions_length, line, line_length);
                 extensions_length += line_length;
             } else if ( line_length == strlen(HOST_STRING) &&
                         strncasecmp(HOST_STRING, line, line_length) == 0 ) {
@@ -350,8 +350,8 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
         return HttpStatus_BadRequest;
     }
 
-    if ( NULL != extensions ) {
-        sep = trim(strtok_r(extensions, ",", &sepptr));
+    if ( NULL != exts ) {
+        sep = trim(strtok_r(exts, ",", &sepptr));
         while(NULL != sep) {
             in_use = false;
             sep = trim(strtok_r(sep, ";", &paramptr));
@@ -391,7 +391,7 @@ enum HttpStatus_Code WSS_parse_header(int fd, wss_header_t *header, wss_config_t
 
             sep = trim(strtok_r(NULL, ",", &sepptr));
         }
-        WSS_free((void **)&extensions);
+        WSS_free((void **)&exts);
     }
 
     if ( unlikely(header->ws_type == UNKNOWN

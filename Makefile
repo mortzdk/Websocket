@@ -110,7 +110,7 @@ else
 endif
 
 
-.PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn massconnect autobahn_debug autobahn_call autobahn_cache count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
+.PHONY: valgrind version bump cachegrind callgrind clean subprotocols extensions autobahn massconnect autobahn_debug autobahn_call autobahn_cache analysis count release debug profiling space test ${addprefix run_,${TEST_NAMES}}
 
 #what we are trying to build
 all: clean version bin build log subprotocols extensions $(NAME)
@@ -345,6 +345,9 @@ ${addprefix run_,${TEST_NAMES}}: ${TEST_NAMES}
 	@echo
 	${BIN_FOLDER}/${patsubst run_%,%,$@} --verbose
 
+analysis:
+	cppcheck --language=c -f -q --enable=warning,performance,portability --std=c11 --error-exitcode=1 -i$(TEST_FOLDER) $(INCLUDES) .
+ 
 #make version
 version:
 	@echo ================ [$(NAME) - version $(VER)] ================

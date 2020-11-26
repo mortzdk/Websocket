@@ -55,7 +55,7 @@ static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
 
     if ( likely(config->port_http > 0) ) {
         for (i = 0; likely(i < hosts_length); i++) {
-            if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%d", config->hosts[i], config->port_http))) ) {
+            if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%u", config->hosts[i], config->port_http))) ) {
                 WSS_log_error("Unable to perform sprintf");
                 WSS_config_free(config);
                 return WSS_PRINTF_ERROR;
@@ -68,7 +68,7 @@ static wss_error_t config_add_port_to_hosts(wss_config_t *config) {
 
     if ( likely(config->port_https > 0) ) {
         for (i = 0; likely(i < hosts_length); i++) {
-            if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%d", config->hosts[i], config->port_https))) ) {
+            if ( unlikely(0 > (n = sprintf(extra+cur, "%s:%u", config->hosts[i], config->port_https))) ) {
                 WSS_log_error("Unable to perform sprintf");
                 WSS_config_free(config);
                 return WSS_PRINTF_ERROR;
