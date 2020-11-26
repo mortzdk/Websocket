@@ -202,7 +202,7 @@ pre.wirelog_tcp_closed_by_peer {color: #fff; margin: 0; background-color: #000; 
       <center><a href="http://autobahn.ws/testsuite" title="Autobahn WebSocket Testsuite"><img src="http://autobahn.ws/static/img/ws_protocol_test_report.png"          border="0" width="820" height="46" alt="Autobahn WebSocket Testsuite Report"></img></a></center>
       <center><a href="http://autobahn.ws"           title="Autobahn WebSocket">          <img src="http://autobahn.ws/static/img/ws_protocol_test_report_autobahn.png" border="0" width="300" height="68" alt="Autobahn WebSocket">                 </img></a></center>
       <br/>
-      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.5.17</b></span> : Pass - <span style="font-size: 0.9em;"><b>11238</b> ms @ 2020-09-27T08:04:52.130Z</a></p>
+      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 12.5.17</b></span> : Pass - <span style="font-size: 0.9em;"><b>11448</b> ms @ 2020-11-26T09:59:53.162Z</a></p>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send 1000 compressed messages each of payload size 131072, auto-fragment to 4096 octets. Use default permessage-deflate offer.</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Receive echo'ed messages (with payload as sent). Timeout case after 480 secs.</p>
 
@@ -221,15 +221,15 @@ Upgrade: WebSocket
 Connection: Upgrade
 Pragma: no-cache
 Cache-Control: no-cache
-Sec-WebSocket-Key: J4ypJq3/N9lghQD1AZoEAw==
+Sec-WebSocket-Key: LisOkEtcDfqBkDjlkHDOcg==
 Sec-WebSocket-Extensions: permessage-deflate; client_no_context_takeover; client_max_window_bits
 Sec-WebSocket-Version: 13</pre>
       <pre class="http_dump">HTTP/1.1 101 Switching Protocols
 Sec-Websocket-Extensions: permessage-deflate;client_no_context_takeover;client_max_window_bits=15;server_max_window_bits=15
-Sec-Websocket-Accept: GiKm+XOCLhXMeORN9ZP6lK5lwRY=
+Sec-Websocket-Accept: h2hX+SAcdzZTe2L75Tpm36g5Ljg=
 Upgrade: websocket
 Connection: Upgrade
-Server: WSServer/v2.0.5</pre>
+Server: WSServer/v2.0.6</pre>
       <br/><hr/>
       <h2>Closing Behavior</h2>
       <table>
@@ -350,7 +350,7 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>17647</td><td>1</td><td>17647</td></tr>
          <tr class="stats_row"><td>17700</td><td>1</td><td>17700</td></tr>
          <tr class="stats_row"><td>17770</td><td>1</td><td>17770</td></tr>
-         <tr class="stats_row"><td>17829</td><td>1</td><td>17829</td></tr>
+         <tr class="stats_row"><td>17882</td><td>1</td><td>17882</td></tr>
          <tr class="stats_row"><td>18728</td><td>1</td><td>18728</td></tr>
          <tr class="stats_row"><td>18795</td><td>1</td><td>18795</td></tr>
          <tr class="stats_row"><td>18883</td><td>1</td><td>18883</td></tr>
@@ -478,7 +478,7 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>37530</td><td>1</td><td>37530</td></tr>
          <tr class="stats_row"><td>37576</td><td>1</td><td>37576</td></tr>
          <tr class="stats_row"><td>37638</td><td>1</td><td>37638</td></tr>
-         <tr class="stats_row"><td>37821</td><td>1</td><td>37821</td></tr>
+         <tr class="stats_row"><td>37768</td><td>1</td><td>37768</td></tr>
          <tr class="stats_row"><td>37836</td><td>1</td><td>37836</td></tr>
          <tr class="stats_row"><td>39476</td><td>1</td><td>39476</td></tr>
          <tr class="stats_row"><td>39573</td><td>1</td><td>39573</td></tr>
@@ -747,10 +747,10 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>59764</td><td>1</td><td>59764</td></tr>
          <tr class="stats_row"><td>59766</td><td>1</td><td>59766</td></tr>
          <tr class="stats_row"><td>59767</td><td>1</td><td>59767</td></tr>
+         <tr class="stats_row"><td>59784</td><td>1</td><td>59784</td></tr>
          <tr class="stats_row"><td>59793</td><td>2</td><td>119586</td></tr>
          <tr class="stats_row"><td>59826</td><td>1</td><td>59826</td></tr>
          <tr class="stats_row"><td>59833</td><td>1</td><td>59833</td></tr>
-         <tr class="stats_row"><td>59837</td><td>1</td><td>59837</td></tr>
          <tr class="stats_row"><td>59869</td><td>2</td><td>119738</td></tr>
          <tr class="stats_row"><td>59872</td><td>1</td><td>59872</td></tr>
          <tr class="stats_row"><td>59877</td><td>2</td><td>119754</td></tr>
@@ -815,6 +815,7 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>60171</td><td>2</td><td>120342</td></tr>
          <tr class="stats_row"><td>60172</td><td>1</td><td>60172</td></tr>
          <tr class="stats_row"><td>60175</td><td>2</td><td>120350</td></tr>
+         <tr class="stats_row"><td>60177</td><td>1</td><td>60177</td></tr>
          <tr class="stats_row"><td>60180</td><td>1</td><td>60180</td></tr>
          <tr class="stats_row"><td>60181</td><td>1</td><td>60181</td></tr>
          <tr class="stats_row"><td>60182</td><td>1</td><td>60182</td></tr>
@@ -844,7 +845,7 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>60227</td><td>2</td><td>120454</td></tr>
          <tr class="stats_row"><td>60228</td><td>3</td><td>180684</td></tr>
          <tr class="stats_row"><td>60229</td><td>1</td><td>60229</td></tr>
-         <tr class="stats_row"><td>60230</td><td>2</td><td>120460</td></tr>
+         <tr class="stats_row"><td>60230</td><td>1</td><td>60230</td></tr>
          <tr class="stats_row"><td>60285</td><td>1</td><td>60285</td></tr>
          <tr class="stats_row"><td>60290</td><td>1</td><td>60290</td></tr>
          <tr class="stats_row"><td>60304</td><td>1</td><td>60304</td></tr>
@@ -1132,9 +1133,9 @@ Server: WSServer/v2.0.5</pre>
          <tr class="stats_row"><td>64919</td><td>1</td><td>64919</td></tr>
          <tr class="stats_row"><td>65278</td><td>1</td><td>65278</td></tr>
          <tr class="stats_row"><td>65374</td><td>1</td><td>65374</td></tr>
-         <tr class="stats_row"><td>65483</td><td>3</td><td>196449</td></tr>
+         <tr class="stats_row"><td>65483</td><td>1</td><td>65483</td></tr>
          <tr class="stats_row"><td>65488</td><td>1</td><td>65488</td></tr>
-         <tr class="stats_row"><td>65536</td><td>767</td><td>50266112</td></tr>
+         <tr class="stats_row"><td>65536</td><td>769</td><td>50397184</td></tr>
          <tr class="stats_total"><td>Total</td><td>1772</td><td>99528868</td></tr>
       </table>
       <h3>Octets Transmitted by Chop Size</h3>
@@ -1999,9 +2000,9 @@ Server: WSServer/v2.0.5</pre>
          <pre class="wirelog_delay">002 WIRELOG DISABLED</pre>
          <pre class="wirelog_kill_after">003 CLOSE CONNECTION AFTER 480.000000 sec</pre>
          <pre class="wirelog_delay">004 WIRELOG ENABLED</pre>
-         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=cc7ee635, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_frame">005 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=93cd3800, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               0x03e8</pre>
-         <pre class="wirelog_tx_octets">006 TX OCTETS: 8882cc7ee635cf96</pre>
+         <pre class="wirelog_tx_octets">006 TX OCTETS: 888293cd38009025</pre>
          <pre class="wirelog_rx_octets">007 RX OCTETS: 880203e8</pre>
          <pre class="wirelog_rx_frame">008 RX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               0x03e8</pre>
