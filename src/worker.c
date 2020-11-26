@@ -1663,13 +1663,13 @@ void WSS_work(void *args) {
     struct timespec now;
     wss_thread_args_t *arguments = (wss_thread_args_t *) args;
     wss_server_t *server = (wss_server_t *) arguments->server;
-    wss_session_state_t state = arguments->state;
+    wss_session_state_t session_state = arguments->state;
     int fd = arguments->fd;
 
     // Free arguments structure as this won't be needed no more
     WSS_free((void **) &arguments);
 
-    if ( unlikely(state == CONNECTING) ) {
+    if ( unlikely(session_state == CONNECTING) ) {
         WSS_log_trace("Handling connect event");
         WSS_connect(server);
         return;
@@ -1730,9 +1730,9 @@ void WSS_work(void *args) {
             WSS_read(server, session);
             break;
         case IDLE:
-            session->state = state;
+            session->state = session_state;
 
-            switch (state) {
+            switch (session_state) {
                 case WRITING:
                     WSS_log_trace("Handling write event");
                     session->event = READ;

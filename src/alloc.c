@@ -37,14 +37,15 @@ void *WSS_malloc(size_t size) {
     }
 
 #ifdef USE_RPMALLOC
-	buffer = rpmalloc( size );
-#else
-	buffer = malloc( size );
-#endif
-
-	if ( unlikely(NULL == buffer) ) {
+	if ( unlikely(NULL == (buffer = rpmalloc( size ))) ) {
 		return NULL;
 	}
+#else
+	if ( unlikely(NULL == (buffer = malloc( size ))) ) {
+		return NULL;
+	}
+#endif
+
 
 	memset(buffer, '\0', size);
 
@@ -66,14 +67,15 @@ void *WSS_calloc(size_t memb, size_t size) {
     }
 
 #ifdef USE_RPMALLOC
-	buffer = rpcalloc(memb, size);
-#else
-	buffer = calloc(memb, size);
-#endif
-
-	if ( unlikely(NULL == buffer) ) {
+	if ( unlikely(NULL == (buffer = rpcalloc(memb, size))) ) {
 		return NULL;
 	}
+#else
+	if ( unlikely(NULL == (buffer = calloc(memb, size))) ) {
+		return NULL;
+	}
+#endif
+
 
 	memset(buffer, '\0', size*memb);
 
@@ -98,22 +100,28 @@ void *WSS_realloc(void **ptr, size_t oldSize, size_t newSize) {
     
     if ( unlikely(ptr == NULL) ) {
 #ifdef USE_RPMALLOC
-	    buffer = rprealloc(NULL, newSize);
+        if ( unlikely(NULL == (buffer = rprealloc(NULL, newSize))) ) {
+            return NULL;
+        }
 #else
-	    buffer = realloc(NULL, newSize);
+        if ( unlikely(NULL == (buffer = realloc(NULL, newSize))) ) {
+            return NULL;
+        }
 #endif
     } else {
 #ifdef USE_RPMALLOC
-	    buffer = rprealloc(*ptr, newSize);
+        if ( unlikely(NULL == (buffer = rprealloc(*ptr, newSize))) ) {
+            WSS_free(ptr);
+            return NULL;
+        }
 #else
-	    buffer = realloc(*ptr, newSize);
+        if ( unlikely(NULL == (buffer = realloc(*ptr, newSize))) ) {
+            WSS_free(ptr);
+            return NULL;
+        }
 #endif
     }
 
-	if ( unlikely(NULL == buffer) ) {
-        WSS_free(ptr);
-		return NULL;
-	}
 
     if ( likely(oldSize < newSize) ) {
         memset(((char *) buffer)+oldSize, '\0', (newSize-oldSize));

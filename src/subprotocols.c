@@ -55,7 +55,7 @@ void WSS_load_subprotocols(wss_config_t *config)
 
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_subprotocol_t)))) ) {
             WSS_log_error("Unable to allocate subprotocol structure");
-            dlclose(proto->handle);
+            dlclose(handle);
             return;
         }
         proto->handle = handle;

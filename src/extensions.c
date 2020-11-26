@@ -51,7 +51,7 @@ void WSS_load_extensions(wss_config_t *config)
 
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_extension_t)))) ) {
             WSS_log_error("Unable to allocate extension structure");
-            dlclose(proto->handle);
+            dlclose(handle);
             return;
         }
         proto->handle = handle;
