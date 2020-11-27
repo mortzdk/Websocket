@@ -307,13 +307,6 @@ void *WSS_server_run(void *arg) {
     }
 #endif
 
-    if ( unlikely(WSS_SUCCESS != (err = WSS_poll_init(server))) ) {
-#ifdef USE_RPMALLOC
-        rpmalloc_thread_finalize();
-#endif
-        pthread_exit( ((void *) err) );
-    }
-
     // Listen for poll events
     while ( likely(state.state == RUNNING) ) {
         err = WSS_poll_delegate(server);
@@ -338,6 +331,7 @@ void *WSS_server_run(void *arg) {
 #ifdef USE_RPMALLOC
     rpmalloc_thread_finalize();
 #endif
+
     pthread_exit( ((void *) ((uintptr_t)WSS_SUCCESS)) );
 }
 

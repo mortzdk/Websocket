@@ -20,6 +20,7 @@
 #include <arpa/inet.h>          /* htonl, htons, inet_ntoa */
 
 #include "http.h"
+#include "event.h"
 #include "alloc.h"
 #include "config.h"
 #include "error.h"
@@ -366,6 +367,11 @@ wss_error_t WSS_http_server(wss_server_t *server) {
 
     WSS_log_trace("Initializing server regexp");
     if ( unlikely((err = WSS_http_regex_init(server)) != WSS_SUCCESS) ) {
+        return err;
+    }
+
+    WSS_log_trace("Initializing server poll");
+    if ( unlikely(WSS_SUCCESS != (err = WSS_poll_init(server))) ) {
         return err;
     }
 
