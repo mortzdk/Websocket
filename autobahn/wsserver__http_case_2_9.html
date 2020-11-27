@@ -202,7 +202,7 @@ pre.wirelog_tcp_closed_by_peer {color: #fff; margin: 0; background-color: #000; 
       <center><a href="http://autobahn.ws/testsuite" title="Autobahn WebSocket Testsuite"><img src="http://autobahn.ws/static/img/ws_protocol_test_report.png"          border="0" width="820" height="46" alt="Autobahn WebSocket Testsuite Report"></img></a></center>
       <center><a href="http://autobahn.ws"           title="Autobahn WebSocket">          <img src="http://autobahn.ws/static/img/ws_protocol_test_report_autobahn.png" border="0" width="300" height="68" alt="Autobahn WebSocket">                 </img></a></center>
       <br/>
-      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 2.9</b></span> : Pass - <span style="font-size: 0.9em;"><b>3</b> ms @ 2020-11-26T09:52:44.185Z</a></p>
+      <p class="case case_ok">WSServer (HTTP) - <span style="font-size: 1.3em;"><b>Case 2.9</b></span> : Pass - <span style="font-size: 0.9em;"><b>3</b> ms @ 2020-11-27T13:58:22.047Z</a></p>
       <p class="case_text_block case_desc"><b>Case Description</b><br/><br/>Send unsolicited pong with payload. Send ping with payload. Verify pong for ping is received.</p>
       <p class="case_text_block case_expect"><b>Case Expectation</b><br/><br/>Nothing in reply to own Pong, but Pong with payload echo'ed in reply to Ping. Clean close with normal code.</p>
 
@@ -221,13 +221,13 @@ Upgrade: WebSocket
 Connection: Upgrade
 Pragma: no-cache
 Cache-Control: no-cache
-Sec-WebSocket-Key: qUW+AwAD7uE0cnaSmd4yVA==
+Sec-WebSocket-Key: lYI3kV+7+w3FxNkMOcMp9Q==
 Sec-WebSocket-Version: 13</pre>
       <pre class="http_dump">HTTP/1.1 101 Switching Protocols
-Sec-Websocket-Accept: BDc88seo+RJyTK9ID7AbzYh7pXU=
+Sec-Websocket-Accept: Y8JohvoLQpnYPLwVEVuOUyLdB7c=
 Upgrade: websocket
 Connection: Upgrade
-Server: WSServer/v2.0.6</pre>
+Server: WSServer/v2.0.7</pre>
       <br/><hr/>
       <h2>Closing Behavior</h2>
       <table>
@@ -285,20 +285,20 @@ Server: WSServer/v2.0.6</pre>
          <pre class="wirelog_tx_octets">000 TX OCTETS: 474554202f20485454502f312e310d0a557365722d4167656e743a204175746f6261686e5465737453756974652f302e382e</pre>
          <pre class="wirelog_tx_octets">               312d302e31302e390d0a486f7374 ...</pre>
          <pre class="wirelog_rx_octets">001 RX OCTETS: 485454502f312e312031303120537769746368696e672050726f746f636f6c730d0a5365632d576562736f636b65742d4163</pre>
-         <pre class="wirelog_rx_octets">               636570743a20424463383873656f ...</pre>
-         <pre class="wirelog_tx_frame">002 TX FRAME : OPCODE=10, FIN=True, RSV=0, PAYLOAD-LEN=24, MASK=2c7f82d5, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_rx_octets">               636570743a2059384a6f68766f4c ...</pre>
+         <pre class="wirelog_tx_frame">002 TX FRAME : OPCODE=10, FIN=True, RSV=0, PAYLOAD-LEN=24, MASK=f63f0c0b, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               unsolicited pong payload</pre>
-         <pre class="wirelog_tx_octets">003 TX OCTETS: 8a982c7f82d55911f1ba4016e1bc581ae6f55c10ecb20c0fe3ac4010e3b1</pre>
-         <pre class="wirelog_tx_frame">004 TX FRAME : OPCODE=9, FIN=True, RSV=0, PAYLOAD-LEN=12, MASK=9122cc16, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_octets">003 TX OCTETS: 8a98f63f0c0b83517f649a566f62825a682b8650626cd64f6d729a506d6f</pre>
+         <pre class="wirelog_tx_frame">004 TX FRAME : OPCODE=9, FIN=True, RSV=0, PAYLOAD-LEN=12, MASK=ebcbe368, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               ping payload</pre>
-         <pre class="wirelog_tx_octets">005 TX OCTETS: 898c9122cc16e14ba271b152ad6ffd4dad72</pre>
+         <pre class="wirelog_tx_octets">005 TX OCTETS: 898cebcbe3689ba28d0fcbbb821187a4820c</pre>
          <pre class="wirelog_kill_after">006 CLOSE CONNECTION AFTER 1.000000 sec</pre>
          <pre class="wirelog_rx_octets">007 RX OCTETS: 8a0c70696e67207061796c6f6164</pre>
          <pre class="wirelog_rx_frame">008 RX FRAME : OPCODE=10, FIN=True, RSV=0, PAYLOAD-LEN=12, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               ping payload</pre>
-         <pre class="wirelog_tx_frame">009 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=01d3c0e1, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
+         <pre class="wirelog_tx_frame">009 TX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASK=2e704b26, PAYLOAD-REPEAT-LEN=None, CHOPSIZE=None, SYNC=False</pre>
          <pre class="wirelog_tx_frame">               0x03e8</pre>
-         <pre class="wirelog_tx_octets">010 TX OCTETS: 888201d3c0e1023b</pre>
+         <pre class="wirelog_tx_octets">010 TX OCTETS: 88822e704b262d98</pre>
          <pre class="wirelog_rx_octets">011 RX OCTETS: 880203e8</pre>
          <pre class="wirelog_rx_frame">012 RX FRAME : OPCODE=8, FIN=True, RSV=0, PAYLOAD-LEN=2, MASKED=False, MASK=None</pre>
          <pre class="wirelog_rx_frame">               0x03e8</pre>
