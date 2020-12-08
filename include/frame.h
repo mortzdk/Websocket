@@ -9,8 +9,12 @@
 #include "subprotocol.h"
 #include "config.h"
 
+#ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
+#ifndef MAX
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#endif
 
 typedef enum {
 	CLOSE_NORMAL                 = 1000, /* The connection */

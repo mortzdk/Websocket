@@ -93,14 +93,48 @@ ifeq ($(BUMP),)
 endif
 
 ifndef TRAVIS
+# Which SSL implementation to use
+ifeq ($(SSL),)
+SSL = OPENSSL
+endif
+
 $(shell pkg-config --exists openssl)
-ifeq ($(.SHELLSTATUS), 0)
+ifeq ($(.SHELLSTATUS),0)
+ifeq ("$(SSL)","OPENSSL")
+		FLAGS_EXTRA += $(shell pkg-config --libs openssl)
+		CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
+endif
+endif
+
+$(shell pkg-config --exists wolfssl)
+ifeq ($(.SHELLSTATUS),0)
+ifeq ("$(SSL)","WOLFSSL")
+	FLAGS_EXTRA += $(shell pkg-config --libs wolfssl)
+	CFLAGS += $(shell pkg-config --cflags wolfssl) -DUSE_WOLFSSL
+endif
+endif
+
+ifeq ("$(SSL)","BORINGSSL")
+ifneq ("$(SSL_LIBRARY_PATH)",)
 	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
-	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
+	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_BORINGSSL
+endif
+endif
+
+ifeq ("$(SSL)","LIBRESSL")
+ifneq ("$(SSL_LIBRARY_PATH)",)
+	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
+	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_LIBRESSL
+endif
+endif
+
+ifneq ($(SSL_LIBRARY_PATH),)
+	INCLUDES += -I$(SSL_LIBRARY_PATH)/include -L$(SSL_LIBRARY_PATH)/lib
+	export LD_LIBRARY_PATH=$(SSL_LIBRARY_PATH)/lib
 endif
 
 $(shell pkg-config --exists criterion)
-ifeq ($(.SHELLSTATUS), 0)
+ifeq ($(.SHELLSTATUS),0)
 	FLAGS_TEST += $(shell pkg-config --libs criterion)
 endif
 else

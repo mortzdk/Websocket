@@ -5,11 +5,6 @@
 #include <sys/socket.h>         /* socket, setsockopt, inet_ntoa, accept, shutdown */
 #include <netinet/in.h>         /* sockaddr_in, inet_ntoa */
 #include <regex.h>              /* regex_t, regcomp, regexec */
-
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>
-#endif
-
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_mutex_init */
 #include "pool.h"
@@ -46,9 +41,7 @@ typedef struct {
     int poll_fd;
     int max_fd;
     wss_config_t *config;
-#ifdef USE_OPENSSL
-    SSL_CTX *ssl_ctx;
-#endif
+    void *ssl_ctx;
     threadpool_t *pool;
     void *events;
     struct sockaddr_in6 info;

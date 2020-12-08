@@ -113,11 +113,9 @@ void WSS_message_send(int fd, wss_opcode_t opcode, char *message, uint64_t messa
 
     WSS_session_jobs_inc(session);
 
-#ifdef USE_OPENSSL
-    if (session->ssl && session->ssl_connected) {
+    if (NULL != session->ssl && session->ssl_connected) {
         server = servers.https;
     }
-#endif
 
     WSS_log_trace("Creating frames");
 

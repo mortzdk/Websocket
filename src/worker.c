@@ -19,19 +19,6 @@
                                    pthread_mutex_init */
 
 #include "alloc.h"
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/sha.h>
-#include <openssl/buffer.h>
-#else
-#define SHA_DIGEST_LENGTH 20
-#include "sha1.h"
-#include "b64.h"
-#endif
-
 #include "worker.h"
 #include "server.h"
 #include "event.h"
@@ -48,6 +35,7 @@
 #include "utf8.h"
 #include "error.h"
 #include "predict.h"
+#include "ssl.h"
 
 /**
  * Function that generates a handshake response, used to authorize a websocket
@@ -87,45 +75,12 @@ static wss_message_t *handshake_response(wss_header_t *header, enum HttpStatus_C
     memset(sha1Key, '\0', SHA_DIGEST_LENGTH);
     memcpy(key+(key_length-magic_length), MAGIC_WEBSOCKET_KEY, magic_length);
     memcpy(key, header->ws_key, (key_length-magic_length));
-#ifdef USE_OPENSSL
-    SHA1((const unsigned char *)key, key_length, (unsigned char*) sha1Key);
 
-    BIO *b64_bio, *mem_bio;                         // Declares two OpenSSL BIOs: a base64 filter and a memory BIO.
-    BUF_MEM *mem_bio_mem_ptr;                       // Pointer to a "memory BIO" structure holding our base64 data.
-    b64_bio = BIO_new(BIO_f_base64());              // Initialize our base64 filter BIO.
-    mem_bio = BIO_new(BIO_s_mem());                 // Initialize our memory sink BIO.
-    b64_bio = BIO_push(b64_bio, mem_bio);           // Link the BIOs by creating a filter-sink BIO chain.
-    BIO_set_flags(b64_bio, BIO_FLAGS_BASE64_NO_NL); // No newlines every 64 characters or less.
-    BIO_set_close(mem_bio, BIO_CLOSE);              // Permit access to mem_ptr after BIOs are destroyed.
-    BIO_write(b64_bio, sha1Key, SHA_DIGEST_LENGTH); // Records base64 encoded data.
-    BIO_flush(b64_bio);                             // Flush data.  Necessary for b64 encoding, because of pad characters.
-    BIO_get_mem_ptr(mem_bio, &mem_bio_mem_ptr);     // Store address of mem_bio's memory structure.
-
-    acceptKeyLength = mem_bio_mem_ptr->length;
-    if ( unlikely(NULL == (acceptKey = WSS_malloc(acceptKeyLength))) ) {
+    acceptKeyLength = WSS_base64_encode_sha1(key, key_length, &acceptKey);
+    if (acceptKeyLength == 0) {
+        WSS_free((void **)&acceptKey);
         return NULL;
     }
-    memcpy(acceptKey, (*mem_bio_mem_ptr).data, acceptKeyLength);
-
-    BIO_free_all(b64_bio);                          // Destroys all BIOs in chain, starting with b64 (i.e. the 1st one).
-#else
-    SHA1Context sha;
-    int i, b;
-
-    SHA1Reset(&sha);
-    SHA1Input(&sha, (const unsigned char*) key, key_length);
-    if ( likely(SHA1Result(&sha)) ) {
-        for (i = 0; likely(i < 5); i++) {
-            b = htonl(sha.Message_Digest[i]);
-            memcpy(sha1Key+(4*i), (unsigned char *) &b, 4);
-        }
-    } else {
-        return NULL;
-    }
-
-    acceptKey = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH);
-    acceptKeyLength = strlen(acceptKey);
-#endif
 
     if ( NULL != header->ws_extensions ) {
         headers += strlen(HTTP_HANDSHAKE_EXTENSIONS)*sizeof(char);
@@ -153,6 +108,7 @@ static wss_message_t *handshake_response(wss_header_t *header, enum HttpStatus_C
 
     length = line + headers;
     if ( unlikely(NULL == (message = (char *) WSS_malloc((length+1)*sizeof(char)))) ) {
+        WSS_free((void **)&acceptKey);
         return NULL;
     }
 
@@ -267,26 +223,11 @@ static wss_message_t *favicon_response(wss_header_t *header, enum HttpStatus_Cod
 
         icon = strload(config->favicon, &ico);
     } else {
-        memcpy(modified, date, strlen(date));
+        return NULL;
     }
 
     // Generate etag from favicon content
-#ifdef USE_OPENSSL
-    SHA1((const unsigned char *)ico, icon, (unsigned char*) sha1Key);
-#else
-    SHA1Context sha;
-    int i, b;
-    memset(sha1Key, '\0', SHA_DIGEST_LENGTH);
-
-    SHA1Reset(&sha);
-    SHA1Input(&sha, (const unsigned char*) ico, icon);
-    if ( likely(SHA1Result(&sha)) ) {
-        for (i = 0; likely(i < 5); i++) {
-            b = htonl(sha.Message_Digest[i]);
-            memcpy(sha1Key+(4*i), (unsigned char *) &b, 4);
-        }
-    }
-#endif
+    WSS_sha1(ico, icon, (char **)&sha1Key);
 
     // Convert etag binary values to hex values
     if ( unlikely(NULL == (etag = bin2hex((const unsigned char *)sha1Key, SHA_DIGEST_LENGTH))) ) {
@@ -485,15 +426,11 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session) {
 
     WSS_log_trace("Deleting client session");
 
-#ifdef USE_OPENSSL
     if (NULL == server->ssl_ctx) {
-#endif
         WSS_log_info("Session %d disconnected from ip: %s:%d using HTTP request", session->fd, session->ip, session->port);
-#ifdef USE_OPENSSL
     } else {
         WSS_log_info("Session %d disconnected from ip: %s:%d using HTTPS request", session->fd, session->ip, session->port);
     }
-#endif
 
     for (i = 0; i < session->jobs; i++) {
         pthread_mutex_unlock(&session->lock);
@@ -514,71 +451,6 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session) {
         return;
     }
 }
-
-#ifdef USE_OPENSSL
-/**
- * Function that performs a ssl handshake with the connecting client.
- *
- * @param   server      [wss_server_t *]    "The server implementation"
- * @param   session     [wss_session_t *]   "The connecting client session"
- * @return              [void]
- */
-static void ssl_handshake(wss_server_t *server, wss_session_t *session) {
-    int ret;
-    unsigned long err;
-
-    WSS_log_trace("Performing SSL handshake");
-
-    ret = SSL_do_handshake(session->ssl);
-    err = SSL_get_error(session->ssl, ret);
-
-    // If something more needs to be read in order for the handshake to finish
-    if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
-        WSS_log_trace("Need to wait for further reads");
-
-        clock_gettime(CLOCK_MONOTONIC, &session->alive);
-
-        WSS_poll_set_read(server, session->fd);
-
-        return;
-    }
-
-    // If something more needs to be written in order for the handshake to finish
-    if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
-        WSS_log_trace("Need to wait for further writes");
-
-        clock_gettime(CLOCK_MONOTONIC, &session->alive);
-
-        WSS_poll_set_write(server, session->fd);
-
-        return;
-    }
-
-    if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
-        char message[1024];
-        while ( (err = ERR_get_error()) != 0 ) {
-            memset(message, '\0', 1024);
-            ERR_error_string_n(err, message, 1024);
-            WSS_log_error("Handshake error: %s", message);
-        }
-
-        WSS_disconnect(server, session);
-        return;
-    }
-
-    WSS_log_trace("SSL handshake was successfull");
-
-    session->ssl_connected = true;
-
-    WSS_log_info("Client with session %d connected", session->fd);
-
-    session->state = IDLE;
-
-    clock_gettime(CLOCK_MONOTONIC, &session->alive);
-
-    WSS_poll_set_read(server, session->fd);
-}
-#endif
 
 /**
  * Function that handles new connections. This function creates a new session and
@@ -648,45 +520,20 @@ void WSS_connect(wss_server_t *server) {
         ringbuf_setup(ringbuf, 0, workers, server->config->size_ringbuffer);
         session->ringbuf = ringbuf;
 
-#ifdef USE_OPENSSL
         if (NULL == server->ssl_ctx) {
-#endif
             WSS_log_trace("User connected from ip: %s:%d using HTTP request", session->ip, session->port);
-#ifdef USE_OPENSSL
         } else {
             WSS_log_trace("User connected from ip: %s:%d using HTTPS request", session->ip, session->port);
         }
-#endif
 
-#ifdef USE_OPENSSL
         if (NULL != server->ssl_ctx) {
-            char ssl_msg[1024];
-
-            WSS_log_trace("Creating ssl client structure");
-            if ( unlikely(NULL == (session->ssl = SSL_new(server->ssl_ctx))) ) {
-                ERR_error_string_n(ERR_get_error(), ssl_msg, 1024);
-                WSS_log_error("Unable to create SSL structure: %s", ssl_msg);
+            if (! WSS_session_ssl(server, session)) {
                 WSS_free((void **)&ringbuf);
-                WSS_disconnect(server, session);
                 return;
             }
 
-            WSS_log_trace("Associating structure with client filedescriptor");
-            if ( unlikely(SSL_set_fd(session->ssl, session->fd) != 1) ) {
-                ERR_error_string_n(ERR_get_error(), ssl_msg, 1024);
-                WSS_log_error("Unable to bind filedescriptor to SSL structure: %s", ssl_msg);
-                WSS_free((void **)&ringbuf);
-                WSS_disconnect(server, session);
-                return;
-            }
-
-
-            WSS_log_trace("Setting accept state");
-            SSL_set_accept_state(session->ssl);
-
-            ssl_handshake(server, session);
+            WSS_ssl_handshake(server, session);
         } else {
-#endif
             session->state = IDLE;
 
             clock_gettime(CLOCK_MONOTONIC, &session->alive);
@@ -695,9 +542,7 @@ void WSS_connect(wss_server_t *server) {
 
             WSS_log_info("Client with session %d connected", session->fd);
 
-#ifdef USE_OPENSSL
         }
-#endif
 
         WSS_session_jobs_dec(session);
         pthread_mutex_unlock(&session->lock);
@@ -743,43 +588,9 @@ static wss_error_t write_internal(wss_session_t *session, wss_message_t *mes) {
 static int read_internal(wss_server_t *server, wss_session_t *session, char *buffer) {
     int n;
 
-#ifdef USE_OPENSSL
-    if ( NULL != server->ssl_ctx ) {
-        unsigned long err;
-
-        n = SSL_read(session->ssl, buffer, server->config->size_buffer);
-        err = SSL_get_error(session->ssl, n);
-
-        // There's no more to read from the kernel
-        if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
-            n = 0;
-        } else
-            
-        // There's no space to write to the kernel, wait for filedescriptor.
-        if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
-            WSS_log_debug("SSL_ERROR_WANT_WRITE");
-
-            n = -2;
-        } else
-            
-        // Some error has occured.
-        if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
-            char msg[1024];
-            while ( (err = ERR_get_error()) != 0 ) {
-                memset(msg, '\0', 1024);
-                ERR_error_string_n(err, msg, 1024);
-                WSS_log_error("SSL read failed: %s", msg);
-            }
-
-            n = -1;
-        } else 
-            
-        // If this was one of the error codes that we do accept, return 0
-        if ( unlikely(n < 0) ) {
-            n = 0;
-        }
+    if ( NULL != session->ssl ) {
+        n = WSS_ssl_read(server, session, buffer);
     } else {
-#endif
         do {
             n = read(session->fd, buffer, server->config->size_buffer);
             if (n == -1) {
@@ -794,9 +605,7 @@ static int read_internal(wss_server_t *server, wss_session_t *session, char *buf
                 }
             }
         } while ( unlikely(0) );
-#ifdef USE_OPENSSL
     }
-#endif
 
     return n;
 }
@@ -1548,56 +1357,11 @@ void WSS_write(wss_server_t *server, wss_session_t *session) {
                     closing = true;
                 }
 
-#ifdef USE_OPENSSL
-                if (NULL != server->ssl_ctx) {
-                    unsigned long err;
-
-                    n = SSL_write(session->ssl, message->msg+bytes_sent, message_length-bytes_sent);
-                    err = SSL_get_error(session->ssl, n);
-
-                    // If something more needs to be read in order for the handshake to finish
-                    if ( unlikely(err == SSL_ERROR_WANT_READ) ) {
-                        WSS_log_trace("Needs to wait for further reads");
-
-                        session->written = bytes_sent;
-                        ringbuf_release(session->ringbuf, i);
-
-                        session->event = READ;
-
+                if (NULL != session->ssl) {
+                    if (! WSS_ssl_write_partial(session, i, message, &bytes_sent)) {
                         return;
-                    }
-
-                    // If something more needs to be written in order for the handshake to finish
-                    if ( unlikely(err == SSL_ERROR_WANT_WRITE) ) {
-                        WSS_log_trace("Needs to wait for further writes");
-
-                        session->written = bytes_sent;
-
-                        ringbuf_release(session->ringbuf, i);
-
-                        session->event = WRITE;
-
-                        return;
-                    }
-
-                    if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
-                        char msg[1024];
-                        while ( (err = ERR_get_error()) != 0 ) {
-                            ERR_error_string_n(err, msg, 1024);
-                            WSS_log_error("SSL write failed: %s", msg);
-                        }
-
-                        session->closing = true;
-
-                        return;
-                    } else {
-                        if (unlikely(n < 0)) {
-                            n = 0;
-                        }
-                        bytes_sent += n;
                     }
                 } else {
-#endif
                     do {
                         n = write(session->fd, message->msg+bytes_sent, message_length-bytes_sent);
                         if (unlikely(n == -1)) {
@@ -1620,9 +1384,7 @@ void WSS_write(wss_server_t *server, wss_session_t *session) {
                             bytes_sent += n;
                         }
                     } while ( unlikely(0) );
-#ifdef USE_OPENSSL
                 }
-#endif
             }
 
             if ( likely(session->messages != NULL) ) {
@@ -1708,14 +1470,13 @@ void WSS_work(void *args) {
             session->closing = true;
             break;
         case CONNECTING:
-#ifdef USE_OPENSSL
             if (NULL != server->ssl_ctx) {
-                ssl_handshake(server, session);
+                WSS_ssl_handshake(server, session);
                 WSS_session_jobs_dec(session);
                 pthread_mutex_unlock(&session->lock);
                 return;
             }
-#endif
+
             WSS_read(server, session);
             break;
         case READING:

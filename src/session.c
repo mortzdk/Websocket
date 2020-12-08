@@ -8,11 +8,6 @@
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_rwlock_init */
 
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#endif
-
 #include "session.h"
 #include "log.h"
 #include "error.h"
@@ -20,6 +15,7 @@
 #include "header.h"
 #include "ringbuf.h"
 #include "predict.h"
+#include "ssl.h"
 
 /**
  * A hashtable containing all active sessions
@@ -207,39 +203,9 @@ static wss_error_t session_delete(wss_session_t *session) {
         WSS_free((void **) &session->messages);
         WSS_free((void **) &session->ringbuf);
 
-#ifdef USE_OPENSSL
-        WSS_log_trace("Free ssl structure");
         if (NULL != session->ssl) {
-            if ( unlikely((err = SSL_shutdown(session->ssl)) < 0) ) {
-                err = SSL_get_error(session->ssl, err);
-                switch (err) {
-                    case SSL_ERROR_WANT_READ:
-                        pthread_rwlock_unlock(&lock);
-                        return WSS_SSL_SHUTDOWN_READ_ERROR;
-                    case SSL_ERROR_WANT_WRITE:
-                        pthread_rwlock_unlock(&lock);
-                        return WSS_SSL_SHUTDOWN_WRITE_ERROR;
-                    case SSL_ERROR_SYSCALL:
-                        WSS_log_error("SSL_shutdown failed: %s", strerror(errno));
-                        break;
-                    default:
-                        WSS_log_error("SSL_shutdown error code: %d", err);
-                        break;
-                }
-
-                char message[1024];
-                while ( (err = ERR_get_error()) != 0 ) {
-                    memset(message, '\0', 1024);
-                    ERR_error_string_n(err, message, 1024);
-                    WSS_log_error("SSL_shutdown error: %s", message);
-                }
-
-                err = WSS_SSL_SHUTDOWN_ERROR;
-            }
-            SSL_free(session->ssl);
-            session->ssl = NULL;
+            err = WSS_session_ssl_free(session, &lock);
         }
-#endif
 
         WSS_log_trace("Deleting client from hash table");
 
