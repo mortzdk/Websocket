@@ -19,6 +19,7 @@
 
 #elif defined(USE_WOLFSSL)
 
+#include <wolfssl/options.h>
 #include <wolfssl/ssl.h>
 #include "b64.h"
 
@@ -290,9 +291,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
         } else {
             SSL_CTX_set_cipher_list(server->ssl_ctx, server->config->ssl_cipher_suites);
         }
-
         WSS_log_trace("Setting cipher suites");
-        wolfSSL_CTX_set_cipher_list(server->ssl_ctx, (char *)cipher_list);
     }
 
     if ( NULL != server->config->ssl_dhparam ) {
