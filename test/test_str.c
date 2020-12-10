@@ -5,18 +5,26 @@
 #include <criterion/criterion.h>
 
 #include "str.h"
-#include "sha1.h"
 #include "alloc.h"
 
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
+#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+
 #include <openssl/sha.h>
-#else
+
+#elif defined(USE_WOLFSSL)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#include <wolfssl/wolfcrypt/sha.h>
+#pragma GCC diagnostic pop
+
 #define SHA_DIGEST_LENGTH 20
+
+#else
+
 #include "sha1.h"
+#define SHA_DIGEST_LENGTH 20
+
 #endif
 
 static void setup(void) {
@@ -63,8 +71,13 @@ Test(bin2hex, sha1_string) {
     const char unsigned *string = (const char unsigned *)WSS_malloc(6);
     sprintf((char *)string, "%s", "12345");
 
-#ifdef USE_OPENSSL
+#if defined(USE_OPENSSL)
     SHA1((const unsigned char *)string, strlen((char *)string), (unsigned char*) sha1Key);
+#elif defined(USE_WOLFSSL)
+    Sha sha;
+    wc_InitSha(&sha);
+    wc_ShaUpdate(&sha, (const unsigned char *) string, strlen((char *)string));
+    wc_ShaFinal(&sha, (unsigned char *) sha1Key);
 #else
     SHA1Context sha;
     int i, b;

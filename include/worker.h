@@ -79,7 +79,7 @@ typedef struct {
  * @param 	session	[wss_session_t *] 	"The session structure"
  * @return          [void]
  */
-//void WSS_disconnect(void *args);
+void WSS_disconnect(wss_server_t *server, wss_session_t *session);
 
 /**
  * Function that handles new connections. This function creates a new session and
