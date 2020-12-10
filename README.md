@@ -9,7 +9,7 @@ As of version 2.0.0 the WSServer has been completely rewritten with many new
 features, better support, better extendability and generally as a more stable
 WebSocket server.
 
-Current Version: **v2.0.7**
+Current Version: **v2.1.0**
 
 ### Early history
 
@@ -74,32 +74,41 @@ another server instance.
 
 WSServer does in principle not rely on any third-party libraries in order to
 serve as a WebSocket server. However if you want the complete feature set the
-[**zlib**](https://zlib.net/) and [**openssl**](https://www.openssl.org/) library must be installed on your system in order to
-support the `permessage-deflate` extension and SSL (WSS).
+[**zlib**](https://zlib.net/) and one of the SSL libraries [**OpenSSL**](https://www.openssl.org/), 
+[**WolfSSL**](https://www.wolfssl.com/), [**BoringSSL**](https://www.boringssl.googlesource.com/boringssl/), [**LibreSSL**](https://www.libressl.org/) must be installed 
+on your system in order to support the `permessage-deflate` extension and SSL (WSS).
 
 ##### Ubuntu
 ```
 $ sudo apt-get install zlib1g-dev
 $ sudo apt-get install openssl
+$ sudo apt-get install wolfssl
 ```
 
 ##### Arch
 ```
-$ pacman -S openssl
 $ pacman -S zlib
+$ pacman -S wolfssl
+$ pacman -S libressl
 ```
 
 ##### MacOS
 ```
-$ brew install openssl
 $ brew install zlib
+$ brew install openssl
+$ brew install wolfssl
 ```
 
 ##### FreeBSD
 ```
+$ pkg install libressl
+$ pkg install boringssl
 $ pkg install openssl
 $ pkg install zlib
 ```
+
+If the installation method is not listed above or your package manager doesn't
+contain the software, it can all be build from source.
 
 No other dependencies are required with regards to building the server with the
 full feature set.
@@ -273,8 +282,32 @@ However the optimal amount of workers is probably system and hardware dependent.
 
 ##### SSL (WSS)
 
-WSServer supports the *wss* scheme by the use of the OpenSSL library. In order
-to activate SSL some configuration must be made.
+WSServer supports the *wss* scheme by the use of one of currently 4 SSL
+libraries ([**OpenSSL**](https://www.openssl.org/), 
+[**WolfSSL**](https://www.wolfssl.com/), [**BoringSSL**](https://www.boringssl.googlesource.com/boringssl/), [**LibreSSL**](https://www.libressl.org/)). 
+The default choice is OpenSSL, but the SSL library can be switched as follows:
+
+```
+# OpenSSL
+$ make
+
+# WolfSSL
+$ make SSL=WOLFSSL
+
+# LibreSSL
+$ make SSL_LIBRARY_PATH=/path/to/libressl
+
+# BoringSSL
+$ make SSL_LIBRARY_PATH=/path/to/boringssl
+```
+
+Note that if compiled with `SSL_LIBRARY_PATH` the binary must be executed with
+`LD_LIBRARY_PATH=/path/to/libressl/lib ./bin/WSServer`.
+
+If LibreSSL or BoringSSL is installed in place of OpenSSL the compilation should
+work out of the box by running `make`.
+
+In order to activate SSL some configuration must be made.
 
 The `key` key define the path to the SSL private key of the server. The private
 key must be in the PEM format.
