@@ -1,21 +1,22 @@
-#if defined(USE_OPENSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
 
 #include <openssl/ssl.h>
 #include <openssl/pem.h>
+#include <openssl/err.h>
+#include <openssl/dh.h>
+
+#if defined(OPENSSL_IS_BORINGSSL)
+
+#include "b64.h"
+
+#else
+
 #include <openssl/bn.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/dh.h>
 #include <openssl/buffer.h>
 
-#elif defined(USE_BORINGSSL)
-
-#include <openssl/ssl.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
-#include <openssl/dh.h>
-#include "b64.h"
+#endif
 
 #elif defined(USE_WOLFSSL)
 
@@ -49,7 +50,7 @@
  * @return 			[wss_error_t]       "The error status"
  */
 wss_error_t WSS_http_ssl(wss_server_t *server) {
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     FILE *f;
     DH *dh;
     const SSL_METHOD *method;
@@ -58,7 +59,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
 
     SSL_library_init();
 
-#if defined(USE_OPENSSL)
+#if ! defined(OPENSSL_IS_BORINGSSL) && ! defined(LIBRESSL_VERSION_NUMBER)
     FIPS_mode_set(1);
 #endif
 
@@ -104,11 +105,11 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     }
 
     WSS_log_trace("Use most appropriate client curve");
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER)
     SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_ECDH_USE);
 #endif
 
-#if defined(USE_OPENSSL) | defined(USE_LIBRESSL)
+#if ! defined(OPENSSL_IS_BORINGSSL)
     SSL_CTX_set_ecdh_auto(server->ssl_ctx, 1);
 #endif
 
@@ -138,18 +139,18 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     WSS_log_trace("Disable use of session and ticket cache and resumption");
     SSL_CTX_set_session_cache_mode(server->ssl_ctx, SSL_SESS_CACHE_OFF);
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER)
     SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_TICKET);
 #endif
 
-#if defined(USE_OPENSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER) && ! defined(OPENSSL_IS_BORINGSSL)
     if ( SSL_SUCCESS != SSL_CTX_set_num_tickets(server->ssl_ctx, 0) ) {
         WSS_log_error("Failed to set number of ticket to zero");
         return WSS_SSL_CTX_ERROR;
     }
 #endif
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER)
     SSL_CTX_set_options(server->ssl_ctx, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
 #endif
 
@@ -159,7 +160,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     }
 
     if ( NULL != server->config->ssl_cipher_suites ) {
-#if defined(USE_OPENSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER) && ! defined(OPENSSL_IS_BORINGSSL)
         WSS_log_trace("Setting cipher suites");
         SSL_CTX_set_ciphersuites(server->ssl_ctx, server->config->ssl_cipher_suites);
 #else
@@ -181,7 +182,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     if ( NULL != server->config->ssl_dhparam ) {
         if ( NULL != (f = fopen(server->config->ssl_dhparam, "r")) ) {
             if ( NULL != (dh = PEM_read_DHparams(f, NULL, NULL, NULL)) ) {
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER)
                 SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_DH_USE);
 #endif
                 if ( SSL_SUCCESS != SSL_CTX_set_tmp_dh(server->ssl_ctx, dh) ) {
@@ -199,6 +200,14 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
             WSS_log_error("Unable to open dhparam file: %s", strerror(errno));
         }
     }
+
+#if defined(LIBRESSL_VERSION_NUMBER)
+    WSS_log_info("SSL was setup using 'LibreSSL'");
+#elif defined(OPENSSL_IS_BORINGSSL)
+    WSS_log_info("SSL was setup using 'BoringSSL'");
+#else
+    WSS_log_info("SSL was setup using 'OpenSSL'");
+#endif
 
     return WSS_SUCCESS;
 #elif defined(USE_WOLFSSL)
@@ -301,6 +310,8 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
         }
     }
 
+    WSS_log_info("SSL was setup using 'WolfSSL'");
+
     return WSS_SUCCESS;
 #else
     return WSS_SSL_CTX_ERROR;
@@ -314,10 +325,10 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
  * @return 			[void]
  */
 void WSS_http_ssl_free(wss_server_t *server) {
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     SSL_CTX_free(server->ssl_ctx);
 
-#if defined(USE_OPENSSL)
+#if ! defined(LIBRESSL_VERSION_NUMBER) && ! defined(OPENSSL_IS_BORINGSSL)
     FIPS_mode_set(0);
 #endif
 
@@ -339,11 +350,11 @@ void WSS_http_ssl_free(wss_server_t *server) {
  * @return              [int]
  */
 int WSS_ssl_read(wss_server_t *server, wss_session_t *session, char *buffer) {
-#if defined(USE_OPENSSL) | defined(USE_WOLFSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) | defined(USE_WOLFSSL)
     int n;
     unsigned long err;
     
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     n = SSL_read(session->ssl, buffer, server->config->size_buffer);
     err = SSL_get_error(session->ssl, n);
 #elif defined(USE_WOLFSSL)
@@ -366,7 +377,7 @@ int WSS_ssl_read(wss_server_t *server, wss_session_t *session, char *buffer) {
     // Some error has occured.
     if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
         char msg[1024];
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
         while ( (err = ERR_get_error()) != 0 ) {
             memset(msg, '\0', 1024);
             ERR_error_string_n(err, msg, 1024);
@@ -404,12 +415,12 @@ int WSS_ssl_read(wss_server_t *server, wss_session_t *session, char *buffer) {
  * @return                [bool]
  */
 bool WSS_ssl_write_partial(wss_session_t *session, unsigned int message_index, wss_message_t *message, unsigned int *bytes_sent) {
-#if defined(USE_OPENSSL) | defined(USE_WOLFSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) | defined(USE_WOLFSSL)
     int n;
     unsigned long err;
     unsigned int message_length = message->length;
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     n = SSL_write(session->ssl, message->msg+*bytes_sent, message_length-*bytes_sent);
     err = SSL_get_error(session->ssl, n);
 #elif defined(USE_WOLFSSL)
@@ -444,7 +455,7 @@ bool WSS_ssl_write_partial(wss_session_t *session, unsigned int message_index, w
 
     if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
         char msg[1024];
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
         while ( (err = ERR_get_error()) != 0 ) {
             ERR_error_string_n(err, msg, 1024);
             WSS_log_error("SSL write failed: %s", msg);
@@ -480,12 +491,12 @@ bool WSS_ssl_write_partial(wss_session_t *session, unsigned int message_index, w
  * @return                 [void]
  */
 void WSS_ssl_write(wss_session_t *session, char *message, unsigned int message_length) {
-#if defined(USE_OPENSSL) | defined(USE_WOLFSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) | defined(USE_WOLFSSL)
     int n;
     size_t written = 0;
 
     do {
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
         n = SSL_write(session->ssl, message+written, message_length-written);
 #elif defined(USE_WOLFSSL)
         n = wolfSSL_write(session->ssl, message+written, message_length-written);
@@ -506,13 +517,13 @@ void WSS_ssl_write(wss_session_t *session, char *message, unsigned int message_l
  * @return              [void]
  */
 void WSS_ssl_handshake(wss_server_t *server, wss_session_t *session) {
-#if defined(USE_OPENSSL) | defined(USE_WOLFSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) | defined(USE_WOLFSSL)
     int ret;
     unsigned long err;
 
     WSS_log_trace("Performing SSL handshake");
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     ret = SSL_do_handshake(session->ssl);
     err = SSL_get_error(session->ssl, ret);
 #elif defined(USE_WOLFSSL)
@@ -544,7 +555,7 @@ void WSS_ssl_handshake(wss_server_t *server, wss_session_t *session) {
 
     if ( unlikely(err != SSL_ERROR_NONE && err != SSL_ERROR_ZERO_RETURN) ) {
         char message[1024];
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
         while ( (err = ERR_get_error()) != 0 ) {
             memset(message, '\0', 1024);
             ERR_error_string_n(err, message, 1024);
@@ -584,7 +595,7 @@ void WSS_ssl_handshake(wss_server_t *server, wss_session_t *session) {
  * @return 			[bool]              "Whether function was successful"
  */
 bool WSS_session_ssl(wss_server_t *server, wss_session_t *session) {
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     char ssl_msg[1024];
 
     WSS_log_trace("Creating ssl client structure");
@@ -645,7 +656,7 @@ bool WSS_session_ssl(wss_server_t *server, wss_session_t *session) {
 wss_error_t WSS_session_ssl_free(wss_session_t *session, pthread_rwlock_t *lock) {
     int err = WSS_SUCCESS;
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     WSS_log_trace("Free ssl structure");
     if ( unlikely((err = SSL_shutdown(session->ssl)) < 0) ) {
         err = SSL_get_error(session->ssl, err);
@@ -720,7 +731,7 @@ wss_error_t WSS_session_ssl_free(wss_session_t *session, pthread_rwlock_t *lock)
 size_t WSS_sha1(char *key, size_t key_length, char **hash) {
     memset(*hash, '\0', SHA_DIGEST_LENGTH);
 
-#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL)
     SHA1((const unsigned char *)key, key_length, (unsigned char*) *hash);
 #elif defined(USE_WOLFSSL)
     Sha sha;
@@ -758,7 +769,7 @@ size_t WSS_base64_encode_sha1(char *key, size_t key_length, char **accept_key) {
     char sha1Key[SHA_DIGEST_LENGTH];
     memset(sha1Key, '\0', SHA_DIGEST_LENGTH);
 
-#if defined(USE_OPENSSL) | defined(USE_LIBRESSL)
+#if defined(USE_OPENSSL) && ! defined(OPENSSL_IS_BORINGSSL)
     SHA1((const unsigned char *)key, key_length, (unsigned char*) sha1Key);
 
 #pragma GCC diagnostic push
@@ -782,7 +793,7 @@ size_t WSS_base64_encode_sha1(char *key, size_t key_length, char **accept_key) {
     memcpy(*accept_key, (*mem_bio_mem_ptr).data, acceptKeyLength);
 
     BIO_free_all(b64_bio);                          // Destroys all BIOs in chain, starting with b64 (i.e. the 1st one).
-#elif defined(USE_BORINGSSL)
+#elif defined(OPENSSL_IS_BORINGSSL)
     SHA1((const unsigned char *)key, key_length, (unsigned char*) sha1Key);
 
     *accept_key = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH);

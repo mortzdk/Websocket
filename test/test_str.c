@@ -5,15 +5,10 @@
 #include <criterion/criterion.h>
 
 #include "str.h"
-#include "sha1.h"
 #include "alloc.h"
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
 
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
 #include <openssl/sha.h>
 
 #elif defined(USE_WOLFSSL)
@@ -27,8 +22,8 @@
 
 #else
 
-#define SHA_DIGEST_LENGTH 20
 #include "sha1.h"
+#define SHA_DIGEST_LENGTH 20
 
 #endif
 
