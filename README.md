@@ -295,11 +295,14 @@ $ make
 $ make SSL=WOLFSSL
 
 # LibreSSL
-$ make SSL_LIBRARY_PATH=/path/to/libressl/installation
+$ make SSL_LIBRARY_PATH=/path/to/libressl
 
 # BoringSSL
-$ make SSL_LIBRARY_PATH=/path/to/boringssl/installation
+$ make SSL_LIBRARY_PATH=/path/to/boringssl
 ```
+
+Note that if compiled with `SSL_LIBRARY_PATH` the binary must be executed with
+`LD_LIBRARY_PATH=/path/to/libressl/lib ./bin/WSServer`.
 
 If LibreSSL or BoringSSL is installed in place of OpenSSL the compilation should
 work out of the box by running `make`.
