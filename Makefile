@@ -88,19 +88,39 @@ ALL_OBJ  = ${SRC_OBJ} ${TEST_OBJ}
 TEST_NAMES = ${patsubst ${TEST_FOLDER}/%.c, %, ${TESTS}}
 DEPS = $(ALL_OBJ:%.o=%.d)
 
+ifneq ($(SSL_LIBRARY_PATH),)
+	INCLUDES += -I$(SSL_LIBRARY_PATH)/include -L$(SSL_LIBRARY_PATH)/lib
+	export LD_LIBRARY_PATH=$(SSL_LIBRARY_PATH)/lib
+endif
+
 ifeq ($(BUMP),)
 	BUMP = default
 endif
 
 ifndef TRAVIS
-$(shell pkg-config --exists openssl)
-ifeq ($(.SHELLSTATUS), 0)
-	FLAGS_EXTRA += $(shell pkg-config --libs openssl)
-	CFLAGS += $(shell pkg-config --cflags openssl) -DUSE_OPENSSL
+# Which SSL implementation to use
+ifeq ($(SSL),)
+SSL = OPENSSL
+endif
+
+$(shell pkg-config --exists libssl libcrypto)
+ifeq ($(.SHELLSTATUS),0)
+ifeq ("$(SSL)","OPENSSL")
+	FLAGS_EXTRA += $(shell pkg-config --libs libssl libcrypto)
+	CFLAGS += $(shell pkg-config --cflags libssl libcrypto) -DUSE_OPENSSL
+endif
+endif
+
+$(shell pkg-config --exists wolfssl)
+ifeq ($(.SHELLSTATUS),0)
+ifeq ("$(SSL)","WOLFSSL")
+	FLAGS_EXTRA += $(shell pkg-config --libs wolfssl)
+	CFLAGS += $(shell pkg-config --cflags wolfssl) -DUSE_WOLFSSL
+endif
 endif
 
 $(shell pkg-config --exists criterion)
-ifeq ($(.SHELLSTATUS), 0)
+ifeq ($(.SHELLSTATUS),0)
 	FLAGS_TEST += $(shell pkg-config --libs criterion)
 endif
 else

@@ -6,16 +6,6 @@
 
 #include "server.h"
 
-#ifdef USE_OPENSSL
-/**
- * Function initializes SSL context that can be used to serve over https.
- *
- * @param   server	[wss_server_t *] 	"The server instance"
- * @return 			[wss_error_t]       "The error status"
- */
-wss_error_t WSS_http_ssl(wss_server_t *server);
-#endif
-
 /**
  * Function that initializes a regex for the server instance that can be used 
  * to validate the connecting path of the client.

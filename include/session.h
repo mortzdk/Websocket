@@ -15,9 +15,6 @@
 
 #include <time.h>
 #include <stdbool.h>
-#ifdef USE_OPENSSL
-#include <openssl/ssl.h>
-#endif
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_mutex_init */
 #include "uthash.h"
@@ -50,12 +47,10 @@ typedef struct {
     char *ip;
     // Whether session has been WSS handshaked
     bool handshaked;
-#ifdef USE_OPENSSL
     // The ssl object used to communicate with session
-    SSL *ssl;
+    void *ssl;
     // Whether session has been SSL handshaked
     bool ssl_connected;
-#endif
     // Whether the session is closing
     bool closing;
     // Whether the session has begun disconnecting

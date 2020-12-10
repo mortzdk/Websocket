@@ -374,15 +374,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
     wss_error_t err;
     struct kevent *events = (struct kevent *) server->events;
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Listening for HTTPS kqueue events");
     } else {
-#endif
         WSS_log_trace("Listening for HTTP kqueue events");
-#ifdef USE_OPENSSL
     }
-#endif
     
     do {
         errno = 0;
@@ -400,15 +396,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
         }
     } while ( unlikely(errno == EINTR) );
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Received %d HTTPS events", n);
     } else {
-#endif
         WSS_log_trace("Received %d HTTP events", n);
-#ifdef USE_OPENSSL
     }
-#endif
 
     for (i = 0; i < n; i++) {
         fd = *((int *)events[i].udata);
@@ -730,15 +722,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
     wss_error_t err;
     struct epoll_event *events = server->events;
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Listening for HTTPS epoll events");
     } else {
-#endif
         WSS_log_trace("Listening for HTTP epoll events");
-#ifdef USE_OPENSSL
     }
-#endif
 
     do {
         errno = 0;
@@ -750,15 +738,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
         }
     } while ( unlikely(errno == EINTR) );
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Received %d HTTPS events", n);
     } else {
-#endif
         WSS_log_trace("Received %d HTTP events", n);
-#ifdef USE_OPENSSL
     }
-#endif
 
     for (i = 0; i < n; i++) {
         if ( unlikely((events[i].events & EPOLLHUP) ||
@@ -1061,15 +1045,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
         return WSS_POLL_WAIT_ERROR;
     }
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Listening for HTTPS poll events");
     } else {
-#endif
         WSS_log_trace("Listening for HTTP poll events");
-#ifdef USE_OPENSSL
     }
-#endif
     
     do {
         errno = 0;
@@ -1083,15 +1063,11 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
         }
     } while ( unlikely(errno == EINTR) );
 
-#ifdef USE_OPENSSL
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Received %d HTTPS events", n);
     } else {
-#endif
         WSS_log_trace("Received %d HTTP events", n);
-#ifdef USE_OPENSSL
     }
-#endif
 
     for (i = start; likely(i <= end); ++i) {
         if ( likely(events[i].fd > 0 && events[i].revents) ) {
