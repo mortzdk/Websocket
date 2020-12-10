@@ -275,12 +275,12 @@
           </tr>
           <tr>
             <td class="headerName">Date:</td>
-            <td class="headerValue">2020-11-27 13:24:48</td>
+            <td class="headerValue">2020-12-10 21:44:00</td>
             <td></td>
             <td class="headerName">Branches:</td>
-            <td class="headerTableEntry">211</td>
+            <td class="headerTableEntry">210</td>
             <td class="headerTableEntry">494</td>
-            <td class="headerTableEntry" style="background-color:LightPink">42.7 %</td>
+            <td class="headerTableEntry" style="background-color:LightPink">42.5 %</td>
           </tr>
         </table>
       </td>
@@ -1863,21 +1863,21 @@
     <tr>
     <td align="right" class="lineno"><pre>224</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>static FORCEINLINE int32_t atomic_load32(atomic32_t* src) { return atomic_load_explicit(src, memory_order_relaxed); }</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>225</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>300</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>303</pre></td>
     <td align="left" class="src coveredLine"><pre>static FORCEINLINE void    atomic_store32(atomic32_t* dst, int32_t val) { atomic_store_explicit(dst, val, memory_order_relaxed); }</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>226</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>static FORCEINLINE int32_t atomic_incr32(atomic32_t* val) { return atomic_fetch_add_explicit(val, 1, memory_order_relaxed) + 1; }</pre></td>
     </tr>
 
@@ -1898,7 +1898,7 @@
     <tr>
     <td align="right" class="lineno"><pre>229</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>10487</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10606</pre></td>
     <td align="left" class="src coveredLine"><pre>static FORCEINLINE int     atomic_cas32_acquire(atomic32_t* dst, int32_t val, int32_t ref) { return atomic_compare_exchange_weak_explicit(dst, &amp;ref, val, memory_order_acquire, memory_order_relaxed); }</pre></td>
     </tr>
 
@@ -1926,7 +1926,7 @@
     <tr>
     <td align="right" class="lineno"><pre>233</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1543</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1546</pre></td>
     <td align="left" class="src coveredLine"><pre>static FORCEINLINE void*   atomic_load_ptr(atomicptr_t* src) { return atomic_load_explicit(src, memory_order_relaxed); }</pre></td>
     </tr>
 
@@ -5496,42 +5496,42 @@
     <tr>
     <td align="right" class="lineno"><pre>743</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_mmap(size_t size, size_t* offset) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>744</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(!(size % _memory_page_size));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>745</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(size >= _memory_page_size);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>746</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_stat_add_peak(&amp;_mapped_pages, (size >> _memory_page_size_shift), _mapped_pages_peak);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>747</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_stat_add(&amp;_mapped_total, (size >> _memory_page_size_shift));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>748</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	return _memory_config.memory_map(size, offset);</pre></td>
     </tr>
 
@@ -5594,49 +5594,49 @@
     <tr>
     <td align="right" class="lineno"><pre>757</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_unmap(void* address, size_t size, size_t offset, size_t release) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>758</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(!release || (release >= size));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>759</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(!release || (release >= _memory_page_size));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>760</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (release) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>761</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>		assert(!(release % _memory_page_size));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>762</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>		_rpmalloc_stat_sub(&amp;_mapped_pages, (release >> _memory_page_size_shift));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>763</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>		_rpmalloc_stat_add(&amp;_unmapped_total, (release >> _memory_page_size_shift));</pre></td>
     </tr>
 
@@ -5650,14 +5650,14 @@
     <tr>
     <td align="right" class="lineno"><pre>765</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	_memory_config.memory_unmap(address, size, offset, release);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>766</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>}</pre></td>
     </tr>
 
@@ -5685,7 +5685,7 @@
     <tr>
     <td align="right" class="lineno"><pre>770</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_mmap_os(size_t size, size_t* offset) {</pre></td>
     </tr>
 
@@ -5698,15 +5698,15 @@
 
     <tr>
     <td align="right" class="lineno"><pre>772</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 141 times">&check;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span><span class="notTakenBranch" title="Branch 2 not taken">&cross;</span><span class="takenBranch" title="Branch 3 taken 141 times">&check;</span><br/></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 141 times">&check;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span><span class="notTakenBranch" title="Branch 2 not taken">&cross;</span><span class="takenBranch" title="Branch 3 taken 141 times">&check;</span><br/></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t padding = ((size >= _memory_span_size) &amp;&amp; (_memory_span_size > _memory_map_granularity)) ? _memory_span_size : 0;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>773</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(size >= _memory_page_size);</pre></td>
     </tr>
 
@@ -5769,7 +5769,7 @@
     <tr>
     <td align="right" class="lineno"><pre>782</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_UNINITIALIZED;</pre></td>
     </tr>
 
@@ -5817,8 +5817,8 @@
 
     <tr>
     <td align="right" class="lineno"><pre>789</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 301 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>602</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 304 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>608</pre></td>
     <td align="left" class="src coveredLine"><pre>	void* ptr = mmap(0, size + padding, PROT_READ | PROT_WRITE, (_memory_huge_pages ? MAP_HUGETLB : 0) | flags, -1, 0);</pre></td>
     </tr>
 
@@ -5866,8 +5866,8 @@
 
     <tr>
     <td align="right" class="lineno"><pre>796</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 301 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 304 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	if ((ptr == MAP_FAILED) || !ptr) {</pre></td>
     </tr>
 
@@ -5902,14 +5902,14 @@
     <tr>
     <td align="right" class="lineno"><pre>801</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_stat_add(&amp;_mapped_pages_os, (int32_t)((size + padding) >> _memory_page_size_shift));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>802</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 141 times">&check;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>301</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 141 times">&check;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>304</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (padding) {</pre></td>
     </tr>
 
@@ -6007,35 +6007,35 @@
     <tr>
     <td align="right" class="lineno"><pre>816</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_unmap_os(void* address, size_t size, size_t offset, size_t release) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>817</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(release || (offset == 0));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>818</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(!release || (release >= _memory_page_size));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>819</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(size >= _memory_page_size);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>820</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 63 times">&check;</span><span class="takenBranch" title="Branch 1 taken 1223 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 63 times">&check;</span><span class="takenBranch" title="Branch 1 taken 1226 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (release &amp;&amp; offset) {</pre></td>
     </tr>
 
@@ -6132,22 +6132,22 @@
 
     <tr>
     <td align="right" class="lineno"><pre>834</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 145 times">&check;</span><span class="takenBranch" title="Branch 1 taken 1141 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 148 times">&check;</span><span class="takenBranch" title="Branch 1 taken 1141 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (release) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>835</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>145</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>148</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (munmap(address, release)) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>836</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>145</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>148</pre></td>
     <td align="left" class="src coveredLine"><pre>			assert("Failed to unmap virtual memory block" == 0);</pre></td>
     </tr>
 
@@ -6203,7 +6203,7 @@
     <tr>
     <td align="right" class="lineno"><pre>844</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>			assert("Failed to madvise virtual memory block as free" == 0);</pre></td>
     </tr>
 
@@ -6238,21 +6238,21 @@
     <tr>
     <td align="right" class="lineno"><pre>849</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (release)</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>850</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>		_rpmalloc_stat_sub(&amp;_mapped_pages_os, release >> _memory_page_size_shift);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>851</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1286</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1289</pre></td>
     <td align="left" class="src coveredLine"><pre>}</pre></td>
     </tr>
 
@@ -9248,21 +9248,21 @@
     <tr>
     <td align="right" class="lineno"><pre>1279</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1543</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1546</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_cache_adopt_deferred(heap_t* heap, span_t** single_span) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1280</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>1543</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>1546</pre></td>
     <td align="left" class="src coveredLine"><pre>	span_t* span = (span_t*)atomic_load_ptr(&amp;heap->span_free_deferred);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1281</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 1543 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>1543</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 1546 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>1546</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (!span)</pre></td>
     </tr>
 
@@ -9570,42 +9570,42 @@
     <tr>
     <td align="right" class="lineno"><pre>1325</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_unmap(heap_t* heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1326</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 82 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 85 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (!heap->master_heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1327</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 82 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span><span class="takenBranch" title="Branch 2 taken 82 times">&check;</span><span class="notTakenBranch" title="Branch 3 not taken">&cross;</span><br/></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 85 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span><span class="takenBranch" title="Branch 2 taken 85 times">&check;</span><span class="notTakenBranch" title="Branch 3 not taken">&cross;</span><br/></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>		if ((heap->finalize > 1) &amp;&amp; !atomic_load32(&amp;heap->child_count)) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1328</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>			size_t heap_size = sizeof(heap_t);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1329</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>			size_t block_size = _memory_page_size * ((heap_size + _memory_page_size - 1) >> _memory_page_size_shift);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1330</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>			_rpmalloc_unmap(heap, block_size, heap->align_offset, block_size);</pre></td>
     </tr>
 
@@ -9654,7 +9654,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1337</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>}</pre></td>
     </tr>
 
@@ -9675,14 +9675,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1340</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_global_finalize(heap_t* heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1341</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (heap->finalize++ > 1) {</pre></td>
     </tr>
 
@@ -9717,7 +9717,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1346</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_heap_finalize(heap);</pre></td>
     </tr>
 
@@ -9737,29 +9737,29 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1349</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 1 taken 10080 times">&check;</span><span class="takenBranch" title="Branch 2 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10240</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 1 taken 10269 times">&check;</span><span class="takenBranch" title="Branch 2 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10432</pre></td>
     <td align="left" class="src coveredLine"><pre>	for (size_t iclass = 0; iclass &lt; LARGE_CLASS_COUNT; ++iclass) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1350</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		span_cache_t* span_cache;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1351</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 160 times">&check;</span><span class="takenBranch" title="Branch 1 taken 9920 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 163 times">&check;</span><span class="takenBranch" title="Branch 1 taken 10106 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (!iclass)</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1352</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			span_cache = &amp;heap->span_cache;</pre></td>
     </tr>
 
@@ -9773,14 +9773,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1354</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>9920</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10106</pre></td>
     <td align="left" class="src coveredLine"><pre>			span_cache = (span_cache_t*)(heap->span_large_cache + (iclass - 1));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1355</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 10080 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 10269 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		for (size_t ispan = 0; ispan &lt; span_cache->count; ++ispan)</pre></td>
     </tr>
 
@@ -9794,7 +9794,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1357</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		span_cache->count = 0;</pre></td>
     </tr>
 
@@ -9821,8 +9821,8 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1361</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (heap->full_span_count) {</pre></td>
     </tr>
 
@@ -9856,15 +9856,15 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1366</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10501 times">&check;</span><span class="takenBranch" title="Branch 1 taken 82 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10583</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10879 times">&check;</span><span class="takenBranch" title="Branch 1 taken 85 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10964</pre></td>
     <td align="left" class="src coveredLine"><pre>	for (size_t iclass = 0; iclass &lt; SIZE_CLASS_COUNT; ++iclass) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1367</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10501 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span><span class="takenBranch" title="Branch 2 taken 78 times">&check;</span><span class="takenBranch" title="Branch 3 taken 10423 times">&check;</span><br/></td>
-    <td align="right" class="linecount coveredLine"><pre>10501</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10879 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span><span class="takenBranch" title="Branch 2 taken 78 times">&check;</span><span class="takenBranch" title="Branch 3 taken 10801 times">&check;</span><br/></td>
+    <td align="right" class="linecount coveredLine"><pre>10879</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (heap->size_class[iclass].free_list || heap->size_class[iclass].partial_span) {</pre></td>
     </tr>
 
@@ -9906,28 +9906,28 @@
     <tr>
     <td align="right" class="lineno"><pre>1373</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t list_idx = heap->id % HEAP_ARRAY_SIZE;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1374</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap_t* list_heap = _memory_heaps[list_idx];</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1375</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 82 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 85 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (list_heap == heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1376</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>		_memory_heaps[list_idx] = heap->next_heap;</pre></td>
     </tr>
 
@@ -9976,7 +9976,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1383</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>82</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>85</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_heap_unmap(heap);</pre></td>
     </tr>
 
@@ -11145,7 +11145,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1550</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_initialize(heap_t* heap) {</pre></td>
     </tr>
 
@@ -11159,7 +11159,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1552</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap->id = 1 + atomic_incr32(&amp;_memory_heap_id);</pre></td>
     </tr>
 
@@ -11180,28 +11180,28 @@
     <tr>
     <td align="right" class="lineno"><pre>1555</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t list_idx = heap->id % HEAP_ARRAY_SIZE;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1556</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap->next_heap = _memory_heaps[list_idx];</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1557</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	_memory_heaps[list_idx] = heap;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1558</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>}</pre></td>
     </tr>
 
@@ -11320,7 +11320,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1575</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_allocate_new(void) {</pre></td>
     </tr>
 
@@ -11334,42 +11334,42 @@
     <tr>
     <td align="right" class="lineno"><pre>1577</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t align_offset = 0;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1578</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t heap_size = sizeof(heap_t);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1579</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t aligned_heap_size = 64 * ((heap_size + 63) / 64);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1580</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t block_size = _memory_page_size * ((aligned_heap_size + _memory_page_size - 1) >> _memory_page_size_shift);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1581</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap_t* heap = (heap_t*)_rpmalloc_mmap(block_size, &amp;align_offset);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1582</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 160 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 163 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (!heap)</pre></td>
     </tr>
 
@@ -11390,14 +11390,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1585</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_heap_initialize(heap);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1586</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap->align_offset = align_offset;</pre></td>
     </tr>
 
@@ -11418,28 +11418,28 @@
     <tr>
     <td align="right" class="lineno"><pre>1589</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	size_t num_heaps = block_size / aligned_heap_size;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1590</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	atomic_store32(&amp;heap->child_count, (int32_t)num_heaps - 1);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1591</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	heap_t* extra_heap = (heap_t*)pointer_offset(heap, aligned_heap_size);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1592</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	while (num_heaps > 1) {</pre></td>
     </tr>
 
@@ -11529,7 +11529,7 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1605</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 3 times">&check;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
     <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	*heap_list = (heap ? heap->next_orphan : 0);</pre></td>
     </tr>
@@ -11641,7 +11641,7 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1621</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 160 times">&check;</span><span class="takenBranch" title="Branch 1 taken 3 times">&check;</span></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 163 times">&check;</span><span class="notTakenBranch" title="Branch 1 not taken">&cross;</span></td>
     <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (!heap)</pre></td>
     </tr>
@@ -11649,7 +11649,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1622</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>		heap = _rpmalloc_heap_allocate_new();</pre></td>
     </tr>
 
@@ -11970,15 +11970,15 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1668</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 119 times">&check;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>282</pre></td>
     <td align="left" class="src coveredLine"><pre>	while (!atomic_cas32_acquire(&amp;_memory_orphan_lock, 1, 0))</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1669</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>282</pre></td>
     <td align="left" class="src coveredLine"><pre>		/* Spin */;</pre></td>
     </tr>
 
@@ -12055,14 +12055,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1680</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>_rpmalloc_heap_finalize(heap_t* heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1681</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 140 times">&check;</span><span class="takenBranch" title="Branch 1 taken 20 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 140 times">&check;</span><span class="takenBranch" title="Branch 1 taken 23 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	if (heap->spans_reserved) {</pre></td>
     </tr>
 
@@ -12104,7 +12104,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1687</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	_rpmalloc_heap_cache_adopt_deferred(heap, 0);</pre></td>
     </tr>
 
@@ -12117,15 +12117,15 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1689</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 1 taken 20160 times">&check;</span><span class="takenBranch" title="Branch 2 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>20320</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 1 taken 20538 times">&check;</span><span class="takenBranch" title="Branch 2 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>20701</pre></td>
     <td align="left" class="src coveredLine"><pre>	for (size_t iclass = 0; iclass &lt; SIZE_CLASS_COUNT; ++iclass) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1690</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 20160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>20160</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 20538 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>20538</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (heap->size_class[iclass].cache)</pre></td>
     </tr>
 
@@ -12139,21 +12139,21 @@
     <tr>
     <td align="right" class="lineno"><pre>1692</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>20160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>20538</pre></td>
     <td align="left" class="src coveredLine"><pre>		heap->size_class[iclass].cache = 0;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1693</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>20160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>20538</pre></td>
     <td align="left" class="src coveredLine"><pre>		span_t* span = heap->size_class[iclass].partial_span;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1694</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 1220 times">&check;</span><span class="takenBranch" title="Branch 1 taken 20160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>21380</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 1220 times">&check;</span><span class="takenBranch" title="Branch 1 taken 20538 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>21758</pre></td>
     <td align="left" class="src coveredLine"><pre>		while (span) {</pre></td>
     </tr>
 
@@ -12194,8 +12194,8 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1700</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 20160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>20160</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 20538 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>20538</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (heap->size_class[iclass].free_list) {</pre></td>
     </tr>
 
@@ -12306,29 +12306,29 @@
 
     <tr>
     <td align="right" class="lineno"><pre>1716</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10080 times">&check;</span><span class="takenBranch" title="Branch 1 taken 160 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10240</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 10269 times">&check;</span><span class="takenBranch" title="Branch 1 taken 163 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10432</pre></td>
     <td align="left" class="src coveredLine"><pre>	for (size_t iclass = 0; iclass &lt; LARGE_CLASS_COUNT; ++iclass) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1717</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		span_cache_t* span_cache;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1718</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 160 times">&check;</span><span class="takenBranch" title="Branch 1 taken 9920 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 163 times">&check;</span><span class="takenBranch" title="Branch 1 taken 10106 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		if (!iclass)</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1719</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			span_cache = &amp;heap->span_cache;</pre></td>
     </tr>
 
@@ -12342,14 +12342,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1721</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>9920</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10106</pre></td>
     <td align="left" class="src coveredLine"><pre>			span_cache = (span_cache_t*)(heap->span_large_cache + (iclass - 1));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1722</pre></td>
-    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 10080 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linebranch"><span class="notTakenBranch" title="Branch 0 not taken">&cross;</span><span class="takenBranch" title="Branch 1 taken 10269 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		for (size_t ispan = 0; ispan &lt; span_cache->count; ++ispan)</pre></td>
     </tr>
 
@@ -12363,7 +12363,7 @@
     <tr>
     <td align="right" class="lineno"><pre>1724</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>10080</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>10269</pre></td>
     <td align="left" class="src coveredLine"><pre>		span_cache->count = 0;</pre></td>
     </tr>
 
@@ -12384,14 +12384,14 @@
     <tr>
     <td align="right" class="lineno"><pre>1727</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>	assert(!atomic_load_ptr(&amp;heap->span_free_deferred));</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>1728</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>}</pre></td>
     </tr>
 
@@ -18151,36 +18151,36 @@
 
     <tr>
     <td align="right" class="lineno"><pre>2551</pre></td>
-    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 160 times">&check;</span><span class="takenBranch" title="Branch 1 taken 7473 times">&check;</span></td>
-    <td align="right" class="linecount coveredLine"><pre>7633</pre></td>
+    <td align="right" class="linebranch"><span class="takenBranch" title="Branch 0 taken 163 times">&check;</span><span class="takenBranch" title="Branch 1 taken 7473 times">&check;</span></td>
+    <td align="right" class="linecount coveredLine"><pre>7636</pre></td>
     <td align="left" class="src coveredLine"><pre>		while (heap) {</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>2552</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			heap_t* next_heap = heap->next_heap;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>2553</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			heap->finalize = 1;</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>2554</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			_rpmalloc_heap_global_finalize(heap);</pre></td>
     </tr>
 
     <tr>
     <td align="right" class="lineno"><pre>2555</pre></td>
     <td align="right" class="linebranch"></td>
-    <td align="right" class="linecount coveredLine"><pre>160</pre></td>
+    <td align="right" class="linecount coveredLine"><pre>163</pre></td>
     <td align="left" class="src coveredLine"><pre>			heap = next_heap;</pre></td>
     </tr>
 
