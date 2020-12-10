@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.7</span>
+   &#160;<span id="projectnumber">v2.1.0</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -62,7 +62,6 @@ $(document).ready(function(){initNavTree('worker_8c.html',''); initResizable(); 
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">worker.c File Reference</div>  </div>
@@ -84,8 +83,6 @@ $(document).ready(function(){initNavTree('worker_8c.html',''); initResizable(); 
 <code>#include &lt;arpa/inet.h&gt;</code><br />
 <code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="alloc_8h_source.html">alloc.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="sha1_8h_source.html">sha1.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="b64_8h_source.html">b64.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="worker_8h_source.html">worker.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="server_8h_source.html">server.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="event_8h_source.html">event.h</a>&quot;</code><br />
@@ -101,71 +98,66 @@ $(document).ready(function(){initNavTree('worker_8c.html',''); initResizable(); 
 <code>#include &quot;<a class="el" href="str_8h_source.html">str.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="utf8_8h_source.html">utf8.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="predict_8h_source.html">predict.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="ssl_8h_source.html">ssl.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for worker.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="worker_8c__incl.png" border="0" usemap="#worker_8c" alt=""/></div>
 <map name="worker_8c" id="worker_8c">
-<area shape="rect" title=" " alt="" coords="1603,5,1679,32"/>
+<area shape="rect" title=" " alt="" coords="1517,5,1593,32"/>
 <area shape="rect" title=" " alt="" coords="5,80,73,107"/>
-<area shape="rect" title=" " alt="" coords="35,155,102,181"/>
-<area shape="rect" title=" " alt="" coords="925,453,996,480"/>
-<area shape="rect" title=" " alt="" coords="1275,528,1345,555"/>
-<area shape="rect" title=" " alt="" coords="2202,80,2277,107"/>
-<area shape="rect" title=" " alt="" coords="2301,80,2369,107"/>
-<area shape="rect" title=" " alt="" coords="1911,229,1975,256"/>
-<area shape="rect" title=" " alt="" coords="2393,80,2467,107"/>
-<area shape="rect" title=" " alt="" coords="2491,80,2587,107"/>
-<area shape="rect" title=" " alt="" coords="2611,80,2697,107"/>
-<area shape="rect" title=" " alt="" coords="503,229,605,256"/>
-<area shape="rect" title=" " alt="" coords="2721,80,2819,107"/>
-<area shape="rect" title=" " alt="" coords="630,229,726,256"/>
-<area shape="rect" title=" " alt="" coords="2844,80,2936,107"/>
-<area shape="rect" title=" " alt="" coords="1189,229,1273,256"/>
-<area shape="rect" href="alloc_8h.html" title=" " alt="" coords="772,379,837,405"/>
-<area shape="rect" href="sha1_8h.html" title=" " alt="" coords="2960,80,3025,107"/>
-<area shape="rect" href="b64_8h.html" title=" " alt="" coords="938,304,997,331"/>
-<area shape="rect" href="worker_8h.html" title=" " alt="" coords="799,80,877,107"/>
-<area shape="rect" href="server_8h.html" title=" " alt="" coords="951,155,1026,181"/>
-<area shape="rect" href="config_8h.html" title=" " alt="" coords="1325,379,1399,405"/>
-<area shape="rect" href="error_8h.html" title=" " alt="" coords="2031,453,2095,480"/>
-<area shape="rect" href="session_8h.html" title=" " alt="" coords="1605,155,1687,181"/>
-<area shape="rect" href="header_8h.html" title=" " alt="" coords="1400,229,1479,256"/>
-<area shape="rect" href="httpstatuscodes_8h.html" title=" " alt="" coords="1495,304,1634,331"/>
-<area shape="rect" href="message_8h.html" title=" " alt="" coords="1706,379,1799,405"/>
-<area shape="rect" href="frame_8h.html" title=" " alt="" coords="1811,304,1884,331"/>
-<area shape="rect" href="event_8h.html" title=" " alt="" coords="1605,80,1676,107"/>
+<area shape="rect" title=" " alt="" coords="38,155,105,181"/>
+<area shape="rect" title=" " alt="" coords="351,453,421,480"/>
+<area shape="rect" title=" " alt="" coords="1209,528,1280,555"/>
+<area shape="rect" title=" " alt="" coords="2395,80,2470,107"/>
+<area shape="rect" title=" " alt="" coords="2495,80,2563,107"/>
+<area shape="rect" title=" " alt="" coords="698,229,762,256"/>
+<area shape="rect" title=" " alt="" coords="2587,80,2660,107"/>
+<area shape="rect" title=" " alt="" coords="2685,80,2781,107"/>
+<area shape="rect" title=" " alt="" coords="2805,80,2890,107"/>
+<area shape="rect" title=" " alt="" coords="1895,229,1997,256"/>
+<area shape="rect" title=" " alt="" coords="2914,80,3013,107"/>
+<area shape="rect" title=" " alt="" coords="2022,229,2118,256"/>
+<area shape="rect" title=" " alt="" coords="3037,80,3129,107"/>
+<area shape="rect" title=" " alt="" coords="1397,229,1481,256"/>
+<area shape="rect" href="alloc_8h.html" title=" " alt="" coords="600,379,665,405"/>
+<area shape="rect" href="worker_8h.html" title=" " alt="" coords="546,80,623,107"/>
+<area shape="rect" href="server_8h.html" title=" " alt="" coords="1573,155,1647,181"/>
+<area shape="rect" href="config_8h.html" title=" " alt="" coords="1356,379,1429,405"/>
+<area shape="rect" href="error_8h.html" title=" " alt="" coords="2149,453,2213,480"/>
+<area shape="rect" href="session_8h.html" title=" " alt="" coords="1153,155,1235,181"/>
+<area shape="rect" href="header_8h.html" title=" " alt="" coords="1141,229,1220,256"/>
+<area shape="rect" href="httpstatuscodes_8h.html" title=" " alt="" coords="606,304,745,331"/>
+<area shape="rect" href="message_8h.html" title=" " alt="" coords="934,379,1027,405"/>
+<area shape="rect" href="frame_8h.html" title=" " alt="" coords="1243,304,1316,331"/>
+<area shape="rect" href="event_8h.html" title=" " alt="" coords="1477,80,1548,107"/>
 <area shape="rect" href="log_8h.html" title=" " alt="" coords="149,80,204,107"/>
-<area shape="rect" href="socket_8h.html" title=" " alt="" coords="1015,80,1091,107"/>
-<area shape="rect" href="str_8h.html" title=" " alt="" coords="225,155,275,181"/>
-<area shape="rect" href="utf8_8h.html" title=" " alt="" coords="3049,80,3109,107"/>
-<area shape="rect" href="predict_8h.html" title=" " alt="" coords="3133,80,3212,107"/>
-<area shape="rect" title=" " alt="" coords="726,528,801,555"/>
-<area shape="rect" href="rpmalloc_8h.html" title=" " alt="" coords="759,453,850,480"/>
-<area shape="rect" href="uthash_8h.html" title=" " alt="" coords="995,379,1073,405"/>
-<area shape="rect" title=" " alt="" coords="801,229,875,256"/>
-<area shape="rect" title=" " alt="" coords="843,304,913,331"/>
-<area shape="rect" href="pool_8h.html" title=" " alt="" coords="899,229,961,256"/>
-<area shape="rect" title=" " alt="" coords="1417,453,1499,480"/>
+<area shape="rect" href="socket_8h.html" title=" " alt="" coords="1700,80,1776,107"/>
+<area shape="rect" href="str_8h.html" title=" " alt="" coords="227,155,278,181"/>
+<area shape="rect" href="utf8_8h.html" title=" " alt="" coords="1708,379,1768,405"/>
+<area shape="rect" href="predict_8h.html" title=" " alt="" coords="3153,80,3232,107"/>
+<area shape="rect" href="ssl_8h.html" title=" " alt="" coords="1572,80,1624,107"/>
+<area shape="rect" title=" " alt="" coords="554,528,629,555"/>
+<area shape="rect" href="rpmalloc_8h.html" title=" " alt="" coords="505,453,595,480"/>
+<area shape="rect" href="uthash_8h.html" title=" " alt="" coords="712,379,791,405"/>
+<area shape="rect" title=" " alt="" coords="1745,229,1819,256"/>
+<area shape="rect" title=" " alt="" coords="1544,304,1615,331"/>
+<area shape="rect" href="pool_8h.html" title=" " alt="" coords="1659,229,1721,256"/>
+<area shape="rect" title=" " alt="" coords="1419,453,1502,480"/>
 <area shape="rect" href="json_8h.html" title=" " alt="" coords="1331,453,1393,480"/>
-<area shape="rect" title=" " alt="" coords="1369,528,1456,555"/>
-<area shape="rect" href="ringbuf_8h.html" title=" " alt="" coords="1656,229,1735,256"/>
-<area shape="rect" href="subprotocols_8h.html" title=" " alt="" coords="1303,304,1421,331"/>
-<area shape="rect" href="extensions_8h.html" title=" " alt="" coords="1072,304,1177,331"/>
-<area shape="rect" title=" " alt="" coords="1697,453,1808,480"/>
-<area shape="rect" title=" " alt="" coords="1832,453,1903,480"/>
-<area shape="rect" title=" " alt="" coords="1523,453,1622,480"/>
-<area shape="rect" title=" " alt="" coords="126,155,201,181"/>
+<area shape="rect" title=" " alt="" coords="1319,528,1405,555"/>
+<area shape="rect" href="ringbuf_8h.html" title=" " alt="" coords="1639,304,1717,331"/>
+<area shape="rect" href="subprotocols_8h.html" title=" " alt="" coords="870,304,987,331"/>
+<area shape="rect" href="extensions_8h.html" title=" " alt="" coords="1113,304,1219,331"/>
+<area shape="rect" title=" " alt="" coords="823,453,933,480"/>
+<area shape="rect" title=" " alt="" coords="1132,453,1203,480"/>
+<area shape="rect" title=" " alt="" coords="1009,453,1107,480"/>
+<area shape="rect" title=" " alt="" coords="129,155,203,181"/>
 </map>
 </div>
 </div>
 <p><a href="worker_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a1a715db7b4403fe6c165e49a32f5fe3d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8c.html#a1a715db7b4403fe6c165e49a32f5fe3d">SHA_DIGEST_LENGTH</a>&#160;&#160;&#160;20</td></tr>
-<tr class="separator:a1a715db7b4403fe6c165e49a32f5fe3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a22051812bb95c45df69de0e733b2ad3c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structwss__message__t.html">wss_message_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8c.html#a22051812bb95c45df69de0e733b2ad3c">handshake_response</a> (<a class="el" href="structwss__header__t.html">wss_header_t</a> *header, enum <a class="el" href="httpstatuscodes_8h.html#aa4368623dd097b95b39b0463fc828e7b">HttpStatus_Code</a> code)</td></tr>
@@ -193,23 +185,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a38013429dcfbeb663cdb94eaec9f2465"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">WSS_work</a> (void *args)</td></tr>
 <tr class="separator:a38013429dcfbeb663cdb94eaec9f2465"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a1a715db7b4403fe6c165e49a32f5fe3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a715db7b4403fe6c165e49a32f5fe3d">&#9670;&nbsp;</a></span>SHA_DIGEST_LENGTH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SHA_DIGEST_LENGTH&#160;&#160;&#160;20</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00030">30</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="ae6ef1c0a3a3332ec645fe42b9e5f7bd0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae6ef1c0a3a3332ec645fe42b9e5f7bd0">&#9670;&nbsp;</a></span>favicon_response()</h2>
@@ -262,7 +237,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00223">223</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00179">179</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -310,7 +285,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00811">811</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00620">620</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -358,7 +333,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[<a class="el" href="structwss__message__t.html" title="Structure containing a message that should be sent to a client.">wss_message_t</a> *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00060">60</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00048">48</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -413,7 +388,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00385">385</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00326">326</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -468,7 +443,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[int] "The amount of bytes read or -1 for error or -2 for wait for IO" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00743">743</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00588">588</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -523,7 +498,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[message_t *] "A message structure that can be passed through ringbuffer" </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00334">334</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00275">275</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -571,7 +546,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00714">714</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00559">559</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -602,7 +577,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00592">592</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00464">464</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -642,7 +617,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00460">460</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00401">401</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -682,7 +657,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l01047">1047</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l00856">856</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -711,7 +686,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l01660">1660</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l01422">1422</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>
@@ -742,7 +717,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Function that writes information to a session and decides wether event poll should be rearmed and whether a session lock should be performed. </p>
-<p>Function that disconnects a session and freeing any allocated memory used by the session.</p>
+<p>Function that handles new connections.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">server</td><td>[<a class="el" href="structwss__server__t.html">wss_server_t</a> *] "The server structure" </td></tr>
@@ -752,7 +727,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>[void] </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l01521">1521</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="worker_8c_source.html#l01330">1330</a> of file <a class="el" href="worker_8c_source.html">worker.c</a>.</p>
 
 </div>
 </div>

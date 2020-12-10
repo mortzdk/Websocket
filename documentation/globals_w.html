@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.7</span>
+   &#160;<span id="projectnumber">v2.1.0</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -102,6 +102,10 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 </li>
 <li>WSS_add_to_threadpool()
 : <a class="el" href="event_8c.html#a4401f89f614109647601e3b4f7a82ad0">event.c</a>
+</li>
+<li>WSS_base64_encode_sha1()
+: <a class="el" href="ssl_8c.html#a365506276a491679ed3e537fcfc991be">ssl.c</a>
+, <a class="el" href="ssl_8h.html#a365506276a491679ed3e537fcfc991be">ssl.h</a>
 </li>
 <li>WSS_calloc()
 : <a class="el" href="alloc_8c.html#a4b131587ca7ef3fc3e242720f404197f">alloc.c</a>
@@ -185,6 +189,7 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 </li>
 <li>WSS_disconnect()
 : <a class="el" href="worker_8c.html#a411eb028137918a185d0d83c9e697b7b">worker.c</a>
+, <a class="el" href="worker_8h.html#a411eb028137918a185d0d83c9e697b7b">worker.h</a>
 </li>
 <li>wss_error_t
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8de">error.h</a>
@@ -221,12 +226,20 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 , <a class="el" href="http_8h.html#a4506941c08962abea3042fb9106c1fa8">http.h</a>
 </li>
 <li>WSS_http_server()
-: <a class="el" href="http_8h.html#a145d9e304403c2dde4621add1f7e2d84">http.h</a>
-, <a class="el" href="http_8c.html#a145d9e304403c2dde4621add1f7e2d84">http.c</a>
+: <a class="el" href="http_8c.html#a145d9e304403c2dde4621add1f7e2d84">http.c</a>
+, <a class="el" href="http_8h.html#a145d9e304403c2dde4621add1f7e2d84">http.h</a>
 </li>
 <li>WSS_http_server_free()
 : <a class="el" href="http_8c.html#a7be3c4c8255a44561185619f5877c74a">http.c</a>
 , <a class="el" href="http_8h.html#a7be3c4c8255a44561185619f5877c74a">http.h</a>
+</li>
+<li>WSS_http_ssl()
+: <a class="el" href="ssl_8c.html#a998ed19a48cdd9de0cdfebdbfb3ab2e2">ssl.c</a>
+, <a class="el" href="ssl_8h.html#a998ed19a48cdd9de0cdfebdbfb3ab2e2">ssl.h</a>
+</li>
+<li>WSS_http_ssl_free()
+: <a class="el" href="ssl_8c.html#aebcff16e1ec22ae3fbd46db3ff6ac682">ssl.c</a>
+, <a class="el" href="ssl_8h.html#aebcff16e1ec22ae3fbd46db3ff6ac682">ssl.h</a>
 </li>
 <li>WSS_load_extensions()
 : <a class="el" href="extensions_8c.html#a934f3d625105d77c5b8b980c5778b8c5">extensions.c</a>
@@ -236,17 +249,17 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="subprotocols_8c.html#a3d39edb9883c1bb857b934be46aa7600">subprotocols.c</a>
 , <a class="el" href="subprotocols_8h.html#a3d39edb9883c1bb857b934be46aa7600">subprotocols.h</a>
 </li>
-<li>WSS_LOG_DEBUG
-: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dadbdfdaeae53b2942a03c6f4984ee2095">log.h</a>
-</li>
 <li>WSS_log_debug
 : <a class="el" href="log_8h.html#a38d0d37843a626377c17371febe30d05">log.h</a>
 </li>
-<li>WSS_LOG_ERROR
-: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daaba259c2e554543dd7f0006b0b6070d6">log.h</a>
+<li>WSS_LOG_DEBUG
+: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dadbdfdaeae53b2942a03c6f4984ee2095">log.h</a>
 </li>
 <li>WSS_log_error
 : <a class="el" href="log_8h.html#a0311ff643517cd77154a05a2ea4b87fd">log.h</a>
+</li>
+<li>WSS_LOG_ERROR
+: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daaba259c2e554543dd7f0006b0b6070d6">log.h</a>
 </li>
 <li>WSS_LOG_FATAL
 : <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2dabf54bbcf755308767498500194a295d0">log.h</a>
@@ -254,11 +267,11 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 <li>WSS_log_fatal
 : <a class="el" href="log_8h.html#abc22b44813b65b9f44008f03ec79a8fe">log.h</a>
 </li>
-<li>WSS_LOG_INFO
-: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daa3646b0873b76882d8154bf9e8915c94">log.h</a>
-</li>
 <li>WSS_log_info
 : <a class="el" href="log_8h.html#aff154e6a469ccfb0f75a51415107dd64">log.h</a>
+</li>
+<li>WSS_LOG_INFO
+: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daa3646b0873b76882d8154bf9e8915c94">log.h</a>
 </li>
 <li>WSS_LOG_TRACE
 : <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2da67560916dba882c9944c42bd11c2153c">log.h</a>
@@ -266,11 +279,11 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 <li>WSS_log_trace
 : <a class="el" href="log_8h.html#aa54d1988cc38c2b4fb2de8b646c29b17">log.h</a>
 </li>
-<li>WSS_LOG_WARN
-: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daa48fadb01fc3bb8fda13f41155178db2">log.h</a>
-</li>
 <li>WSS_log_warn
 : <a class="el" href="log_8h.html#a5ebc527089676eed4611c12671757b48">log.h</a>
+</li>
+<li>WSS_LOG_WARN
+: <a class="el" href="log_8h.html#a0411cd49bb5b71852cecd93bcbf0ca2daa48fadb01fc3bb8fda13f41155178db2">log.h</a>
 </li>
 <li>WSS_malloc()
 : <a class="el" href="alloc_8c.html#aafc61d568f2f093f1f72238f51fbdba4">alloc.c</a>
@@ -341,8 +354,8 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea802252cca99fa83b84461b8951028810">error.h</a>
 </li>
 <li>WSS_pong_frame()
-: <a class="el" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">frame.c</a>
-, <a class="el" href="frame_8h.html#af3340bd289b5863c51dc12418f7f71ce">frame.h</a>
+: <a class="el" href="frame_8h.html#af3340bd289b5863c51dc12418f7f71ce">frame.h</a>
+, <a class="el" href="frame_8c.html#af3340bd289b5863c51dc12418f7f71ce">frame.c</a>
 </li>
 <li>WSS_PRINTF_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea13e22bcc3d8509297fcbd5bd1d9b5b17">error.h</a>
@@ -351,8 +364,8 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="worker_8c.html#aa13c6dce116c6d87d8bb6bb01d89eef3">worker.c</a>
 </li>
 <li>WSS_realloc()
-: <a class="el" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">alloc.c</a>
-, <a class="el" href="alloc_8h.html#a6e256791db29407ee9b80ae3728307cd">alloc.h</a>
+: <a class="el" href="alloc_8h.html#a6e256791db29407ee9b80ae3728307cd">alloc.h</a>
+, <a class="el" href="alloc_8c.html#a6e256791db29407ee9b80ae3728307cd">alloc.c</a>
 </li>
 <li>WSS_realloc_normal()
 : <a class="el" href="alloc_8c.html#a2bd20cb7531b6391cd01365110e74f7f">alloc.c</a>
@@ -378,12 +391,12 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 , <a class="el" href="server_8h.html#afbb09219caed041e80ee50524eb4d6f6">server.h</a>
 </li>
 <li>WSS_server_set_max_fd()
-: <a class="el" href="server_8h.html#a26c751fbd88dd81292b574af18f1bfec">server.h</a>
-, <a class="el" href="server_8c.html#a26c751fbd88dd81292b574af18f1bfec">server.c</a>
+: <a class="el" href="server_8c.html#a26c751fbd88dd81292b574af18f1bfec">server.c</a>
+, <a class="el" href="server_8h.html#a26c751fbd88dd81292b574af18f1bfec">server.h</a>
 </li>
 <li>WSS_server_set_state()
-: <a class="el" href="server_8c.html#ae8f5c0c2d37bc22657fed36465730d66">server.c</a>
-, <a class="el" href="server_8h.html#a14477f4645465a93dd45315d7140cc0b">server.h</a>
+: <a class="el" href="server_8h.html#a14477f4645465a93dd45315d7140cc0b">server.h</a>
+, <a class="el" href="server_8c.html#ae8f5c0c2d37bc22657fed36465730d66">server.c</a>
 </li>
 <li>WSS_server_start()
 : <a class="el" href="server_8c.html#ab0c740b5a4d1405d3dcbc7bd24a76936">server.c</a>
@@ -397,16 +410,16 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 , <a class="el" href="session_8h.html#a807d1682c442cd87af892d5339e0a257">session.h</a>
 </li>
 <li>WSS_session_all()
-: <a class="el" href="session_8h.html#a7eae64b58d134947756e14de8d8fa7dd">session.h</a>
-, <a class="el" href="session_8c.html#a7eae64b58d134947756e14de8d8fa7dd">session.c</a>
+: <a class="el" href="session_8c.html#a7eae64b58d134947756e14de8d8fa7dd">session.c</a>
+, <a class="el" href="session_8h.html#a7eae64b58d134947756e14de8d8fa7dd">session.h</a>
 </li>
 <li>WSS_session_delete()
 : <a class="el" href="session_8c.html#a1b52a74cd4d04b8fdca29d8336ab9e64">session.c</a>
 , <a class="el" href="session_8h.html#a1b52a74cd4d04b8fdca29d8336ab9e64">session.h</a>
 </li>
 <li>WSS_session_delete_all()
-: <a class="el" href="session_8h.html#a38d1c0487df59319db201bf7f9f25cb8">session.h</a>
-, <a class="el" href="session_8c.html#a38d1c0487df59319db201bf7f9f25cb8">session.c</a>
+: <a class="el" href="session_8c.html#a38d1c0487df59319db201bf7f9f25cb8">session.c</a>
+, <a class="el" href="session_8h.html#a38d1c0487df59319db201bf7f9f25cb8">session.h</a>
 </li>
 <li>WSS_session_delete_no_lock()
 : <a class="el" href="session_8c.html#afac2fd38327a73cbb8f5b6c305271416">session.c</a>
@@ -420,12 +433,12 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="session_8h.html#afa189f0057632631a99236d6ec40c848">session.h</a>
 </li>
 <li>WSS_session_find()
-: <a class="el" href="session_8h.html#aff2ca8a6e49794288553cb2c0b65dd16">session.h</a>
-, <a class="el" href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">session.c</a>
+: <a class="el" href="session_8c.html#aff2ca8a6e49794288553cb2c0b65dd16">session.c</a>
+, <a class="el" href="session_8h.html#aff2ca8a6e49794288553cb2c0b65dd16">session.h</a>
 </li>
 <li>WSS_session_init_lock()
-: <a class="el" href="session_8h.html#aa6d08a0e66c7686eec43f8c1f5bd2b13">session.h</a>
-, <a class="el" href="session_8c.html#aa6d08a0e66c7686eec43f8c1f5bd2b13">session.c</a>
+: <a class="el" href="session_8c.html#aa6d08a0e66c7686eec43f8c1f5bd2b13">session.c</a>
+, <a class="el" href="session_8h.html#aa6d08a0e66c7686eec43f8c1f5bd2b13">session.h</a>
 </li>
 <li>WSS_session_is_disconnecting()
 : <a class="el" href="session_8c.html#a28b6106e2bececec3e6ecbecaa6852c6">session.c</a>
@@ -440,8 +453,8 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 , <a class="el" href="session_8h.html#afc2c95cb48396ed56ae592b260cb0485">session.h</a>
 </li>
 <li>WSS_session_jobs_wait()
-: <a class="el" href="session_8c.html#a432642f29762ba93bee41bfa8f0c1cd6">session.c</a>
-, <a class="el" href="session_8h.html#a432642f29762ba93bee41bfa8f0c1cd6">session.h</a>
+: <a class="el" href="session_8h.html#a432642f29762ba93bee41bfa8f0c1cd6">session.h</a>
+, <a class="el" href="session_8c.html#a432642f29762ba93bee41bfa8f0c1cd6">session.c</a>
 </li>
 <li>WSS_SESSION_LOCK_CREATE_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea9f261a999749e81ee8f7a5295e709903">error.h</a>
@@ -452,15 +465,27 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 <li>WSS_SESSION_LOCK_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8deabee37069806a2b3e7695cba7fc7ef0af">error.h</a>
 </li>
+<li>WSS_session_ssl()
+: <a class="el" href="ssl_8h.html#ad8910c0b26a7ac71b46e5892937bd56c">ssl.h</a>
+, <a class="el" href="ssl_8c.html#ad8910c0b26a7ac71b46e5892937bd56c">ssl.c</a>
+</li>
+<li>WSS_session_ssl_free()
+: <a class="el" href="ssl_8c.html#acb2f6f90151bea25d62a88ec9880f2e2">ssl.c</a>
+, <a class="el" href="ssl_8h.html#acb2f6f90151bea25d62a88ec9880f2e2">ssl.h</a>
+</li>
 <li>wss_session_state_t
 : <a class="el" href="session_8h.html#a60dc0459be58e075a9ddcb16c6b5af88">session.h</a>
+</li>
+<li>WSS_sha1()
+: <a class="el" href="ssl_8c.html#ab4a08121b3f51ee5214950ff5a772d76">ssl.c</a>
+, <a class="el" href="ssl_8h.html#ab4a08121b3f51ee5214950ff5a772d76">ssl.h</a>
 </li>
 <li>WSS_SIGNAL_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea26fd37a6f2953a44e32c3c144d073f80">error.h</a>
 </li>
 <li>WSS_socket_bind()
-: <a class="el" href="socket_8h.html#a4d1bb4d6126028efc9ed93468f3ddda9">socket.h</a>
-, <a class="el" href="socket_8c.html#a4d1bb4d6126028efc9ed93468f3ddda9">socket.c</a>
+: <a class="el" href="socket_8c.html#a4d1bb4d6126028efc9ed93468f3ddda9">socket.c</a>
+, <a class="el" href="socket_8h.html#a4d1bb4d6126028efc9ed93468f3ddda9">socket.h</a>
 </li>
 <li>WSS_SOCKET_BIND_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea64edf33b538bdc69b350a3d95966798f">error.h</a>
@@ -469,29 +494,29 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8deab618f36381831dcc56f5c0de404eb3c6">error.h</a>
 </li>
 <li>WSS_socket_create()
-: <a class="el" href="socket_8h.html#a5ec99b4c730a0fe2eb738694f34e866d">socket.h</a>
-, <a class="el" href="socket_8c.html#a5ec99b4c730a0fe2eb738694f34e866d">socket.c</a>
+: <a class="el" href="socket_8c.html#a5ec99b4c730a0fe2eb738694f34e866d">socket.c</a>
+, <a class="el" href="socket_8h.html#a5ec99b4c730a0fe2eb738694f34e866d">socket.h</a>
 </li>
 <li>WSS_SOCKET_CREATE_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea7cdc2545b5d431d738bc63d1a6993566">error.h</a>
 </li>
 <li>WSS_socket_listen()
-: <a class="el" href="socket_8c.html#ae3de127482bed78b208960d56bcca3d8">socket.c</a>
-, <a class="el" href="socket_8h.html#ae3de127482bed78b208960d56bcca3d8">socket.h</a>
+: <a class="el" href="socket_8h.html#ae3de127482bed78b208960d56bcca3d8">socket.h</a>
+, <a class="el" href="socket_8c.html#ae3de127482bed78b208960d56bcca3d8">socket.c</a>
 </li>
 <li>WSS_SOCKET_LISTEN_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea823aa919396c26eeb081e26d5b500ef6">error.h</a>
 </li>
 <li>WSS_socket_non_blocking()
-: <a class="el" href="socket_8h.html#ac33448c8e9691bcf32053691ffb53e55">socket.h</a>
-, <a class="el" href="socket_8c.html#ac33448c8e9691bcf32053691ffb53e55">socket.c</a>
+: <a class="el" href="socket_8c.html#ac33448c8e9691bcf32053691ffb53e55">socket.c</a>
+, <a class="el" href="socket_8h.html#ac33448c8e9691bcf32053691ffb53e55">socket.h</a>
 </li>
 <li>WSS_SOCKET_NONBLOCKED_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea0d043573861da1112b16218931a79573">error.h</a>
 </li>
 <li>WSS_socket_reuse()
-: <a class="el" href="socket_8h.html#a276be60090b421efa4823177d1725063">socket.h</a>
-, <a class="el" href="socket_8c.html#a276be60090b421efa4823177d1725063">socket.c</a>
+: <a class="el" href="socket_8c.html#a276be60090b421efa4823177d1725063">socket.c</a>
+, <a class="el" href="socket_8h.html#a276be60090b421efa4823177d1725063">socket.h</a>
 </li>
 <li>WSS_SOCKET_REUSE_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8deaf0bd95f6089be05aa4055a20f687331c">error.h</a>
@@ -500,8 +525,8 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea4d9448a73e290e9c178a3700c3da872f">error.h</a>
 </li>
 <li>WSS_socket_threadpool()
-: <a class="el" href="socket_8c.html#aa3f684fcd900c9d54a3c53b321debaa3">socket.c</a>
-, <a class="el" href="socket_8h.html#aa3f684fcd900c9d54a3c53b321debaa3">socket.h</a>
+: <a class="el" href="socket_8h.html#aa3f684fcd900c9d54a3c53b321debaa3">socket.h</a>
+, <a class="el" href="socket_8c.html#aa3f684fcd900c9d54a3c53b321debaa3">socket.c</a>
 </li>
 <li>WSS_SSL_CA_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8deade8e9dff9c5849dcdea28b997d291e4e">error.h</a>
@@ -512,8 +537,16 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 <li>WSS_SSL_CTX_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dead1424130914e2f7bc3ec96e8e5be4c61">error.h</a>
 </li>
+<li>WSS_ssl_handshake()
+: <a class="el" href="ssl_8h.html#ae2c03ab95138244f3b7901c6ea79cfd3">ssl.h</a>
+, <a class="el" href="ssl_8c.html#ae2c03ab95138244f3b7901c6ea79cfd3">ssl.c</a>
+</li>
 <li>WSS_SSL_KEY_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea687eb82661eebe602a8377928fa36bb6">error.h</a>
+</li>
+<li>WSS_ssl_read()
+: <a class="el" href="ssl_8h.html#aa0261bc87150dc34895b404624e9591e">ssl.h</a>
+, <a class="el" href="ssl_8c.html#aa0261bc87150dc34895b404624e9591e">ssl.c</a>
 </li>
 <li>WSS_SSL_SHUTDOWN_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea84ab0e8364e2d3aabaecf1f00170483c">error.h</a>
@@ -524,6 +557,14 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 <li>WSS_SSL_SHUTDOWN_WRITE_ERROR
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8dea5fac100a24b09e8bd577e0d02f2ebbae">error.h</a>
 </li>
+<li>WSS_ssl_write()
+: <a class="el" href="ssl_8h.html#aadd7fbf57392fe8279ad699de938a507">ssl.h</a>
+, <a class="el" href="ssl_8c.html#aadd7fbf57392fe8279ad699de938a507">ssl.c</a>
+</li>
+<li>WSS_ssl_write_partial()
+: <a class="el" href="ssl_8c.html#a48551e40ddf0ed83de6105fa5208d93f">ssl.c</a>
+, <a class="el" href="ssl_8h.html#a48551e40ddf0ed83de6105fa5208d93f">ssl.h</a>
+</li>
 <li>wss_state_t
 : <a class="el" href="server_8h.html#a9a8edf7028ef40c22e91fc530baa7a13">server.h</a>
 </li>
@@ -532,8 +573,8 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 , <a class="el" href="frame_8c.html#af5c433dfec7214fe91ec2137dc18ba2b">frame.c</a>
 </li>
 <li>WSS_stringify_frames()
-: <a class="el" href="frame_8h.html#af921b15f7e265f23253c059bcd050021">frame.h</a>
-, <a class="el" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">frame.c</a>
+: <a class="el" href="frame_8c.html#af921b15f7e265f23253c059bcd050021">frame.c</a>
+, <a class="el" href="frame_8h.html#af921b15f7e265f23253c059bcd050021">frame.h</a>
 </li>
 <li>WSS_SUCCESS
 : <a class="el" href="error_8h.html#aa1247c2aac972e07ca94ad44c671d8deade71aaab63b1d2977a5337ada8198b27">error.h</a>
@@ -569,16 +610,16 @@ $(document).ready(function(){initNavTree('globals_w.html',''); initResizable(); 
 : <a class="el" href="header_8h.html#a3e49c29af32db796faeefff09a8b4bf5">header.h</a>
 </li>
 <li>WSS_upgrade_header()
-: <a class="el" href="header_8c.html#a7f8d7c100aeaa7807c232f003ed93302">header.c</a>
-, <a class="el" href="header_8h.html#a7f8d7c100aeaa7807c232f003ed93302">header.h</a>
+: <a class="el" href="header_8h.html#a7f8d7c100aeaa7807c232f003ed93302">header.h</a>
+, <a class="el" href="header_8c.html#a7f8d7c100aeaa7807c232f003ed93302">header.c</a>
 </li>
 <li>WSS_work()
-: <a class="el" href="worker_8h.html#a38013429dcfbeb663cdb94eaec9f2465">worker.h</a>
-, <a class="el" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">worker.c</a>
+: <a class="el" href="worker_8c.html#a38013429dcfbeb663cdb94eaec9f2465">worker.c</a>
+, <a class="el" href="worker_8h.html#a38013429dcfbeb663cdb94eaec9f2465">worker.h</a>
 </li>
 <li>WSS_write()
-: <a class="el" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">worker.c</a>
-, <a class="el" href="worker_8h.html#a0ed3fd758a91033e30dab4d17d376bcc">worker.h</a>
+: <a class="el" href="worker_8h.html#a0ed3fd758a91033e30dab4d17d376bcc">worker.h</a>
+, <a class="el" href="worker_8c.html#a0ed3fd758a91033e30dab4d17d376bcc">worker.c</a>
 </li>
 </ul>
 </div><!-- contents -->

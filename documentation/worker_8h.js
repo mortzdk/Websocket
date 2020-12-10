@@ -15,6 +15,7 @@ var worker_8h =
     [ "MAGIC_WEBSOCKET_KEY", "worker_8h.html#af246d70b38fc70811ab79f8b9f0b1cd0", null ],
     [ "uthash_free", "worker_8h.html#a56cdf8c254fc700332c8e6a7263b4657", null ],
     [ "uthash_malloc", "worker_8h.html#a861013aff36c0448f1888a2b0b5836d8", null ],
+    [ "WSS_disconnect", "worker_8h.html#a411eb028137918a185d0d83c9e697b7b", null ],
     [ "WSS_work", "worker_8h.html#a38013429dcfbeb663cdb94eaec9f2465", null ],
     [ "WSS_write", "worker_8h.html#a0ed3fd758a91033e30dab4d17d376bcc", null ]
 ];

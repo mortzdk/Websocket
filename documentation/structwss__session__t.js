@@ -26,6 +26,8 @@ var structwss__session__t =
     [ "pong_length", "structwss__session__t.html#afa837cae92f56bded7c5e3b78481e896", null ],
     [ "port", "structwss__session__t.html#aeeaaaf338367afcf41f0e260f6043fd2", null ],
     [ "ringbuf", "structwss__session__t.html#af7f8f64dbc62ed75731e0a54aa2365ed", null ],
+    [ "ssl", "structwss__session__t.html#a942cad1fc9d2d5f0839ccdd71ded76dc", null ],
+    [ "ssl_connected", "structwss__session__t.html#a66dd5035be39c8b9695a2097db0be4fe", null ],
     [ "state", "structwss__session__t.html#a625e6f3b2376e356d3ade17e89b6583f", null ],
     [ "written", "structwss__session__t.html#aa82aa5afbc545b5fb70fff0ff9509224", null ]
 ];

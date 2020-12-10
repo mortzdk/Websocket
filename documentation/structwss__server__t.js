@@ -12,5 +12,6 @@ var structwss__server__t =
     [ "port", "structwss__server__t.html#a6d3a83f6a2383c221233981306f44dc5", null ],
     [ "re", "structwss__server__t.html#a9e9c9d56dc4c053078abd6563db4172d", null ],
     [ "rearm_pipefd", "structwss__server__t.html#a8ce2d6441949419de4869bcdcac9a62a", null ],
+    [ "ssl_ctx", "structwss__server__t.html#a38d0ddcfa6e52bd09c3a4ac68a6ae05a", null ],
     [ "thread_id", "structwss__server__t.html#ad5f33e2a06bf9632ea1800a40d167a46", null ]
 ];

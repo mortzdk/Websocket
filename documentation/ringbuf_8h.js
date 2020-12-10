@@ -1,5 +1,7 @@
 var ringbuf_8h =
 [
+    [ "__BEGIN_DECLS", "ringbuf_8h.html#a568e6bde99652b7fd271ad206cfe38f5", null ],
+    [ "__END_DECLS", "ringbuf_8h.html#a115472f6d0d1035f1885658ce0821537", null ],
     [ "ringbuf_t", "ringbuf_8h.html#a94cea41b84f2458e2138f515ea0575bb", null ],
     [ "ringbuf_worker_t", "ringbuf_8h.html#acb2b646676e78226c01a3a99eefbd62b", null ],
     [ "ringbuf_acquire", "ringbuf_8h.html#a62d17c949af16c199fda53e985f201cd", null ],

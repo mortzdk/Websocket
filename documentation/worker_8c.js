@@ -1,6 +1,5 @@
 var worker_8c =
 [
-    [ "SHA_DIGEST_LENGTH", "worker_8c.html#a1a715db7b4403fe6c165e49a32f5fe3d", null ],
     [ "favicon_response", "worker_8c.html#ae6ef1c0a3a3332ec645fe42b9e5f7bd0", null ],
     [ "handshake", "worker_8c.html#a5eb3738e224cef734cad112f8fbc4090", null ],
     [ "handshake_response", "worker_8c.html#a22051812bb95c45df69de0e733b2ad3c", null ],

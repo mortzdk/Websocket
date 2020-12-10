@@ -41,6 +41,8 @@ var files_dup =
     [ "sha1.h", "sha1_8h.html", "sha1_8h" ],
     [ "socket.c", "socket_8c.html", "socket_8c" ],
     [ "socket.h", "socket_8h.html", "socket_8h" ],
+    [ "ssl.c", "ssl_8c.html", "ssl_8c" ],
+    [ "ssl.h", "ssl_8h.html", "ssl_8h" ],
     [ "str.c", "str_8c.html", "str_8c" ],
     [ "str.h", "str_8h.html", "str_8h" ],
     [ "subprotocols.c", "subprotocols_8c.html", "subprotocols_8c" ],

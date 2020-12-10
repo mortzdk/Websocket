@@ -24,7 +24,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.doxygen.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">WSServer
-   &#160;<span id="projectnumber">v2.0.7</span>
+   &#160;<span id="projectnumber">v2.1.0</span>
    </div>
    <div id="projectbrief">C-WebSocket-Server</div>
   </td>
@@ -68,7 +68,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="textblock"><p><a href="https://travis-ci.org/mortzdk/Websocket"><object type="image/svg+xml" data="https://travis-ci.org/mortzdk/Websocket.svg?branch=master" style="pointer-events: none;">Build Status</object></a> <a href="https://opencollective.com/websocket/"><object type="image/svg+xml" data="https://opencollective.com/websocket/tiers/badge.svg" style="pointer-events: none;">Financial Contributors</object></a></p>
 <p>WSServer is a fast, configurable, and extendable WebSocket Server for UNIX systems written in C (C11).</p>
 <p>As of version 2.0.0 the WSServer has been completely rewritten with many new features, better support, better extendability and generally as a more stable WebSocket server.</p>
-<p>Current Version: <b>v2.0.7</b></p>
+<p>Current Version: <b>v2.1.0</b></p>
 <h2>Early history</h2>
 <p>The original WebSocket server (v1.0.0 and before) started out as a hobby project in 2012. The idea at the time, was to learn the C language and understand the basics of WebSockets. The initial version of the server worked for some but not all aspects of the protocols present at that time. At that time, different browsers implemented different versions of the WebSocket Protocol, which made it difficult to support all browsers. Today all major browsers support the <a href="http://tools.ietf.org/html/rfc6455">RFC6455</a> protocol, which has been stable for many years.</p>
 <h2>Present (2020)</h2>
@@ -84,20 +84,26 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>WSServer keeps a log file at <code>logs/WSServer.log</code>. The detail of the log is defined by the <code>log_level</code> value in the configuration. Default for a release build is 3 (FATAL, ERROR, WARN, INFO). Default for a test build is 5 (FATAL, ERROR, WARN, INFO, DEBUG, TRACE).</p>
 <p>The log file is a good tool for discovering misbehavior of the server, such as when the server isn't able to start, since port 80 is already occupied by another server instance.</p>
 <h3>Dependencies</h3>
-<p>WSServer does in principle not rely on any third-party libraries in order to serve as a WebSocket server. However if you want the complete feature set the <a href="https://zlib.net/"><b>zlib</b></a> and <a href="https://www.openssl.org/"><b>openssl</b></a> library must be installed on your system in order to support the <code>permessage-deflate</code> extension and SSL (WSS).</p>
+<p>WSServer does in principle not rely on any third-party libraries in order to serve as a WebSocket server. However if you want the complete feature set the <a href="https://zlib.net/"><b>zlib</b></a> and one of the SSL libraries <a href="https://www.openssl.org/"><b>OpenSSL</b></a>, <a href="https://www.wolfssl.com/"><b>WolfSSL</b></a>, <a href="https://www.boringssl.googlesource.com/boringssl/"><b>BoringSSL</b></a>, <a href="https://www.libressl.org/"><b>LibreSSL</b></a> must be installed on your system in order to support the <code>permessage-deflate</code> extension and SSL (WSS).</p>
 <h5>Ubuntu</h5>
 <div class="fragment"><div class="line">$ sudo apt-get install zlib1g-dev</div>
 <div class="line">$ sudo apt-get install openssl</div>
+<div class="line">$ sudo apt-get install wolfssl</div>
 </div><!-- fragment --><h5>Arch</h5>
-<div class="fragment"><div class="line">$ pacman -S openssl</div>
-<div class="line">$ pacman -S zlib</div>
+<div class="fragment"><div class="line">$ pacman -S zlib</div>
+<div class="line">$ pacman -S wolfssl</div>
+<div class="line">$ pacman -S libressl</div>
 </div><!-- fragment --><h5>MacOS</h5>
-<div class="fragment"><div class="line">$ brew install openssl</div>
-<div class="line">$ brew install zlib</div>
+<div class="fragment"><div class="line">$ brew install zlib</div>
+<div class="line">$ brew install openssl</div>
+<div class="line">$ brew install wolfssl</div>
 </div><!-- fragment --><h5>FreeBSD</h5>
-<div class="fragment"><div class="line">$ pkg install openssl</div>
+<div class="fragment"><div class="line">$ pkg install libressl</div>
+<div class="line">$ pkg install boringssl</div>
+<div class="line">$ pkg install openssl</div>
 <div class="line">$ pkg install zlib</div>
-</div><!-- fragment --><p>No other dependencies are required with regards to building the server with the full feature set.</p>
+</div><!-- fragment --><p>If the installation method is not listed above or your package manager doesn't contain the software, it can all be build from source.</p>
+<p>No other dependencies are required with regards to building the server with the full feature set.</p>
 <p>If you want to run the <a href="https://github.com/crossbario/autobahn-testsuite">Autobahn testsuite</a> and the unit tests yourself, further dependencies are required. These are <a href="https://www.docker.com/"><b>docker</b></a> and <a href="https://github.com/Snaipe/Criterion"><b>criterion</b></a>.</p>
 <h5>Ubuntu</h5>
 <div class="fragment"><div class="line">$ sudo apt install docker.io</div>
@@ -156,7 +162,21 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>Internally the WSServer runs a threadpool to schedule IO work from the clients.</p>
 <p>The <code>worker</code> key define the amount of threads the threadpool shall consist of. Generally the rule of thumb is that the higher the load, the more threads. However the optimal amount of workers is probably system and hardware dependent.</p>
 <h5>SSL (WSS)</h5>
-<p>WSServer supports the <em>wss</em> scheme by the use of the OpenSSL library. In order to activate SSL some configuration must be made.</p>
+<p>WSServer supports the <em>wss</em> scheme by the use of one of currently 4 SSL libraries (<a href="https://www.openssl.org/"><b>OpenSSL</b></a>, <a href="https://www.wolfssl.com/"><b>WolfSSL</b></a>, <a href="https://www.boringssl.googlesource.com/boringssl/"><b>BoringSSL</b></a>, <a href="https://www.libressl.org/"><b>LibreSSL</b></a>). The default choice is OpenSSL, but the SSL library can be switched as follows:</p>
+<div class="fragment"><div class="line"># OpenSSL</div>
+<div class="line">$ make</div>
+<div class="line"> </div>
+<div class="line"># WolfSSL</div>
+<div class="line">$ make SSL=WOLFSSL</div>
+<div class="line"> </div>
+<div class="line"># LibreSSL</div>
+<div class="line">$ make SSL_LIBRARY_PATH=/path/to/libressl</div>
+<div class="line"> </div>
+<div class="line"># BoringSSL</div>
+<div class="line">$ make SSL_LIBRARY_PATH=/path/to/boringssl</div>
+</div><!-- fragment --><p>Note that if compiled with <code>SSL_LIBRARY_PATH</code> the binary must be executed with <code>LD_LIBRARY_PATH=/path/to/libressl/lib ./bin/WSServer</code>.</p>
+<p>If LibreSSL or BoringSSL is installed in place of OpenSSL the compilation should work out of the box by running <code>make</code>.</p>
+<p>In order to activate SSL some configuration must be made.</p>
 <p>The <code>key</code> key define the path to the SSL private key of the server. The private key must be in the PEM format.</p>
 <p>The <code>cert</code> key define the path to the SSL server certificate. The certificate must be in the PEM format.</p>
 <p>The <code>ca_file</code> key define the path to the root CA certificate.</p>
