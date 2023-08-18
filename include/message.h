@@ -1,5 +1,7 @@
-#ifndef wss_message_h
-#define wss_message_h
+#pragma once
+
+#ifndef WSS_MESSAGE_H
+#define WSS_MESSAGE_H
 
 #include <stdlib.h>
 #include <stdint.h>

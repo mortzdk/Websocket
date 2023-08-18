@@ -16,12 +16,10 @@
 
 #include "permessage-deflate.h"
 #include "uthash.h"
-#include "predict.h"
-
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 #define EXT_CHUNK_SIZE                 "chunk_size"
 #define EXT_MEMORY_LEVEL               "memory_level"
+#define EXT_COMPRESSION_LEVEL          "compression_level"
 #define EXT_SERVER_NO_CONTEXT_TAKEOVER "server_no_context_takeover"
 #define EXT_CLIENT_NO_CONTEXT_TAKEOVER "client_no_context_takeover"
 #define EXT_SERVER_MAX_WINDOW_BITS     "server_max_window_bits"
@@ -29,6 +27,8 @@
 
 #define MAX_CHUNK_SIZE UINT_MAX
 #define MIN_CHUNK_SIZE 1
+#define SERVER_MIN_COMPRESSION_LEVEL Z_NO_COMPRESSION 
+#define SERVER_MAX_COMPRESSION_LEVEL Z_BEST_COMPRESSION 
 #define SERVER_MAX_MEM_LEVEL MAX_MEM_LEVEL
 #define SERVER_MIN_MEM_LEVEL 1
 #define SERVER_MAX_WINDOW_BITS 15
@@ -84,10 +84,11 @@ wss_comp_t *compressors = NULL;
  */
 static bool default_client_no_context_takeover = false;
 static bool default_server_no_context_takeover = false;
-static int default_chunk_size = 32768;
-static int default_memory_level = 4;
-static int default_server_window_bits = 15;
-static int default_client_window_bits = 15;
+static int default_chunk_size                  = 32768;
+static int default_memory_level                = 8;
+static int default_compression_level           = Z_DEFAULT_COMPRESSION;
+static int default_server_window_bits          = 15;
+static int default_client_window_bits          = 15;
 
 /**
  * Trims a string for leading and trailing whitespace.
@@ -144,7 +145,7 @@ static void parse_param(const char *param, param_t *p) {
                 j++;
                 bits = strtol(sep+j, NULL, 10);
 
-                p->client_max_window_bits = MIN(bits, CLIENT_MAX_WINDOW_BITS);
+                p->client_max_window_bits = WSS_MIN(bits, CLIENT_MAX_WINDOW_BITS);
             } else {
                 // Default
                 p->client_max_window_bits = default_client_window_bits;
@@ -163,7 +164,7 @@ static void parse_param(const char *param, param_t *p) {
                 bits++;
             }
 
-            p->server_max_window_bits = MIN(bits, SERVER_MAX_WINDOW_BITS);
+            p->server_max_window_bits = WSS_MIN(bits, SERVER_MAX_WINDOW_BITS);
         } else if ( strncmp(EXT_CLIENT_NO_CONTEXT_TAKEOVER, sep, strlen(EXT_CLIENT_NO_CONTEXT_TAKEOVER)) == 0) {
             p->client_no_context_takeover = true;
         } else if ( strncmp(EXT_SERVER_NO_CONTEXT_TAKEOVER, sep, strlen(EXT_SERVER_NO_CONTEXT_TAKEOVER)) == 0) {
@@ -182,7 +183,7 @@ static char * negotiate(char *param, wss_comp_t *comp) {
     parse_param(param, p);
 
     if (p->server_no_context_takeover) {
-        // server_no_contect_takeover
+        // server_no_context_takeover
         snct_length = strlen(EXT_SERVER_NO_CONTEXT_TAKEOVER)+1;
         accepted_length += snct_length;
     }
@@ -264,7 +265,7 @@ static bool init_comp(wss_comp_t *comp) {
     comp->compressor.zfree  = zfree;
     comp->compressor.opaque = Z_NULL;
 
-    if ( unlikely(Z_OK != deflateInit2(&comp->compressor, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) ) {
+    if ( unlikely(Z_OK != deflateInit2(&comp->compressor, default_compression_level, Z_DEFLATED, -comp->params.server_max_window_bits, default_memory_level, Z_DEFAULT_STRATEGY)) ) {
 
         inflateEnd(&comp->decompressor);
         return false;
@@ -286,7 +287,7 @@ void onInit(char *config) {
     regex_t re;
     size_t nmatch = 8;
     regmatch_t matches[nmatch];
-    const char *reg_str = "^(\\s*((server_no_context_takeover)|(server_max_window_bits\\s*=\\s*[0-9]+)|(client_max_window_bits\\s*=\\s*[0-9]+)|(memory_level\\s*=\\s*[0-9]+)|(chunk_size\\s*=\\s*[0-9]+))\\s*;?\\s*)*$";
+    const char *reg_str = "^(\\s*((server_no_context_takeover)|(server_max_window_bits\\s*=\\s*[0-9]+)|(client_max_window_bits\\s*=\\s*[0-9]+)|(memory_level\\s*=\\s*[0-9]+)|(compression_level\\s*=\\s*[0-9]+)|(chunk_size\\s*=\\s*[0-9]+))\\s*;?\\s*)*$";
 
     if ( NULL == config ) {
         return;
@@ -338,6 +339,18 @@ void onInit(char *config) {
                 continue;
             }
             default_memory_level = val;
+        } else if ( strncmp(EXT_COMPRESSION_LEVEL, buffer+matches[i].rm_so, strlen(EXT_COMPRESSION_LEVEL)) == 0) {
+            j = matches[i].rm_so;
+            while (buffer[j] != '=') {
+                j++;
+            }
+
+            j++;
+            val = strtol(buffer+j, NULL, 10);
+            if (val < SERVER_MIN_COMPRESSION_LEVEL || SERVER_MAX_COMPRESSION_LEVEL < val) {
+                continue;
+            }
+            default_compression_level = val;
         } else if ( strncmp(EXT_SERVER_MAX_WINDOW_BITS, buffer+matches[i].rm_so, strlen(EXT_SERVER_MAX_WINDOW_BITS)) == 0) {
             j = matches[i].rm_so;
             while (buffer[j] != '=') {
@@ -529,32 +542,65 @@ void onOpen(int fd, char *param, char **accepted, bool *valid) {
     pthread_mutex_unlock(&lock);
 }
 
-/**
- * Event called when a frame_t of data is received.
- *
- * @param 	fd	    [int]               "The filedescriptor of the session"
- * @param 	frame	[wss_frame_t *]     "A websocket frame"
- * @return 	        [void]
- */
-void inFrame(int fd, wss_frame_t *frame) {
+static inline bool writeFrames(wss_frame_t **frames, z_stream *comp, char *buffer, size_t *last_frame_length, size_t *next_start_index, size_t total_in, size_t payload_length, size_t last_index) {
+    size_t j;
+    char *tmp_payload;
+    size_t written    = 0;
+    size_t length     = default_chunk_size - comp->avail_out;
+    size_t last_frame = floor(((double)(comp->total_in-total_in) / payload_length) * last_index);
+    size_t size       = (size_t)ceil((double)length/(last_frame-*next_start_index+1));
+    for (j = *next_start_index; likely(j <= last_frame); j++) {
+        // Update last frame with lengths and reset last frame length since we've advanced to a new frame
+        if ( likely(j != *next_start_index) ) {
+            frames[j-1]->extensionDataLength = 0;
+            frames[j-1]->applicationDataLength = *last_frame_length;
+            frames[j-1]->payloadLength = frames[j-1]->applicationDataLength + frames[j-1]->extensionDataLength;
+
+            *last_frame_length = 0;
+        }
+
+        // Adjust size for the last frame 
+        if ( unlikely(written + size > length) ) {
+            size = length - written;
+        }
+
+        if ( *last_frame_length+size > frames[j]->payloadLength ) {
+            if ( unlikely(NULL == (tmp_payload = allocs.realloc(frames[j]->payload, *last_frame_length+size+1))) ) {
+                return false;
+            }
+            frames[j]->payload = tmp_payload;
+            frames[j]->payloadLength = *last_frame_length+size;
+        }
+
+        memcpy(frames[j]->payload+*last_frame_length, buffer+written, size);
+
+        *last_frame_length += size;
+        written            += size;
+    }
+
+    *next_start_index = j-1;
+
+    return true;
 }
 
 /**
  * Event called when a full set of frames are received.
  *
- * @param 	fd	      [int]             "The filedescriptor of the session"
- * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
- * @param 	len	      [size_t]          "The amount of frames"
- * @return 	          [void]
+ * @param 	fd	            [int]             "The filedescriptor of the session"
+ * @param 	frames	        [wss_frame_t **]  "The websocket frames received"
+ * @param 	frames_count	[size_t]          "The amount of frames"
+ * @return 	                [void]
  */
-void inFrames(int fd, wss_frame_t **frames, size_t len) {
-    size_t j, size;
-    char *message = NULL;
-    size_t payload_length = 0;
-    wss_comp_t *comp = NULL;
-    size_t current_length = 0;
-    size_t message_length = 0;
+void inFrames(int fd, wss_frame_t **frames, size_t frames_count) {
+    size_t j, total_in;
+    size_t last_frame_length    = 0;
+    size_t next_start_index     = 0;
+    size_t last_index           = frames_count-1;
+    size_t payload_length       = 0;
+    wss_comp_t *comp            = NULL;
+    size_t current_length       = 0;
     int flush_mask = Z_SYNC_FLUSH;
+    char buffer[default_chunk_size];
 
     if (! frames[0]->rsv1) {
         return;
@@ -572,7 +618,7 @@ void inFrames(int fd, wss_frame_t **frames, size_t len) {
         return;
     }
 
-    for (j = 0; likely(j < len); j++) {
+    for (j = 0; likely(j < frames_count); j++) {
         payload_length += frames[j]->payloadLength; 
     }
     payload_length += 4;
@@ -580,7 +626,7 @@ void inFrames(int fd, wss_frame_t **frames, size_t len) {
     char payload[payload_length+1];
     payload[payload_length] = '\0';
 
-    for (j = 0; likely(j < len); j++) {
+    for (j = 0; likely(j < frames_count); j++) {
         memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
         current_length += frames[j]->payloadLength;
     }
@@ -594,74 +640,46 @@ void inFrames(int fd, wss_frame_t **frames, size_t len) {
         flush_mask = Z_FULL_FLUSH;
     }
 
-    // Decompress data
+    // Decompress data and put it back into frames
+    total_in = comp->decompressor.total_in;
     do {
-        if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+1)*sizeof(char)))) ) {
-            allocs.free(message);
-            return; 
-        }
-        memset(message+message_length, '\0', default_chunk_size+1); 
-
         comp->decompressor.avail_out = default_chunk_size;
-        comp->decompressor.next_out = (unsigned char *)message+message_length;
+        comp->decompressor.next_out = (unsigned char *)buffer;
         switch (inflate(&comp->decompressor, flush_mask)) {
             case Z_OK:
             case Z_STREAM_END:
             case Z_BUF_ERROR:
                 break;
             default:
-                allocs.free(message);
                 return;
         }
-        message_length += default_chunk_size - comp->decompressor.avail_out;
-    } while ( comp->decompressor.avail_out == 0 );
 
-    // unset rsv1 bit
-    frames[0]->rsv1 = false;
-    current_length = 0;
-
-    // Reallocate application data to contain the decompressed data in the same
-    // amount of frames
-    for (j = 0; likely(j < len); j++) {
-        if ( likely(j+1 != len) ) {
-            size = message_length/len;
-        } else {
-            size = message_length-current_length;
-        }
-
-        if ( unlikely(NULL == (frames[j]->payload = allocs.realloc(frames[j]->payload, size))) ) {
-            allocs.free(message);
+        if ( unlikely(! writeFrames(frames, &comp->decompressor, buffer, &last_frame_length, &next_start_index, total_in, payload_length, last_index)) ) {
             return;
         }
-        memcpy(frames[j]->payload, message+current_length, size);
-        current_length += size;
-        frames[j]->extensionDataLength = 0;
-        frames[j]->applicationDataLength = size;
-        frames[j]->payloadLength = size;
-    }
+    } while ( comp->decompressor.avail_out == 0 );
 
-    allocs.free(message);
-}
+    // Set last frame length
+    frames[last_index]->extensionDataLength = 0;
+    frames[last_index]->applicationDataLength = last_frame_length;
+    frames[last_index]->payloadLength = frames[last_index]->applicationDataLength + frames[last_index]->extensionDataLength;
 
-/**
- * Event called when a frame_t of data is about to be sent.
- *
- * @param 	fd	    [int]               "The filedescriptor of the session"
- * @param 	frame	[wss_frame_t *]     "A websocket frame"
- * @return 	        [void]
- */
-void outFrame(int fd, wss_frame_t *frame) {
+    // Unset rsv1 bit of first frame
+    frames[0]->rsv1 = 0;
+
+    inflateReset(&comp->compressor);
 }
 
 /**
  * Event called when a full set of frames are about to be sent.
  *
- * @param 	fd	      [int]             "The filedescriptor of the session"
- * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
- * @param 	len	      [size_t]          "The amount of frames"
- * @return 	          [void]
+ * @param 	fd	            [int]             "The filedescriptor of the session"
+ * @param 	frames	        [wss_frame_t **]  "The websocket frames received"
+ * @param 	frames_count	[size_t]          "The amount of frames"
+ * @return 	                [void]
  */
-void outFrames(int fd, wss_frame_t **frames, size_t len) {
+/*
+void outFrames(int fd, wss_frame_t **frames, size_t frame_count) {
     size_t j, size;
     char *message = NULL;
     size_t payload_length = 0;
@@ -686,14 +704,14 @@ void outFrames(int fd, wss_frame_t **frames, size_t len) {
         return;
     }
 
-    for (j = 0; likely(j < len); j++) {
-        payload_length += frames[j]->payloadLength; 
+    for (j = 0; likely(j < frame_count); j++) {
+        payload_length += frames[j]->payloadLength;
     }
 
     char payload[payload_length+1];
     payload[payload_length] = '\0';
 
-    for (j = 0; likely(j < len); j++) {
+    for (j = 0; likely(j < frame_count); j++) {
         memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
         current_length += frames[j]->payloadLength;
     }
@@ -710,9 +728,9 @@ void outFrames(int fd, wss_frame_t **frames, size_t len) {
     do {
         if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
             allocs.free(message);
-            return; 
+            return;
         }
-        memset(message+message_length, '\0', default_chunk_size+2); 
+        memset(message+message_length, '\0', default_chunk_size+2);
 
         comp->compressor.avail_out = default_chunk_size;
         comp->compressor.next_out = (unsigned char *)message+message_length;
@@ -734,9 +752,9 @@ void outFrames(int fd, wss_frame_t **frames, size_t len) {
 
         if ( unlikely(NULL == (message = allocs.realloc(message, (message_length+default_chunk_size+2)*sizeof(char)))) ) {
             allocs.free(message);
-            return; 
+            return;
         }
-        memset(message+message_length, '\0', default_chunk_size+2); 
+        memset(message+message_length, '\0', default_chunk_size+2);
 
         comp->compressor.avail_out = default_chunk_size;
         comp->compressor.next_out = (unsigned char *)message+message_length;
@@ -767,9 +785,9 @@ void outFrames(int fd, wss_frame_t **frames, size_t len) {
 
     // Reallocate application data to contain the compressed data in the same
     // amount of frames
-    for (j = 0; likely(j < len); j++) {
-        if ( likely(j+1 != len) ) {
-            size = message_length/len;
+    for (j = 0; likely(j < frame_count); j++) {
+        if ( likely(j+1 != frame_count) ) {
+            size = message_length/frame_count;
         } else {
             size = message_length-current_length;
         }
@@ -786,8 +804,120 @@ void outFrames(int fd, wss_frame_t **frames, size_t len) {
     }
 
     allocs.free(message);
+    deflateReset(&comp->compressor);
 }
+*/
 
+void outFrames(int fd, wss_frame_t **frames, size_t frames_count) {
+    wss_frame_t *frame;
+    size_t j, total_in;
+    size_t payload_length    = 0;
+    size_t current_length    = 0;
+    size_t next_start_index  = 0;
+    size_t last_frame_length = 0;
+    size_t last_index        = frames_count-1;
+    int flush_mask = Z_SYNC_FLUSH;
+    char buffer[default_chunk_size];
+    wss_comp_t *comp;
+
+    if ( unlikely(frames[0]->opcode >= 0x8 && frames[0]->opcode <= 0xA) ) {
+        return;
+    }
+
+    if ( unlikely(pthread_mutex_lock(&lock) != 0) ) {
+        return;
+    }
+
+    HASH_FIND_INT(compressors, &fd, comp);
+
+    pthread_mutex_unlock(&lock);
+
+    if ( unlikely(NULL == comp) ) {
+        return;
+    }
+
+    for (j = 0; likely(j < frames_count); j++) {
+        payload_length += frames[j]->payloadLength; 
+    }
+
+    char payload[payload_length+1];
+    payload[payload_length] = '\0';
+
+    for (j = 0; likely(j < frames_count); j++) {
+        memcpy(payload+current_length, frames[j]->payload, frames[j]->payloadLength);
+        current_length += frames[j]->payloadLength;
+    }
+
+    // https://github.com/madler/zlib/issues/149
+    if (comp->params.server_no_context_takeover) {
+        flush_mask = Z_BLOCK;
+    }
+
+    // Compress whole message
+    comp->compressor.avail_in = payload_length;
+    comp->compressor.next_in = (unsigned char *)payload;
+
+    total_in = comp->compressor.total_in;
+    do {
+        comp->compressor.avail_out = default_chunk_size;
+        comp->compressor.next_out = (unsigned char *)buffer;
+        switch (deflate(&comp->compressor, flush_mask)) {
+            case Z_OK:
+            case Z_STREAM_END:
+            case Z_BUF_ERROR:
+                break;
+            default:
+                return;
+        }
+
+        if ( unlikely(! writeFrames(frames, &comp->compressor, buffer, &last_frame_length, &next_start_index, total_in, payload_length, last_index)) ) {
+            return;
+        }
+    } while ( comp->compressor.avail_out == 0 );
+
+    // https://github.com/madler/zlib/issues/149
+    if (comp->params.server_no_context_takeover) {
+        flush_mask = Z_FULL_FLUSH;
+
+        comp->compressor.avail_out = default_chunk_size;
+        comp->compressor.next_out = (unsigned char *)buffer;
+        switch (deflate(&comp->compressor, flush_mask)) {
+            case Z_OK:
+            case Z_STREAM_END:
+            case Z_BUF_ERROR:
+                break;
+            default:
+                return;
+        }
+
+        if ( unlikely(! writeFrames(frames, &comp->compressor, buffer, &last_frame_length, &next_start_index, total_in, payload_length, last_index)) ) {
+            return;
+        }
+    }
+
+    // Set last frame length
+    frame = frames[last_index];
+    frame->extensionDataLength = 0;
+    frame->applicationDataLength = last_frame_length;
+    frame->payloadLength = frames[last_index]->applicationDataLength + frames[last_index]->extensionDataLength;
+
+    // Remove extra bytes from last frame
+    if ( unlikely(frame->payloadLength < 5 || memcmp(frame->payload+(frame->payloadLength-4), "\x00\x00\xff\xff", 4) != 0) ) {
+        frame->payload[frame->payloadLength] = '\x00';
+        frame->payloadLength += 1;
+        frame->applicationDataLength += 1;
+    } else {
+        memset(frame->payload+(frame->payloadLength-4), '\x00', 4);
+        frame->payloadLength -= 4;
+        frame->applicationDataLength -= 4;
+    }
+
+    // set rsv1 bit
+    frames[0]->rsv1 = 1;
+
+    // TODO: should we reset?
+    deflateReset(&comp->compressor);
+}
 
 /**
  * Event called when the session is closed.
@@ -807,8 +937,8 @@ void onClose(int fd) {
     if ( NULL != comp ) {
         HASH_DEL(compressors, comp);
 
-        (void)inflateEnd(&comp->decompressor);
-        (void)deflateEnd(&comp->compressor);
+        WSS_UNUSED(inflateEnd(&comp->decompressor));
+        WSS_UNUSED(deflateEnd(&comp->compressor));
 
         allocs.free(comp);
     }

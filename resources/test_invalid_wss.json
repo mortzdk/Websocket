@@ -24,9 +24,14 @@
             "pipe" : 128
 		},
 		"pool" : {
-			"size" : 8192,
-			"queues" : 32,
-			"workers" : 4
+            "connect" : {
+                "workers" : 2,
+                "tasks" : 32768
+            },
+            "io" : {
+                "workers" : 6,
+                "tasks" : 32768
+            }
 		},
         "ssl" : {
             "key" : "key.pem",

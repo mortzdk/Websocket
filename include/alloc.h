@@ -1,5 +1,7 @@
-#ifndef wss_alloc_h
-#define wss_alloc_h
+#pragma once 
+
+#ifndef WSS_ALLOC_H
+#define WSS_ALLOC_H
 
 #include <stdlib.h>
 #include <stddef.h>

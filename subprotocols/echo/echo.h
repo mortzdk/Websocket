@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include "subprotocol.h"
+#include "core.h"
 
 /**
  * Event called when subprotocol is initialized.
@@ -11,7 +12,7 @@
  * @param 	send        [WSS_send]          "Function that send message to a single recipient"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) onInit(char *config, WSS_send send);
+void visible onInit(char *config, WSS_send send);
 
 /**
  * Sets the allocators to use instead of the default ones
@@ -21,7 +22,7 @@ void __attribute__((visibility("default"))) onInit(char *config, WSS_send send);
  * @param 	subfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);
+void visible setAllocators(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t subfree);
 
 /**
  * Event called when a new session has handshaked and hence connects to the WSS server.
@@ -33,7 +34,7 @@ void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t submalloc
  * @param 	cookies  [char *]  "The cookies received from the client. This can be used to do authentication."
  * @return 	         [void]
  */
-void __attribute__((visibility("default"))) onConnect(int fd, char *ip, int port, char *path, char *cookies);
+void visible onConnect(int fd, char *ip, int port, char *path, char *cookies);
 
 /**
  * Event called when a session has received new data.
@@ -45,7 +46,7 @@ void __attribute__((visibility("default"))) onConnect(int fd, char *ip, int port
  * @param 	receiver_count	[size_t]  "The amount of receivers"
  * @return 	                [void]
  */
-void __attribute__((visibility("default"))) onMessage(int fd, wss_opcode_t opcode, char *message, size_t message_length);
+void visible onMessage(int fd, wss_opcode_t opcode, char *message, size_t message_length);
 
 /**
  * Event called when a session are about to perform a write.
@@ -55,7 +56,7 @@ void __attribute__((visibility("default"))) onMessage(int fd, wss_opcode_t opcod
  * @param 	message_length	[size_t]  "The length of the message"
  * @return 	                [void]
  */
-void __attribute__((visibility("default"))) onWrite(int fd, char *message, size_t message_length);
+void visible onWrite(int fd, char *message, size_t message_length);
 
 /**
  * Event called when a session disconnects from the WSS server.
@@ -63,13 +64,13 @@ void __attribute__((visibility("default"))) onWrite(int fd, char *message, size_
  * @param 	fd	[int]     "A filedescriptor of the disconnecting session"
  * @return 	    [void]
  */
-void __attribute__((visibility("default"))) onClose(int fd);
+void visible onClose(int fd);
 
 /**
  * Event called when the subprotocol should be destroyed.
  *
  * @return 	    [void]
  */
-void __attribute__((visibility("default"))) onDestroy();
+void visible onDestroy();
 
 #endif

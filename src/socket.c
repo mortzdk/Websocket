@@ -11,9 +11,9 @@
 #include "socket.h"
 #include "log.h"
 #include "error.h"
-#include "pool.h"
+#include "threadpool.h"
 #include "alloc.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Function that initializes a socket and store the filedescriptor.
@@ -132,28 +132,33 @@ wss_error_t WSS_socket_listen(int fd) {
 /**
  * Function that creates a threadpool which can be used handle traffic.
  *
- * @param 	server	[wss_server_t *]	"The server instance"
- * @return 			[wss_error_t]       "The error status"
+ * @param 	workers	    [unsigned int]	    "Amount of workers"
+ * @param 	tasks	    [unsigned int]	    "Amount of worker tasks"
+ * @param 	stack_size	[unsigned int]	    "Stack size for each thread"
+ * @param 	pool	    [threadpool_t **]	"A pointer to where the pool should be stored"
+ * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_socket_threadpool(wss_server_t *server) {
-    if ( unlikely(NULL == server) ) {
-        WSS_log_fatal("No server structure given");
-        return WSS_THREADPOOL_CREATE_ERROR;
-    }
+wss_error_t WSS_socket_threadpool(unsigned int workers, unsigned int tasks, size_t stack_size, threadpool_t **pool) {
+    size_t default_stack_size;
+    pthread_attr_t attr;
+    threadpool_t *p;
 
-    if ( unlikely(NULL == server->config) ) {
-        WSS_log_fatal("No server config structure");
-        return WSS_THREADPOOL_CREATE_ERROR;
-    }
+    pthread_attr_init(&attr);
+    pthread_attr_getstacksize(&attr, &default_stack_size);
+    WSS_log_info("Default thread stack size %d", default_stack_size);
+    pthread_attr_destroy(&attr);
 
     /**
      * Creating threadpool
      */
-    if ( unlikely(NULL == (server->pool = threadpool_create(server->config->pool_workers,
-                        server->config->size_thread, server->config->size_thread, 0))) ) {
+    if ( unlikely(NULL == (p = threadpool_create(workers, tasks, stack_size, 0))) ) {
         WSS_log_fatal("The threadpool failed to initialize");
         return WSS_THREADPOOL_CREATE_ERROR;
     }
+
+    WSS_log_info("Configured thread stack size %llu", threadpool_get_stack_size(p));
+
+    *pool = p;
 
     return WSS_SUCCESS;
 }

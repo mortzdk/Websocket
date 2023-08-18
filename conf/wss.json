@@ -2,7 +2,8 @@
     // Allowed Hosts 
 	"hosts" : [
 		"localhost",
-		"127.0.0.1"
+		"127.0.0.1",
+        "wss.morten"
 	],
     // Allowed paths
     "paths" : [
@@ -13,20 +14,27 @@
     // Allowed origins
 	"origins" : [
 		"http://localhost",
-		"http://127.0.0.1"
+		"http://127.0.0.1",
+		"http://wss.morten"
 	],
 	"setup" : {
-        "log_level": 3,
+        "log_level": 5,
         // Subprotocols to load with the server
         "subprotocols" : [
             {
                 "file" : "subprotocols/echo/echo.so",
-                "config" : ""
+                "config" : "",
+                "default" : true
             },
             {
                 "file" : "subprotocols/broadcast/broadcast.so",
                 "config" : ""
+            }/*,
+            {
+                "file" : "../Chat/subprotocol/chat.so",
+                "config" : ""
             }
+            */
         ],
         // Extensions to load with the server
         "extensions" : [
@@ -46,7 +54,7 @@
             // How long, before timeouting writing to a client. -1 is infinitely
             "write"  : 1000,
             // How long, since a client last was active before timing out. -1 is infinitely
-            "client" : 3600000,
+            "client" : 10000,
             // How many pings should be sent during the client timeout period
             "pings"  : 2
         },
@@ -75,22 +83,32 @@
             "fragmented" : 1048576
 		},
         // Configurations regarding the thread poll
-		"pool" : {
-            // How many worker threads to use
-			"workers" : 8
+		"pools" : {
+            "connect" : {
+                // How many worker threads to use
+                "workers" : 2,
+                // How many tasks each thread can queue
+                "tasks" : 32768
+            },
+            "io" : {
+                // How many worker threads to use
+                "workers" : 6,
+                // How many tasks each thread can queue
+                "tasks" : 32768
+            }
 		},
         // Configurations regarding SSL
         "ssl" : {
             // The private key of the server
-            "key" : null,
+            "key" : "resources/wsserver.key",
             // The certificate of the server
-            "cert" : null,
+            "cert" : "resources/wsserver.crt",
             // The root CA certiface 
-            "ca_file" : null,
+            "ca_file" : "resources/rootCA.crt",
             // Path to folder where root CA certificates are placed
             "ca_path" : "/usr/lib/ssl/certs/",
             // Where the dhparam file is located
-            "dhparam" : null,
+            "dhparam" : "resources/dhparam.pem",
             // Allowed TLS 2.0 and below ciphers
             "cipher_list" : "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256",
             // Allowed TLS 3.0 cipher suites

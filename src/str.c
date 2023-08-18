@@ -6,23 +6,22 @@
 #include "str.h"
 #include "alloc.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 /**
- * Function that converts a binary representation into a hexidecimal one.
+ * Function that converts a binary representation into a hexidecimal one. 
+ *
+ * Output must be of size len*2+1.
  *
  * @param 	bin	    [const unsigned char *]     "The binary value"
  * @param 	len     [size_t] 	                "The length of the binary value"
- * @return 	        [char *]                    "The hexidecimal representation of the binary value in a new memory block"
+ * @param 	output  [char **]                   "The output string to write to"
+ * @return          [size_t]                    "The length of the output string"
  */
-char *bin2hex(const unsigned char *bin, size_t len)
+inline size_t bin2hex(const unsigned char *bin, size_t len, char **output)
 {
-    char *out;
+    char *out = *output;
     size_t i;
-
-    if ( unlikely(NULL == (out = (char *) WSS_malloc(len*2+1))) ) {
-        return NULL;
-    }
 
     for (i = 0; likely(i < len); i++) {
         out[i*2]   = "0123456789ABCDEF"[bin[i] >> 4];
@@ -31,7 +30,7 @@ char *bin2hex(const unsigned char *bin, size_t len)
 
     out[len*2] = '\0';
 
-    return out;
+    return len*2;
 }
 
 /**
@@ -61,7 +60,7 @@ int strinarray(const char *needle, const char **haystack, size_t size) {
     unsigned long length = strlen(needle);
 
     for (i = 0; likely(i < (int) size); i++) {
-        if (NULL != haystack[i] && length == strlen(haystack[i]) && strncmp(needle, haystack[i], length) == 0) {
+        if ( unlikely(NULL != haystack[i] && length == strlen(haystack[i]) && strncmp(needle, haystack[i], length) == 0) ) {
             return 0;
         }
     }

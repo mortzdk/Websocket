@@ -14,7 +14,7 @@
 #include "alloc.h"
 #include "header.h"
 #include "ringbuf.h"
-#include "predict.h"
+#include "core.h"
 #include "ssl.h"
 
 /**
@@ -70,6 +70,7 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
     WSS_log_trace("Adding session");
 
     if ( unlikely(NULL != (session = WSS_session_find(fd))) ) {
+        WSS_log_error("Unable to find session");
         return NULL;
     }
 
@@ -120,7 +121,15 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
 
     session->fd = fd;
     session->port = port;
-    session->header = NULL;
+    session->header.ws_protocol = NULL;
+    session->header.ws_upgrade = NULL;
+    session->header.ws_connection = NULL;
+    session->header.ws_extensions = NULL;
+    session->header.ws_origin = NULL;
+    session->header.ws_key = NULL;
+    session->header.ws_key1 = NULL;
+    session->header.ws_key2 = NULL;
+    session->header.ws_key3 = NULL;
 
     length = strlen(ip);
     if ( unlikely(NULL == (session->ip = (char *) WSS_malloc( (length+1)*sizeof(char)))) ) {
@@ -168,9 +177,6 @@ static wss_error_t session_delete(wss_session_t *session) {
         WSS_log_trace("Free ip string");
         WSS_free((void **) &session->ip);
 
-        WSS_log_trace("Free pong string");
-        WSS_free((void **) &session->pong);
-
         WSS_log_trace("Free payload");
         WSS_free((void **) &session->payload);
 
@@ -181,25 +187,23 @@ static wss_error_t session_delete(wss_session_t *session) {
         WSS_free((void **) &session->frames);
 
         WSS_log_trace("Free session header structure");
-        if ( likely(NULL != session->header) ) {
-            for (j = 0; j < session->header->ws_extensions_count; j++) {
-                session->header->ws_extensions[j]->ext->close(session->fd);
-            }
-
-            session->header->ws_protocol->close(session->fd);
-
-            WSS_free_header(session->header);
+        for (j = 0; j < session->header.ws_extensions_count; j++) {
+            session->header.ws_extensions[j]->ext->close(session->fd);
         }
+        if (session->header.ws_protocol) {
+            session->header.ws_protocol->close(session->fd);
+        }
+        WSS_free_header(&session->header);
 
         WSS_log_trace("Free ringbuf");
         for (i = 0; likely(i < session->messages_count); i++) {
             if ( likely(NULL != session->messages[i]) ) {
-                if ( likely(NULL != session->messages[i]->msg) ) {
-                    WSS_free((void **) &session->messages[i]->msg);
-                }
-                WSS_free((void **) &session->messages[i]);
+                WSS_message_free(session->messages[i]);
+                WSS_memorypool_dealloc(session->message_pool, session->messages[i]);
+                session->messages[i] = NULL;
             }
         }
+        session->messages_count = 0;
         WSS_free((void **) &session->messages);
         WSS_free((void **) &session->ringbuf);
 

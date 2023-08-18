@@ -1,3 +1,5 @@
+#pragma once 
+
 #ifndef wss_config_h
 #define wss_config_h
 
@@ -28,9 +30,11 @@ typedef struct {
     unsigned int size_buffer;
     unsigned int size_ringbuffer;
     unsigned int size_frame;
+    unsigned int pool_connect_tasks;
+    unsigned int pool_connect_workers;
+    unsigned int pool_io_tasks;
+    unsigned int pool_io_workers;
     unsigned int max_frames;
-    unsigned int pool_workers;
-    unsigned int pool_retries;
     unsigned int timeout_pings;
     int timeout_poll;
     int timeout_read;
@@ -46,6 +50,7 @@ typedef struct {
     bool ssl_compression;
     bool ssl_peer_cert;
     char *favicon;
+    unsigned int subprotocols_default;
     char **subprotocols;
     unsigned int subprotocols_length;
     char **subprotocols_config;

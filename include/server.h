@@ -1,5 +1,7 @@
-#ifndef wss_server_h
-#define wss_server_h
+#pragma once
+
+#ifndef WSS_SERVER_H
+#define WSS_SERVER_H
 
 #include <signal.h>
 #include <sys/socket.h>         /* socket, setsockopt, inet_ntoa, accept, shutdown */
@@ -7,7 +9,8 @@
 #include <regex.h>              /* regex_t, regcomp, regexec */
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
                                    pthread_mutex_init */
-#include "pool.h"
+#include "threadpool.h"
+#include "memorypool.h"
 #include "config.h"
 
 #if !defined(uthash_malloc) || !defined(uthash_free)
@@ -42,14 +45,20 @@ typedef struct {
     int max_fd;
     wss_config_t *config;
     void *ssl_ctx;
-    threadpool_t *pool;
+    threadpool_t *pool_connect;
+    threadpool_t *pool_io;
     void *events;
     struct sockaddr_in6 info;
     pthread_t thread_id;
     pthread_t cleanup_thread_id;
     pthread_mutex_t lock;
+#if defined(WSS_POLL)
     int rearm_pipefd[2];
-    regex_t *re;
+#endif //WSS_POLL
+    regex_t re;
+    wss_memorypool_t *thread_args_pool;
+    wss_memorypool_t *frame_pool;
+    wss_memorypool_t *message_pool;
 } wss_server_t;
 
 typedef struct {
@@ -58,8 +67,8 @@ typedef struct {
 } wss_server_state_t;
 
 typedef struct {
-    wss_server_t *http;
-    wss_server_t *https;
+    wss_server_t http;
+    wss_server_t https;
 } wss_servers_t;
 
 /**

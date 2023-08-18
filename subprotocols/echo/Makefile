@@ -7,55 +7,53 @@ NAME = echo
 #Compiler
 CC = gcc
 
+# Folders
+FOLDER = $(shell pwd)
+SUBPROTOCOLS_FOLDER = $(FOLDER)/../
+INCLUDE_FOLDER = $(FOLDER)/../../include
+
 #Debug or Release
-PROFILE = -Og -g -DNDEBUG
-DEBUG = -Og -g
+PROFILING = -Og -g -DNDEBUG
+DEBUG = -Og -g --param max-inline-insns-single=1000
 RELEASE = -O3 -funroll-loops -DNDEBUG
 SPACE = -Os -DNDEBUG
+MODE = "release"
+PREV_MODE = "$(shell cat $(BUILD_FOLDER)/.mode 2> /dev/null)" 
 EXEC = $(RELEASE)
 
 #Compiler options
 CFLAGS = $(EXEC) \
+		 -pedantic \
+		 -pedantic-errors \
 		 -fno-exceptions \
 		 -fPIC \
-		 -fstack-protector \
-		 -funroll-loops \
+		 -fstack-protector -Wl,-z,relro -Wl,-z,now \
 		 -fvisibility=hidden \
 		 -march=native \
 		 -MMD \
-		 -pedantic \
-		 -pedantic-errors \
 		 -pipe \
 		 -W \
 		 -Wall \
 		 -Werror \
+		 -Wextra \
 		 -Wformat \
 		 -Wformat-security \
 		 -Wformat-nonliteral \
 		 -Winit-self \
 		 -Winline \
-		 -Wl,-z,relro \
-		 -Wl,-z,now \
 		 -Wmultichar \
-		 -Wno-unused-parameter \
-		 -Wno-unused-function \
-		 -Wno-unused-label \
-		 -Wno-deprecated \
-		 -Wno-strict-aliasing \
 		 -Wpointer-arith \
 		 -Wreturn-type \
 	     -Wsign-compare \
 		 -Wuninitialized \
+		 -D_GNU_SOURCE \
 		 -D_DEFAULT_SOURCE
 
+# Compiler version
 CVER = -std=c11
 
-# Folders
-FOLDER = $(shell pwd)
-SUBPROTOCOLS_FOLDER = $(FOLDER)/../
-
-# Include folders
-INCLUDES = -I$(SUBPROTOCOLS_FOLDER)
+# Flags
+FLAGS_INCLUDES = -I$(SUBPROTOCOLS_FOLDER) -I$(INCLUDE_FOLDER)
 
 # Files
 SRC = $(shell find $(FOLRDER) -name '*.c' -type f;)
@@ -69,15 +67,19 @@ all: $(NAME)
 
 release_mode:
 	$(eval EXEC = $(RELEASE))
+	$(eval MODE = "release")
 
 debug_mode:
 	$(eval EXEC = $(DEBUG))
+	$(eval MODE = "debug")
 
 profiling_mode:
-	$(eval EXEC = $(PROFILE))
+	$(eval EXEC = $(PROFILING))
+	$(eval MODE = "profiling")
 
 space_mode:
 	$(eval EXEC = $(SPACE))
+	$(eval MODE = "space")
 
 # Recompile when headers change
 -include $(DEPS)
@@ -87,7 +89,7 @@ $(NAME): $(SRC_OBJ)
 	@echo 
 	@echo ================ [Creating Shared Object] ================ 
 	@echo
-	$(CC) -shared $(CFLAGS) $(CVER) -o $(NAME).so $(SRC_OBJ) $(INCLUDES)
+	$(CC) -shared $(CFLAGS) $(CVER) $(FLAGS_INCLUDES) -o $(NAME).so $(SRC_OBJ)
 	@echo
 	@echo ================ [$(NAME).so compiled succesfully] ================ 
 	@echo
@@ -97,7 +99,7 @@ $(NAME): $(SRC_OBJ)
 	@echo
 	@echo ================ [Building Object] ================
 	@echo
-	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(INCLUDES)
+	$(CC) $(CFLAGS) $(CVER) -c $< -o $@ $(FLAGS_INCLUDES)
 	@echo
 	@echo OK [$<] - [$@]
 	@echo
@@ -107,18 +109,20 @@ clean:
 	@echo
 	@echo ================ [Cleaning $(NAME)] ================
 	@echo
-	rm -f *.d
-	rm -f *.o
+	if [ $(PREV_MODE) != $(MODE) ]; then \
+		rm -f *.d; \
+		rm -f *.o; \
+	fi
 	rm -f *.so
 
 #make release
-release: clean release_mode all
+release: release_mode clean all
 
 #make debug
-debug: clean debug_mode all
+debug: debug_mode clean all
 
 #make profiling
-profiling: clean profiling_mode all
+profiling: profiling_mode clean all
 
 #make space
-space: clean space_mode all
+space: space_mode clean all

@@ -1,5 +1,7 @@
-#ifndef wss_socket_h
-#define wss_socket_h
+#pragma once
+
+#ifndef WSS_SOCKET_H
+#define WSS_SOCKET_H
 
 #include "server.h"
 #include "error.h"
@@ -47,9 +49,12 @@ wss_error_t WSS_socket_listen(int fd);
 /**
  * Function that creates a threadpool which can be used handle traffic.
  *
- * @param 	server	[wss_server_t *]	"The server instance"
- * @return 			[wss_error_t]       "The error status"
+ * @param 	workers	    [unsigned int]	    "Amount of workers"
+ * @param 	tasks	    [unsigned int]	    "Amount of worker tasks"
+ * @param 	stack_size	[unsigned int]	    "Stack size for each thread"
+ * @param 	pool	    [threadpool_t **]	"A pointer to where the pool should be stored"
+ * @return 			    [wss_error_t]       "The error status"
  */
-wss_error_t WSS_socket_threadpool(wss_server_t *server);
+wss_error_t WSS_socket_threadpool(unsigned int workers, unsigned int tasks, size_t stack_size, threadpool_t **pool);
 
 #endif

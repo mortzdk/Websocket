@@ -1,5 +1,7 @@
-#ifndef wss_header_h
-#define wss_header_h
+#pragma once
+
+#ifndef WSS_HEADER_H
+#define WSS_HEADER_H
 
 #include <stdbool.h>
 #include <regex.h>              /* regex_t, regcomp, regexec */

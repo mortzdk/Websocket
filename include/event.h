@@ -1,18 +1,19 @@
+#pragma once 
+
 #ifndef WSS_EVENT_H
 #define WSS_EVENT_H
 
-#if defined(__linux__) && !defined(USE_POLL)
-#define WSS_EPOLL 1
-#elif defined(__APPLE__)   || defined(__FreeBSD__) || defined(__NetBSD__) || \
-      defined(__OpenBSD__) || defined(__bsdi__)    || defined(__DragonFly__)
-#define WSS_KQUEUE 1
-#else
-#define WSS_POLL 1
-#endif
+#include <errno.h>
 
+#include "core.h"
+#include "error.h"
 #include "server.h"
 #include "session.h"
-#include "error.h"
+#include "threadpool.h"
+#include "worker.h" 
+#include "socket.h" 
+#include "log.h" 
+#include "core.h" 
 
 /**
  * Structure used to send from event loop to threadpool
@@ -77,6 +78,19 @@ wss_error_t WSS_poll_delegate(wss_server_t *server);
  */
 wss_error_t WSS_poll_close(wss_server_t *server);
 
+/**
+ * Function that adds function to threadpools task queue.
+ *
+ * @param 	pool	[threadpool_t *] 	"A threadpool instance"
+ * @param 	func	[void (*)(void *)] 	"A function pointer to add to task queue"
+ * @param 	args	[void *] 	        "Arguments to be served to the function"
+ * @return 			[wss_error_t]       "The error status"
+ */
+wss_error_t WSS_poll_add_task_to_threadpool(threadpool_t *pool, void (*func)(void *), void *args);
+
+/**
+ * Pipes used to inform the event loop to stop since the application is closing
+ */
 extern int close_pipefd[2];
 
 #endif

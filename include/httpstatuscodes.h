@@ -1,3 +1,5 @@
+#pragma once
+
 /*! \file
  *
  * HTTP Status Codes - C Variant
@@ -12,6 +14,8 @@
 #ifndef HTTPSTATUSCODES_C_H_
 #define HTTPSTATUSCODES_C_H_
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 
 /*! Enum for the HTTP status codes.
 */
@@ -198,5 +202,6 @@ static const char* HttpStatus_reasonPhrase(int code)
 
 }
 
+#pragma GCC diagnostic pop
 
 #endif /* HTTPSTATUSCODES_C_H_ */

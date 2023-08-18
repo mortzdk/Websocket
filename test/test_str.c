@@ -42,31 +42,32 @@ static void teardown(void) {
 TestSuite(bin2hex, .init = setup, .fini = teardown);
 
 Test(bin2hex, zero_length) {
+    char output[1];
     char *string = "";
-    char *str = bin2hex((const char unsigned *) string, 0);
+    size_t len = bin2hex((const char unsigned *) string, 0, (char **)&output);
 
-    cr_assert(str != NULL);
-    cr_assert(str[0] == '\0'); 
-
-    WSS_free((void**)&str);
+    cr_assert(len == 0);
+    cr_assert(output[0] == '\0'); 
 }
 
 Test(bin2hex, simple_string) {
-    char *str;
+    size_t len;
+    char output[11];
     const char unsigned *string = (const char unsigned *)WSS_malloc(6);
     sprintf((char *)string, "%s", "12345");
 
-    str = bin2hex(string, strlen((char *)string));
+    len = bin2hex(string, strlen((char *)string), (char **)&output);
 
-    cr_assert(str != NULL);
-    cr_assert(strncmp(str, "3132333435", 10) == 0); 
+    cr_assert(len == 10); 
+    cr_assert(strncmp(output, "3132333435", len) == 0); 
+    cr_assert(output[10] == '\0'); 
 
-    WSS_free((void **)&str);
     WSS_free((void **) &string);
 }
 
 Test(bin2hex, sha1_string) {
-    char *str;
+    size_t len;
+    char output[2*SHA_DIGEST_LENGTH+1];
     char sha1Key[SHA_DIGEST_LENGTH];
     const char unsigned *string = (const char unsigned *)WSS_malloc(6);
     sprintf((char *)string, "%s", "12345");
@@ -92,12 +93,12 @@ Test(bin2hex, sha1_string) {
         }
     }
 #endif
-    str = bin2hex((const unsigned char *)sha1Key, SHA_DIGEST_LENGTH);
+    len = bin2hex((const unsigned char *)sha1Key, SHA_DIGEST_LENGTH, (char **)&output);
 
-    cr_assert(str != NULL);
-    cr_assert(strncmp(str, "8cb2237d0679ca88db6464eac60da96345513964", SHA_DIGEST_LENGTH));
+    cr_assert(len == 2*SHA_DIGEST_LENGTH); 
+    cr_assert(strncmp(output, "8cb2237d0679ca88db6464eac60da96345513964", 2*SHA_DIGEST_LENGTH));
+    cr_assert(output[2*SHA_DIGEST_LENGTH] == '\0'); 
 
-    WSS_free((void **) &str);
     WSS_free((void **) &string);
 }
 

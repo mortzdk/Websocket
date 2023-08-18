@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef WSS_UTF8_H
 #define WSS_UTF8_H
 

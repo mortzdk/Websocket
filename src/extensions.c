@@ -6,7 +6,7 @@
 #include "uthash.h"
 #include "alloc.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Global hashtable of extensions
@@ -22,19 +22,18 @@ wss_extension_t *extensions = NULL;
  * extensions/permessage-deflate/permessage-deflate.so 
  *
  * @param 	config	[config_t *] 	"The configuration of the server"
- * @return 	      	[void]
+ * @return 	      	[unsigned int]      "The number of extensions loaded"
  */
-void WSS_load_extensions(wss_config_t *config)
+unsigned int WSS_load_extensions(wss_config_t *config)
 {
     size_t i, j;
     char *name;
-    char *pyname;
     int *handle;
     wss_extension_t* proto;
     int name_length;
 
     if ( unlikely(NULL == config) ) {
-        return;
+        return 0;
     }
 
     WSS_log_trace("Loading extensions");
@@ -52,7 +51,7 @@ void WSS_load_extensions(wss_config_t *config)
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_extension_t)))) ) {
             WSS_log_error("Unable to allocate extension structure");
             dlclose(handle);
-            return;
+            return 0;
         }
         proto->handle = handle;
 
@@ -77,22 +76,8 @@ void WSS_load_extensions(wss_config_t *config)
             continue;
         }
 
-        if ( unlikely((*(void**)(&proto->inframe) = dlsym(proto->handle, "inFrame")) == NULL) ) {
-            WSS_log_error("Failed to find 'inFrame' function: %s", dlerror());
-            dlclose(proto->handle);
-            WSS_free((void **) &proto);
-            continue;
-        }
-
         if ( unlikely((*(void**)(&proto->inframes) = dlsym(proto->handle, "inFrames")) == NULL) ) {
             WSS_log_error("Failed to find 'inFrames' function: %s", dlerror());
-            dlclose(proto->handle);
-            WSS_free((void **) &proto);
-            continue;
-        }
-
-        if ( unlikely((*(void**)(&proto->outframe) = dlsym(proto->handle, "outFrame")) == NULL) ) {
-            WSS_log_error("Failed to find 'outFrame' function: %s", dlerror());
             dlclose(proto->handle);
             WSS_free((void **) &proto);
             continue;
@@ -124,29 +109,38 @@ void WSS_load_extensions(wss_config_t *config)
             name_length++;
         }
 
-        if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
-            WSS_log_error("Unable to allocate name");
+        if (name_length > MAX_EXTENSION_NAME_LENGTH) {
+            WSS_log_error("Extension name '%s' is too long", name);
             dlclose(proto->handle);
             WSS_free((void **) &proto);
-            return;
+            continue;
         }
 
-        // Call Cython init if available
-        if ( unlikely(NULL == (pyname = WSS_malloc(7+name_length+1))) ) {
-            WSS_log_error("Unable to allocate name");
-            dlclose(proto->handle);
-            WSS_free((void **) &proto->name);
-            WSS_free((void **) &proto);
-            return;
-        }
+        /*
+         * TODO: Find out what is necessary to invoke python shared object
+         *
+         * char *pyname;
+         * if ( unlikely(NULL == (pyname = WSS_malloc(7+name_length+1))) ) {
+         *     WSS_log_error("Unable to allocate name");
+         *     dlclose(proto->handle);
+         *     WSS_free((void **) &proto->name);
+         *     WSS_free((void **) &proto);
+         *     return;
+         * }
 
-        sprintf(pyname, "PyInit_%s", name); 
-        if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
-            proto->pyinit(); 
-        }
-        WSS_free((void **) &pyname);
+         * sprintf(pyname, "PyInit_%s", name); 
+         * if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
+         *     proto->pyinit(); 
+         * } else {
+         *     sprintf(pyname, "init%s", name); 
+         *     if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
+         *         proto->pyinit(); 
+         *     }
+         * }
+         * WSS_free((void **) &pyname);
+         */
 
-        memcpy(proto->name, name, name_length);
+        memcpy(&proto->name[0], name, name_length);
 
         HASH_ADD_KEYPTR(hh, extensions, proto->name, name_length, proto);
 
@@ -160,6 +154,8 @@ void WSS_load_extensions(wss_config_t *config)
 
         WSS_log_info("Successfully loaded %s extension", proto->name);
     }
+
+    return HASH_COUNT(extensions);
 }
 
 /**
@@ -192,7 +188,6 @@ void WSS_destroy_extensions() {
         HASH_DEL(extensions, proto);
         proto->destroy();
         dlclose(proto->handle);
-        WSS_free((void **) &proto->name);
         WSS_free((void **) &proto);
     }
 }

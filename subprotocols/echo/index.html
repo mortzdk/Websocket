@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+
+        <title>WebSocket Test</title>
+
+        <script language="javascript" type="text/javascript">
+var origin = window.location.origin;
+var wsUri = origin.replace("http", "ws") + ":9010";
+var output, close, send, text;
+
+function init()
+{
+    output = document.getElementById("output");
+    close  = document.getElementById("close");
+    text   = document.getElementById("text");
+    send   = document.getElementById("send");
+
+    testWebSocket();
+
+    send.onclick = function (evt) {
+        if (text.value !== "") {
+            doSend(text.value);
+            text.value = "";
+        }
+
+        evt.preventDefault();
+
+        return false;
+    };
+
+    close.onclick = function (evt) {
+        websocket.close();
+
+        evt.preventDefault();
+
+        return false;
+    };
+}
+
+function testWebSocket()
+{
+    websocket = new WebSocket(wsUri, "echo");
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+}
+
+function onOpen(evt)
+{
+    writeToScreen("CONNECTED");
+    doSend("WebSocket rocks");
+}
+
+function onClose(evt)
+{
+    writeToScreen("DISCONNECTED");
+}
+
+function onMessage(evt)
+{
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+}
+
+function onError(evt)
+{
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+}
+
+function doSend(message)
+{
+    writeToScreen("SENT: " + message);
+    websocket.send(message);
+}
+
+function writeToScreen(message)
+{
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+}
+
+window.addEventListener("load", init, false);
+
+</script>
+</head>
+<body>
+    <h2>WebSocket Echo Test</h2>
+    <textarea id="text"></textarea>
+    <br />
+    <button id="send">Send</button>
+    <button id="close">Close</button>
+    <div id="output"></div>
+</body>
+</html>

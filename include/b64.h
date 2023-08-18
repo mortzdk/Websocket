@@ -1,3 +1,5 @@
+#pragma once 
+
 /**
  * `b64.h' - b64
  *
@@ -47,14 +49,14 @@ extern "C" {
  * Returns a `char *' base64 encoded string.
  */
 
-char *
-b64_encode (const unsigned char *, size_t);
+size_t
+b64_encode (const unsigned char *, size_t, char **out);
 
 /**
- * Decode `char *' source with `size_t' size.
- * Returns a `unsigned char *' base64 decoded string + size of decoded string.
+ * Decode `char *' source with `size_t' len into out.
+ * Returns a `size_t' size of decoded string.
  */
-unsigned char *b64_decode_ex (const char *src, size_t len, size_t *decsize);
+size_t b64_decode_ex (const char *src, size_t len, unsigned char **out, size_t out_len);
 
 #ifdef __cplusplus
 }

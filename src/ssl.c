@@ -41,7 +41,7 @@
 #include "event.h"
 #include "ssl.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Function initializes SSL context that can be used to serve over https.
@@ -51,8 +51,6 @@
  */
 wss_error_t WSS_http_ssl(wss_server_t *server) {
 #if defined(USE_OPENSSL)
-    FILE *f;
-    DH *dh;
     const SSL_METHOD *method;
     int error_size = 1024;
     char error[error_size];
@@ -60,7 +58,9 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     SSL_library_init();
 
 #if ! defined(OPENSSL_IS_BORINGSSL) && ! defined(LIBRESSL_VERSION_NUMBER)
-    FIPS_mode_set(1);
+#if OPENSSL_VERSION_NUMBER <= 0x30000000
+    FIPS_mode_set(0);
+#endif
 #endif
 
     ERR_load_crypto_strings();
@@ -122,9 +122,6 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     WSS_log_trace("Allow writes to be partial");
     SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_ENABLE_PARTIAL_WRITE);
 
-    //WSS_log_trace("Allow write buffer to be moving as it is allocated on the heap");
-    //SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
-
     WSS_log_trace("Allow read and write buffers to be released when they are no longer needed");
     SSL_CTX_set_mode(server->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
 
@@ -180,12 +177,37 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     }
 
     if ( NULL != server->config->ssl_dhparam ) {
-        if ( NULL != (f = fopen(server->config->ssl_dhparam, "r")) ) {
-            if ( NULL != (dh = PEM_read_DHparams(f, NULL, NULL, NULL)) ) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+        EVP_PKEY *dh;
+        BIO *bio = BIO_new_file(server->config->ssl_dhparam, "r");
+        if ( likely(NULL != bio) ) {
+            dh = EVP_PKEY_new();
+            
+            if ( likely(PEM_read_bio_Parameters(bio, &dh)) ) {
+                SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_DH_USE);
+
+                if ( unlikely(SSL_SUCCESS != SSL_CTX_set0_tmp_dh_pkey(server->ssl_ctx, dh)) ) {
+                    ERR_error_string_n(ERR_get_error(), error, error_size);
+                    WSS_log_error("Setting dhparam failed: %s", error);
+                }
+            } else {
+                ERR_error_string_n(ERR_get_error(), error, error_size);
+                WSS_log_error("Setting dhparam failed: %s", error);
+            }
+
+            BIO_free(bio);
+        } else {
+            WSS_log_error("Unable to open dhparam file: %s", strerror(errno));
+        }
+#else
+        DH *dh;
+        FILE *f;
+        if ( likely(NULL != (f = fopen(server->config->ssl_dhparam, "r"))) ) {
+            if ( likely(NULL != (dh = PEM_read_DHparams(f, NULL, NULL, NULL))) ) {
 #if ! defined(LIBRESSL_VERSION_NUMBER)
                 SSL_CTX_set_options(server->ssl_ctx, SSL_OP_SINGLE_DH_USE);
 #endif
-                if ( SSL_SUCCESS != SSL_CTX_set_tmp_dh(server->ssl_ctx, dh) ) {
+                if ( unlikely(SSL_SUCCESS != SSL_CTX_set_tmp_dh(server->ssl_ctx, dh)) ) {
                     ERR_error_string_n(ERR_get_error(), error, error_size);
                     WSS_log_error("Setting dhparam failed: %s", error);
                 }
@@ -199,6 +221,9 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
         } else {
             WSS_log_error("Unable to open dhparam file: %s", strerror(errno));
         }
+#endif
+    } else {
+        SSL_CTX_set_dh_auto(server->ssl_ctx, 1);
     }
 
 #if defined(LIBRESSL_VERSION_NUMBER)
@@ -304,7 +329,7 @@ wss_error_t WSS_http_ssl(wss_server_t *server) {
     }
 
     if ( NULL != server->config->ssl_dhparam ) {
-        if ( SSL_SUCCESS != wolfSSL_SetTmpDH_file(server->ssl_ctx, server->config->ssl_dhparam, SSL_FILETYPE_PEM) ) {
+        if ( unlikely(SSL_SUCCESS != wolfSSL_SetTmpDH_file(server->ssl_ctx, server->config->ssl_dhparam, SSL_FILETYPE_PEM)) ) {
             wolfSSL_ERR_error_string_n(wolfSSL_ERR_get_error(), error, error_size);
             WSS_log_error("Setting dhparam failed: %s", error);
         }
@@ -329,7 +354,9 @@ void WSS_http_ssl_free(wss_server_t *server) {
     SSL_CTX_free(server->ssl_ctx);
 
 #if ! defined(LIBRESSL_VERSION_NUMBER) && ! defined(OPENSSL_IS_BORINGSSL)
+#if OPENSSL_VERSION_NUMBER <= 0x30000000
     FIPS_mode_set(0);
+#endif
 #endif
 
     EVP_cleanup();
@@ -734,7 +761,7 @@ size_t WSS_sha1(char *key, size_t key_length, char **hash) {
 #if defined(USE_OPENSSL)
     SHA1((const unsigned char *)key, key_length, (unsigned char*) *hash);
 #elif defined(USE_WOLFSSL)
-    Sha sha;
+    wc_Sha sha;
     wc_InitSha(&sha);
     wc_ShaUpdate(&sha, (const unsigned char *) key, key_length);
     wc_ShaFinal(&sha, (unsigned char *)*hash);
@@ -787,34 +814,21 @@ size_t WSS_base64_encode_sha1(char *key, size_t key_length, char **accept_key) {
 #pragma GCC diagnostic pop
 
     acceptKeyLength = mem_bio_mem_ptr->length;
-    if ( unlikely(NULL == (*accept_key = WSS_malloc(acceptKeyLength))) ) {
-        return 0;
-    }
     memcpy(*accept_key, (*mem_bio_mem_ptr).data, acceptKeyLength);
 
     BIO_free_all(b64_bio);                          // Destroys all BIOs in chain, starting with b64 (i.e. the 1st one).
 #elif defined(OPENSSL_IS_BORINGSSL)
     SHA1((const unsigned char *)key, key_length, (unsigned char*) sha1Key);
 
-    *accept_key = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH);
-    acceptKeyLength = strlen(*accept_key);
+    acceptKeyLength = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH, accept_key);
 #elif defined(USE_WOLFSSL)
-    Sha sha;
+    wc_Sha sha;
     wc_InitSha(&sha);
     wc_ShaUpdate(&sha, (const unsigned char *) key, key_length);
     wc_ShaFinal(&sha, (unsigned char *)sha1Key);
 
-    if ( unlikely(NULL == (*accept_key = WSS_malloc((SHA_DIGEST_LENGTH*4)/3+1))) ) {
-        return 0;
-    }
-
-    *accept_key = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH);
-    acceptKeyLength = strlen(*accept_key);
+    acceptKeyLength = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH, accept_key);
 #else
-    SHA1Context sha;
-    int i, b;
-
-    SHA1Reset(&sha);
     SHA1Input(&sha, (const unsigned char*) key, key_length);
     if ( likely(SHA1Result(&sha)) ) {
         for (i = 0; likely(i < 5); i++) {
@@ -825,8 +839,7 @@ size_t WSS_base64_encode_sha1(char *key, size_t key_length, char **accept_key) {
         return 0;
     }
 
-    *accept_key = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH);
-    acceptKeyLength = strlen(*accept_key);
+    acceptKeyLength = b64_encode((const unsigned char *) sha1Key, SHA_DIGEST_LENGTH, accept_key);
 #endif
 
     return acceptKeyLength;

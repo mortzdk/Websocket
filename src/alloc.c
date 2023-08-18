@@ -2,7 +2,7 @@
 #include <string.h>             /* strerror, memset, strncpy, memcpy, strlen */
 
 #include "alloc.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Function that allocates memory.
@@ -14,6 +14,7 @@ void *WSS_copy(void *ptr, size_t size) {
 	void *buffer;
 
     if ( unlikely(ptr == NULL) ) {
+
         return NULL;
     }
 

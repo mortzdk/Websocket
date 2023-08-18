@@ -1,5 +1,7 @@
-#ifndef wss_frame_h
-#define wss_frame_h
+#pragma once
+
+#ifndef WSS_FRAME_H
+#define WSS_FRAME_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -9,12 +11,7 @@
 #include "subprotocol.h"
 #include "config.h"
 
-#ifndef MIN
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-#ifndef MAX
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#endif
+#define FRAME_PONG_LENGTH 120
 
 typedef enum {
 	CLOSE_NORMAL                 = 1000, /* The connection */
@@ -42,9 +39,10 @@ typedef enum {
  * @param   payload         [char *]           "The payload to be processed"
  * @param   payload_length  [size_t]           "The length of the payload"
  * @param   offset          [size_t *]         "A pointer to an offset"
- * @return 		            [wss_frame_t *]    "A websocket frame"
+ * @param   frame           [wss_frame_t *]    "A pointer to the frame to populate"
+ * @return                  [wss_error_t]      "The error status"
  */
-wss_frame_t *WSS_parse_frame(char *payload, size_t payload_length, uint64_t *offset);
+wss_error_t WSS_parse_frame(char *payload, size_t payload_length, uint64_t *offset, wss_frame_t *frame);
 
 /**
  * Converts a single frame into a char array.
@@ -73,32 +71,37 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message);
  * @param   message         [char *]           "The message to be converted into frames"
  * @param   message_length  [size_t]           "The length of the message"
  * @param   frames          [wss_frame_t ***]  "The frames created from the message"
+ * @param   frames_length   [size_t]           "The amount of frames available"
  * @return 		            [size_t]           "The amount of frames created"
  */
-size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***frames);
+size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***frames, size_t frames_length);
 
 /**
  * Creates a closing frame given a reason for the closure.
  *
- * @param   reason   [wss_close_t]      "The reason for the closure"
- * @return 		     [wss_frame_t *]    "A websocket frame"
+ * @param   reason   [wss_close_t]     "The reason for the closure"
+ * @param   message  [char *]          "A closing message"
+ * @param   frame    [wss_frame_t *]   "A pointer to the frame to populate"
+ * @return           [wss_error_t]     "The error status"
  */
-wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message);
+wss_error_t WSS_closing_frame(wss_close_t reason, char *message, wss_frame_t *frame);
 
 /**
  * Creates a ping frame.
  *
- * @return 		     [wss_frame_t *]    "A websocket frame"
+ * @param   frame    [wss_frame_t *]   "A pointer to the frame to populate"
+ *
+ * @return           [wss_error_t]     "The error status"
  */
-wss_frame_t *WSS_ping_frame();
+wss_error_t WSS_ping_frame(wss_frame_t *frame);
 
 /**
  * Creates a pong frame from a received ping frame.
  *
- * @param   ping     [wss_frame_t *]    "A ping frame"
- * @return 		     [wss_frame_t *]    "A websocket frame"
+ * @param   frame    [wss_frame_t *]   "A ping frame"
+ * @return           [wss_error_t]     "The error status"
  */
-wss_frame_t *WSS_pong_frame(wss_frame_t *ping);
+wss_error_t WSS_pong_frame(wss_frame_t *fame);
 
 /**
  * Releases memory used by a frame.

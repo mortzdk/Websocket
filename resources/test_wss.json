@@ -1,4 +1,4 @@
-{
+e
 	"hosts" : [
 		"localhost",
 		"127.0.0.1"
@@ -23,7 +23,8 @@
             },
             {
                 "file" : "subprotocols/broadcast/broadcast.so",
-                "config" : ""
+                "config" : "",
+                "default" : true
             }
         ],
         "extensions" : [
@@ -56,8 +57,14 @@
             "fragmented" : 1048576
 		},
 		"pool" : {
-			"workers" : 4,
-			"retries" : 5
+            "connect" : {
+                "workers" : 2,
+                "tasks" : 32768
+            },
+            "io" : {
+                "workers" : 6,
+                "tasks" : 32768
+            }
 		},
         "ssl" : {
             "key" : "key.pem",

@@ -2,7 +2,7 @@
 #include <pthread.h>
 
 #include "broadcast.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * A hashtable containing all active sessions
@@ -42,6 +42,7 @@ pthread_rwlock_t lock;
  * @return 	            [void]
  */
 void onInit(char *config, WSS_send s) {
+    WSS_UNUSED(config);
     send = s;
     return;
 }
@@ -91,6 +92,11 @@ inline static wss_client_t *WSS_client_find(int fd) {
  * @return 	         [void]
  */
 void onConnect(int fd, char *ip, int port, char *path, char *cookies) {
+    WSS_UNUSED(ip);
+    WSS_UNUSED(port);
+    WSS_UNUSED(path);
+    WSS_UNUSED(cookies);
+
     wss_client_t *client;
 
     if ( unlikely(NULL != (client = WSS_client_find(fd))) ) {
@@ -148,6 +154,9 @@ void onMessage(int fd, wss_opcode_t opcode, char *message, size_t message_length
  * @return 	                [void]
  */
 void onWrite(int fd, char *message, size_t message_length) {
+    WSS_UNUSED(fd);
+    WSS_UNUSED(message);
+    WSS_UNUSED(message_length);
     return;
 }
 

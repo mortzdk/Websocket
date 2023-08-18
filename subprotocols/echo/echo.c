@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "echo.h"
+#include "core.h"
 
 typedef struct {
     void *(*malloc)(size_t);
@@ -24,6 +25,7 @@ WSS_send send = NULL;
  * @return 	            [void]
  */
 void onInit(char *config, WSS_send s) {
+    WSS_UNUSED(config);
     send = s;
     return;
 }
@@ -53,6 +55,11 @@ void setAllocators(WSS_malloc_t submalloc, WSS_realloc_t subrealloc, WSS_free_t 
  * @return 	         [void]
  */
 void onConnect(int fd, char *ip, int port, char *path, char *cookies) {
+    WSS_UNUSED(fd);
+    WSS_UNUSED(ip);
+    WSS_UNUSED(port);
+    WSS_UNUSED(path);
+    WSS_UNUSED(cookies);
     return;
 }
 
@@ -77,6 +84,9 @@ void onMessage(int fd, wss_opcode_t opcode, char *message, size_t message_length
  * @return 	                [void]
  */
 void onWrite(int fd, char *message, size_t message_length) {
+    WSS_UNUSED(fd);
+    WSS_UNUSED(message);
+    WSS_UNUSED(message_length);
     return;
 }
 
@@ -87,6 +97,7 @@ void onWrite(int fd, char *message, size_t message_length) {
  * @return 	    [void]
  */
 void onClose(int fd) {
+    WSS_UNUSED(fd);
     return;
 }
 

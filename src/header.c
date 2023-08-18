@@ -16,7 +16,7 @@
 #include "str.h"
 #include "subprotocols.h"
 #include "extensions.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Acceptable HTTP methods
@@ -428,8 +428,9 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
     char msg[1024];
     char *sep;
     char *sepptr = NULL;
-    unsigned char *key = NULL;
-    unsigned long key_length;
+    size_t key_length;
+    unsigned char key[SEC_WEBSOCKET_KEY_LENGTH];
+    unsigned char *key_ptr = &key[0];
 
     WSS_log_trace("Upgrading HTTP header");
 
@@ -526,17 +527,14 @@ enum HttpStatus_Code WSS_upgrade_header(wss_header_t *header, wss_config_t * con
 
     if ( unlikely(NULL == header->ws_key) ) {
         WSS_log_trace("Invalid websocket key");
-        WSS_free((void **) &key);
         return HttpStatus_UpgradeRequired;
     }
 
-    key = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_length);
-    if ( unlikely(NULL == key || key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
-        WSS_log_trace("Invalid websocket key");
-        WSS_free((void **) &key);
+    key_length = b64_decode_ex(header->ws_key, strlen(header->ws_key), &key_ptr, SEC_WEBSOCKET_KEY_LENGTH + 1);
+    if ( unlikely(key_length != SEC_WEBSOCKET_KEY_LENGTH) ) {
+        WSS_log_trace("Invalid length of websocket key %d", key_length);
         return HttpStatus_UpgradeRequired;
     }
-    WSS_free((void **) &key);
 
     WSS_log_trace("Accepted handshake, switching protocol");
 
@@ -559,8 +557,8 @@ void WSS_free_header(wss_header_t *header) {
                 WSS_free((void **) &header->ws_extensions[i]);
             }
         }
+        header->ws_extensions_count = 0;
         WSS_free((void **) &header->ws_extensions);
         WSS_free((void **) &header->content);
     }
-    WSS_free((void **) &header);
 }

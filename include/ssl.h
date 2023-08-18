@@ -1,5 +1,7 @@
-#ifndef wss_ssl_h
-#define wss_ssl_h
+#pragma once
+
+#ifndef WSS_SSL_H
+#define WSS_SSL_H
 
 #if defined(USE_OPENSSL) | defined(USE_BORINGSSL) | defined(USE_LIBRESSL)
 

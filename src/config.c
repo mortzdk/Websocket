@@ -10,7 +10,7 @@
 #include "alloc.h"
 #include "error.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 json_settings settings; 
 
@@ -244,7 +244,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                     }
                 } else if ( strncmp(name, "setup", 5) == 0 && likely(value->type == json_object) ) {
                     if ( (val = json_value_find(value, "subprotocols")) != NULL ) {
-                        if ( val->type == json_array) {
+                        if ( likely(val->type == json_array) ) {
                             length = val->u.array.length;
 
                             if (length > 0) {
@@ -263,7 +263,7 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                 for (j = 0; likely(j < length); j++) {
                                     if ( likely(val->u.array.values[j]->type == json_object) ) {
                                         if ( (temp = json_value_find(val->u.array.values[j], "file")) != NULL ) {
-                                            if ( temp->type == json_string ) {
+                                            if ( likely(temp->type == json_string) ) {
                                                 config->subprotocols[j] =
                                                     (char *) temp->u.string.ptr;
                                                 WSS_log_info("Found extension %s from configuration", config->subprotocols[j]);
@@ -275,11 +275,17 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                                         }
 
                                         if ( (temp = json_value_find(val->u.array.values[j], "config")) != NULL ) {
-                                            if ( temp->type == json_string ) {
+                                            if ( likely(temp->type == json_string) ) {
                                                 config->subprotocols_config[j] =
                                                     (char *) temp->u.string.ptr;
                                             } else {
                                                 config->subprotocols_config[j] = NULL;
+                                            }
+                                        }
+
+                                        if ( (temp = json_value_find(val->u.array.values[j], "default")) != NULL ) {
+                                            if ( likely(temp->type == json_boolean) && temp->u.boolean) {
+                                                config->subprotocols_default = j;
                                             }
                                         }
                                     } else {
@@ -533,20 +539,40 @@ wss_error_t WSS_config_load(wss_config_t *config, char *path) {
                         }
                     }
 
-                    if ( (val = json_value_find(value, "pool")) != NULL ) {
+                    if ( (val = json_value_find(value, "pools")) != NULL ) {
                         if ( likely(val->type == json_object) ) {
-                            // Getting amount of workers
-                            temp = json_value_find(val, "workers");
-                            if ( temp != NULL && likely(temp->type == json_integer) ) {
-                                config->pool_workers =
-                                    (unsigned int)temp->u.integer;
+                            // Getting connect pool settings
+                            if ( (val = json_value_find(value, "connect")) != NULL ) {
+                                // Getting amount of tasks
+                                temp = json_value_find(val, "tasks");
+                                if ( temp != NULL && likely(temp->type == json_integer) ) {
+                                    config->pool_connect_tasks =
+                                        (unsigned int)temp->u.integer;
+                                }
+
+                                // Getting amount of workers
+                                temp = json_value_find(val, "workers");
+                                if ( temp != NULL && likely(temp->type == json_integer) ) {
+                                    config->pool_connect_workers =
+                                        (unsigned int)temp->u.integer;
+                                }
                             }
 
-                            // Getting amount of retries
-                            temp = json_value_find(val, "retries");
-                            if ( temp != NULL && likely(temp->type == json_integer) ) {
-                                config->pool_retries =
-                                    (unsigned int)temp->u.integer;
+                            // Getting io pool settings
+                            if ( (val = json_value_find(value, "io")) != NULL ) {
+                                // Getting amount of tasks
+                                temp = json_value_find(val, "tasks");
+                                if ( temp != NULL && likely(temp->type == json_integer) ) {
+                                    config->pool_io_tasks =
+                                        (unsigned int)temp->u.integer;
+                                }
+
+                                // Getting amount of workers
+                                temp = json_value_find(val, "workers");
+                                if ( temp != NULL && likely(temp->type == json_integer) ) {
+                                    config->pool_io_workers =
+                                        (unsigned int)temp->u.integer;
+                                }
                             }
                         }
                     }
@@ -621,10 +647,11 @@ wss_error_t WSS_config_free(wss_config_t *config) {
         WSS_free((void **) &config->hosts);
         WSS_free((void **) &config->origins);
         WSS_free((void **) &config->queries);
-        WSS_free((void **) &config->extensions);
+        WSS_free((void **) &config->paths);
         WSS_free((void **) &config->subprotocols);
-        WSS_free((void **) &config->extensions_config);
         WSS_free((void **) &config->subprotocols_config);
+        WSS_free((void **) &config->extensions);
+        WSS_free((void **) &config->extensions_config);
     }
 
     return WSS_SUCCESS;

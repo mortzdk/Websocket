@@ -13,13 +13,14 @@
         "subprotocols" : [
             {
                 "file" : "subprotocols/echo/echo.so",
-                "config" : ""
+                "config" : "",
+                "default" : true
             }
         ],
         "extensions" : [
             {
                 "file" : "extensions/permessage-deflate/permessage-deflate.so",
-                "config" : "server_max_window_bits=15;client_max_window_bits=15;memory_level=8"
+                "config" : "server_max_window_bits=15;client_max_window_bits=15;memory_level=9;compression_level=1"
             }
         ],
         "log_level": 7,
@@ -39,16 +40,22 @@
             "payload" : 16777215,
             "header" : 8192,
             "uri" : 8192,
-            "buffer" : 1048576,
-            "thread" : 4194304,
+            "buffer" : 32768,
+            "thread" : 16777216,
             "ringbuffer" : 1024,
             "frame" : 16777216,
             "fragmented" : 1048576
         },
-        "pool" : {
-            "workers" : 8,
-            "retries" : 5
-        },
+		"pools" : {
+            "connect" : {
+                "workers" : 2,
+                "tasks" : 32768
+            },
+            "io" : {
+                "workers" : 6,
+                "tasks" : 32768
+            }
+		},
         "ssl" : {
             "key" : "resources/wsserver.key",
             "cert" : "resources/wsserver.crt",

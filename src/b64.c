@@ -9,18 +9,14 @@
 #include <ctype.h>
 #include "b64.h"
 
-char *
-b64_encode (const unsigned char *src, size_t len) {
+size_t
+b64_encode (const unsigned char *src, size_t len, char **out) {
     int i = 0;
     int j = 0;
-    char *enc = NULL;
     size_t size = 0;
+    char *enc = *out;
     unsigned char buf[4];
     unsigned char tmp[3];
-
-    // alloc
-    enc = (char *) b64_malloc(1);
-    if (NULL == enc) { return NULL; }
 
     // parse until end of source
     while (len--) {
@@ -34,11 +30,9 @@ b64_encode (const unsigned char *src, size_t len) {
             buf[2] = ((tmp[1] & 0x0f) << 2) + ((tmp[2] & 0xc0) >> 6);
             buf[3] = tmp[2] & 0x3f;
 
-            // allocate 4 new byts for `enc` and
-            // then translate each encoded buffer
+            // Translate each encoded buffer
             // part by index from the base 64 index table
             // into `enc' unsigned char array
-            enc = (char *) b64_realloc(enc, size + 4);
             for (i = 0; i < 4; ++i) {
                 enc[size++] = b64_table[buf[i]];
             }
@@ -61,39 +55,32 @@ b64_encode (const unsigned char *src, size_t len) {
         buf[2] = ((tmp[1] & 0x0f) << 2) + ((tmp[2] & 0xc0) >> 6);
         buf[3] = tmp[2] & 0x3f;
 
-        // perform same write to `enc` with new allocation
+        // perform same write to `enc`
         for (j = 0; (j < i + 1); ++j) {
-            enc = (char *) b64_realloc(enc, size + 1);
             enc[size++] = b64_table[buf[j]];
         }
 
         // while there is still a remainder
         // append `=' to `enc'
         while ((i++ < 3)) {
-            enc = (char *) b64_realloc(enc, size + 1);
             enc[size++] = '=';
         }
     }
 
     // Make sure we have enough space to add '\0' character at end.
-    enc = (char *) b64_realloc(enc, size + 1);
     enc[size] = '\0';
 
-    return enc;
+    return size;
 }
 
-unsigned char *b64_decode_ex (const char *src, size_t len, size_t *decsize) {
+size_t b64_decode_ex (const char *src, size_t len, unsigned char **out, size_t out_len) {
     int i = 0;
     int j = 0;
     int l = 0;
     size_t size = 0;
-    unsigned char *dec = NULL;
+    unsigned char *dec = *out;
     unsigned char buf[3];
     unsigned char tmp[4];
-
-    // alloc
-    dec = (unsigned char *) b64_malloc(1);
-    if (NULL == dec) { return NULL; }
 
     // parse until end of source
     while (len--) {
@@ -123,13 +110,12 @@ unsigned char *b64_decode_ex (const char *src, size_t len, size_t *decsize) {
             buf[2] = ((tmp[2] & 0x3) << 6) + tmp[3];
 
             // write decoded buffer to `dec'
-            dec = (unsigned char *) b64_realloc(dec, size + 3);
-            if (dec != NULL){
-                for (i = 0; i < 3; ++i) {
-                    dec[size++] = buf[i];
+            for (i = 0; i < 3; ++i) {
+                dec[size++] = buf[i];
+
+                if (size >= out_len) {
+                    return 0;
                 }
-            } else {
-                return NULL;
             }
 
             // reset
@@ -161,28 +147,17 @@ unsigned char *b64_decode_ex (const char *src, size_t len, size_t *decsize) {
         buf[2] = ((tmp[2] & 0x3) << 6) + tmp[3];
 
         // write remainer decoded buffer to `dec'
-        dec = (unsigned char *) b64_realloc(dec, size + (i - 1));
-        if (dec != NULL){
-            for (j = 0; (j < i - 1); ++j) {
-                dec[size++] = buf[j];
+        for (j = 0; (j < i - 1); ++j) {
+            dec[size++] = buf[j];
+
+            if (size >= out_len) {
+                return 0;
             }
-        } else {
-            return NULL;
         }
     }
 
     // Make sure we have enough space to add '\0' character at end.
-    dec = (unsigned char *) b64_realloc(dec, size + 1);
-    if (dec != NULL){
-        dec[size] = '\0';
-    } else {
-        return NULL;
-    }
+    dec[size] = '\0';
 
-    // Return back the size of decoded string if demanded.
-    if (decsize != NULL) {
-        *decsize = size;
-    }
-
-    return dec;
+    return size;
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  *  sha1.h
  *

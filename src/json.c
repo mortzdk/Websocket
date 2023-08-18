@@ -28,6 +28,9 @@
 
 #include "json.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
 #ifdef _MSC_VER
    #ifndef _CRT_SECURE_NO_WARNINGS
       #define _CRT_SECURE_NO_WARNINGS
@@ -1046,3 +1049,5 @@ json_value * json_value_find (json_value * parent, char * name)
 
     return NULL;
 }
+
+#pragma GCC diagnostic pop

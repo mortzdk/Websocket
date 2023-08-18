@@ -12,7 +12,7 @@
 #include "str.h"
 #include "alloc.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 #if defined(_MSC_VER)
 /* Microsoft C/C++-compatible compiler */
@@ -44,6 +44,10 @@
  */
 static char *random_bytes(int length) {
     char *res = WSS_malloc(length);
+    if (res == NULL) {
+        return NULL;
+    }
+
     /* Seed number for rand() */
     srand((unsigned int) time(0) + getpid());
 
@@ -255,23 +259,25 @@ static void unmask(wss_frame_t *frame) {
  * @param   payload [char *]           "The payload to be processed"
  * @param   length  [size_t]           "The length of the payload"
  * @param   offset  [size_t *]         "A pointer to an offset"
- * @return 		    [wss_frame_t *]    "A websocket frame"
+ * @param   frame   [wss_frame_t *]    "A pointer to the frame to populate"
+ * @return          [wss_error_t]      "The error status"
  */
-wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
-    wss_frame_t *frame;
-
+wss_error_t WSS_parse_frame(char *payload, size_t length, size_t *offset, wss_frame_t *frame) {
     if ( unlikely(NULL == payload) ) {
-        WSS_log_error("Payload cannot be NULL");
-        return NULL;
+        WSS_log_error("No payload provided");
+        return WSS_FRAME_NO_PAYLOAD_ERROR;
     }
 
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
-        WSS_log_error("Unable to allocate frame");
-        return NULL;
+    if ( NULL == frame ) {
+        WSS_log_error("No frame provided to parse into");
+        return WSS_FRAME_NULL_ERROR;
     }
 
     WSS_log_trace("Parsing frame starting from offset %lu", *offset);
 
+    memset(frame->maskingKey, '\0', sizeof(uint32_t));
+
+    frame->payload = NULL;
     frame->mask = false;
     frame->payloadLength = 0;
     frame->applicationDataLength = 0;
@@ -317,10 +323,10 @@ wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
 
     frame->applicationDataLength = frame->payloadLength-frame->extensionDataLength;
     if ( likely(frame->applicationDataLength > 0) ) {
-        if ( likely(*offset+frame->applicationDataLength <= length) ) {
-            if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength))) ) {
+        if ( likely(*offset+frame->payloadLength <= length) ) {
+            if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->payloadLength))) ) {
                 WSS_log_error("Unable to allocate frame application data");
-                return NULL;
+                return WSS_MEMORY_ERROR;
             }
 
             memcpy(frame->payload, payload+*offset, frame->applicationDataLength);
@@ -332,7 +338,7 @@ wss_frame_t *WSS_parse_frame(char *payload, size_t length, size_t *offset) {
         unmask(frame);
     }
 
-    return frame;
+    return WSS_SUCCESS;
 }
 
 /**
@@ -474,37 +480,33 @@ size_t WSS_stringify_frames(wss_frame_t **frames, size_t size, char **message) {
  * @param   message         [char *]           "The message to be converted into frames"
  * @param   message_length  [size_t]           "The length of the message"
  * @param   fs              [wss_frame_t ***]  "The frames created from the message"
+ * @param   frames_length   [size_t]           "The amount of frames available"
  * @return 		            [size_t]           "The amount of frames created"
  */
-size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs) {
-    size_t i, j, offset = 0;
+size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *message, size_t message_length, wss_frame_t ***fs, size_t frames_length) {
+    size_t i, offset = 0;
     wss_frame_t *frame;
-    size_t frames_count;
     wss_frame_t **frames;
     wss_close_t code;
     char *msg = message;
 
     if ( unlikely(NULL == config) ) {
-        *fs = NULL;
         return 0;
     }
 
-    if ( unlikely(NULL == message && message_length != 0) ) {
-        *fs = NULL;
-        return 0;
-    }
-
-    frames_count = MAX(1, (size_t)ceil((double)message_length/(double)config->size_frame));
-
-    if ( unlikely(NULL == (*fs = WSS_malloc(frames_count*sizeof(wss_frame_t *)))) ) {
-        WSS_log_error("Unable to allocate closing frame");
-        *fs = NULL;
+    if ( unlikely(NULL == msg && message_length != 0) ) {
         return 0;
     }
 
     frames = *fs;
 
     if (opcode == CLOSE_FRAME) {
+        frame = frames[0];
+
+        if ( NULL == frame ) {
+            return 0;
+        }
+
         if ( likely(message_length >= sizeof(uint16_t)) ) {
             memcpy(&code, msg, sizeof(uint16_t));
             code = ntohs(code);
@@ -516,72 +518,70 @@ size_t WSS_create_frames(wss_config_t *config, wss_opcode_t opcode, char *messag
             code = CLOSE_NORMAL;
         }
 
-        frame = WSS_closing_frame(code, msg);
-        frames[0] = frame;
+        if (WSS_SUCCESS != WSS_closing_frame(code, msg, frame)) {
+            return 0;
+        }
+
         return 1;
     }
 
-    for (i = 0; i < frames_count; i++) {
-        // Always allocate one frame
-        if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
-            WSS_log_error("Unable to allocate frame");
-            for (j = 0; j < i; j++) {
-                WSS_free_frame(frames[j]);
-            }
-            WSS_free((void **)&frames);
-            *fs = NULL;
+    for (i = 0; i < frames_length; i++) {
+        frame = frames[i];
+
+        if ( NULL == frame ) {
             return 0;
         }
 
         frame->fin = 0;
+        frame->rsv1 = 0;
+        frame->rsv2 = 0;
+        frame->rsv3 = 0;
         frame->opcode = opcode;
         frame->mask = 0;
 
-        frame->applicationDataLength = MIN(message_length-(config->size_frame*i), config->size_frame);
-        if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {
-            WSS_log_error("Unable to allocate frame application data");
-            for (j = 0; j < i; j++) {
-                WSS_free_frame(frames[j]);
-            }
-            WSS_free((void **)&frame);
-            WSS_free((void **)&frames);
-            *fs = NULL;
+        memset(frame->maskingKey, '\0', sizeof(uint32_t));
+
+        frame->extensionDataLength = 0;
+        frame->applicationDataLength = WSS_MIN(message_length-(config->size_frame*i), config->size_frame);
+        frame->payloadLength = frame->extensionDataLength + frame->applicationDataLength;
+        if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->payloadLength+1))) ) {
             return 0;
         }
-        memcpy(frame->payload, msg+offset, frame->applicationDataLength);
-        frame->payloadLength += frame->extensionDataLength;
-        frame->payloadLength += frame->applicationDataLength;
+        memcpy(frame->payload, msg+offset, frame->payloadLength);
         offset += frame->payloadLength;
-
-        frames[i] = frame;
     }
 
-    frames[frames_count-1]->fin = 1;
+    frames[frames_length-1]->fin = 1;
 
-    return frames_count;
+    return frames_length;
 }
 
 /**
  * Creates a closing frame given a reason for the closure.
  *
- * @param   reason   [wss_close_t]      "The reason for the closure"
- * @return 		     [wss_frame_t *]    "A websocket frame"
+ * @param   reason   [wss_close_t]     "The reason for the closure"
+ * @param   message  [char *]          "A closing message"
+ * @param   frame    [wss_frame_t *]   "A pointer to the frame to populate"
+ * @return           [wss_error_t]     "The error status"
  */
-wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message) {
-    wss_frame_t *frame;
+wss_error_t WSS_closing_frame(wss_close_t reason, char *message, wss_frame_t *frame) {
     uint16_t nbo_reason;
     char *reason_str = message;
 
-    WSS_log_trace("Creating closing frame");
-
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
-        WSS_log_error("Unable to allocate closing frame");
-        return NULL;
+    if ( NULL == frame ) {
+        return WSS_FRAME_NULL_ERROR;
     }
 
+    WSS_log_trace("Creating closing frame");
+
     frame->fin = 1;
+    frame->rsv1 = 0;
+    frame->rsv2 = 0;
+    frame->rsv3 = 0;
     frame->opcode = CLOSE_FRAME;
     frame->mask = 0;
+
+    memset(frame->maskingKey, '\0', sizeof(uint32_t));
 
     if (NULL == reason_str) {
         switch (reason) {
@@ -632,24 +632,22 @@ wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message) {
                 break;
             default:
                 WSS_log_error("Unknown closing reason");
-                WSS_free_frame(frame);
-                return NULL;
+                return WSS_FRAME_UNKNOWN_REASON_ERROR;
         }
     }
+    frame->extensionDataLength = 0;
     frame->applicationDataLength = strlen(reason_str)+sizeof(uint16_t);
-    if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+1))) ) {
+    if ( unlikely(NULL == (frame->payload = WSS_malloc(frame->applicationDataLength+frame->extensionDataLength))) ) {
         WSS_log_error("Unable to allocate closing frame application data");
-        WSS_free_frame(frame);
-        return NULL;
+        return WSS_MEMORY_ERROR;
     }
     nbo_reason = htons16(reason);
     memcpy(frame->payload, &nbo_reason, sizeof(uint16_t));
     memcpy(frame->payload+sizeof(uint16_t), reason_str, strlen(reason_str));
 
-    frame->payloadLength += frame->extensionDataLength;
-    frame->payloadLength += frame->applicationDataLength;
+    frame->payloadLength = frame->extensionDataLength + frame->applicationDataLength;
 
-    return frame;
+    return WSS_SUCCESS;
 }
 
 /**
@@ -657,56 +655,57 @@ wss_frame_t *WSS_closing_frame(wss_close_t reason, char *message) {
  *
  * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-wss_frame_t *WSS_ping_frame() {
+wss_error_t WSS_ping_frame(wss_frame_t *frame) {
     WSS_log_trace("Creating ping frame");
 
-    wss_frame_t *frame;
-
-    if ( unlikely(NULL == (frame = WSS_malloc(sizeof(wss_frame_t)))) ) {
-        WSS_log_error("Unable to allocate ping frame");
-        return NULL;
+    if ( NULL == frame ) {
+        return WSS_FRAME_NULL_ERROR;
     }
 
-    frame->fin = 1;
+    frame->fin    = 1;
+    frame->rsv1   = 0;
+    frame->rsv2   = 0;
+    frame->rsv3   = 0;
     frame->opcode = PING_FRAME;
-    frame->mask = 0;
+    frame->mask   = 0;
 
-    frame->applicationDataLength = 120;
-    if ( unlikely(NULL == (frame->payload = random_bytes(frame->applicationDataLength))) ) {
+    memset(frame->maskingKey, '\0', sizeof(uint32_t));
+
+    frame->extensionDataLength = 0;
+    frame->applicationDataLength = FRAME_PONG_LENGTH;
+    frame->payloadLength = frame->extensionDataLength + frame->applicationDataLength;
+    if ( unlikely(NULL == (frame->payload = random_bytes(frame->payloadLength))) ) {
         WSS_log_error("Unable to allocate ping frame application data");
-        WSS_free_frame(frame);
-        return NULL;
+        return WSS_MEMORY_ERROR;
     }
 
-    frame->payloadLength += frame->extensionDataLength;
-    frame->payloadLength += frame->applicationDataLength;
 
-    return frame;
+    return WSS_SUCCESS;
 }
 
 /**
  * Creates a pong frame from a received ping frame.
  *
- * @param   ping     [wss_frame_t *]    "A ping frame"
+ * @param   frame    [wss_frame_t *]    "A ping frame"
  * @return 		     [wss_frame_t *]    "A websocket frame"
  */
-wss_frame_t *WSS_pong_frame(wss_frame_t *ping) {
+wss_error_t WSS_pong_frame(wss_frame_t *frame) {
     WSS_log_trace("Converting ping frame to pong frame");
     
-    if ( NULL == ping ) {
-        return NULL;
+    if ( NULL == frame ) {
+        return WSS_FRAME_NULL_ERROR;
     }
 
-    ping->fin = 1;
-    ping->rsv1 = 0;
-    ping->rsv2 = 0;
-    ping->rsv3 = 0;
-    ping->opcode = PONG_FRAME;
-    ping->mask = 0;
+    frame->fin = 1;
+    frame->rsv1 = 0;
+    frame->rsv2 = 0;
+    frame->rsv3 = 0;
+    frame->opcode = PONG_FRAME;
+    frame->mask = 0;
 
-    memset(ping->maskingKey, '\0', sizeof(uint32_t));
+    memset(frame->maskingKey, '\0', sizeof(uint32_t));
 
-    return ping;
+    return WSS_SUCCESS;
 }
 
 /**
@@ -719,5 +718,4 @@ void WSS_free_frame(wss_frame_t *frame) {
     if ( likely(NULL != frame) ) {
         WSS_free((void **) &frame->payload);
     }
-    WSS_free((void **) &frame);
 }

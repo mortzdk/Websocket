@@ -9,7 +9,7 @@
 #include "message.h"
 #include "alloc.h"
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 /**
  * Global hashtable of subprotocols
@@ -26,19 +26,18 @@ wss_subprotocol_t *subprotocols = NULL;
  * subprotocols/broadcast/broadcast.so 
  *
  * @param 	config	[config_t *] 	"The configuration of the server"
- * @return 	      	[void]
+ * @return 	      	[unsigned int]  "The number of subprotocols loaded"
  */
-void WSS_load_subprotocols(wss_config_t *config)
+unsigned int WSS_load_subprotocols(wss_config_t *config)
 {
     size_t i, j;
     char *name;
-    char *pyname;
     int *handle;
     wss_subprotocol_t* proto;
     int name_length;
 
     if ( unlikely(NULL == config) ) {
-        return;
+        return 0;
     }
 
     WSS_log_trace("Loading %d subprotocols", config->subprotocols_length);
@@ -56,7 +55,7 @@ void WSS_load_subprotocols(wss_config_t *config)
         if ( unlikely(NULL == (proto = WSS_malloc(sizeof(wss_subprotocol_t)))) ) {
             WSS_log_error("Unable to allocate subprotocol structure");
             dlclose(handle);
-            return;
+            return 0;
         }
         proto->handle = handle;
 
@@ -114,29 +113,33 @@ void WSS_load_subprotocols(wss_config_t *config)
             name_length++;
         }
 
-        if ( unlikely(NULL == (proto->name = WSS_malloc(name_length+1))) ) {
-            WSS_log_error("Unable to allocate name");
+        if ( unlikely(name_length > MAX_SUBPROTOCOL_NAME_LENGTH) ) {
+            WSS_log_error("Subprotocol name '%s' is too long", name);
             dlclose(proto->handle);
             WSS_free((void **) &proto);
-            return;
+            continue;
         }
 
-        // Call Cython init if available
-        if ( unlikely(NULL == (pyname = WSS_malloc(7+name_length+1))) ) {
-            WSS_log_error("Unable to allocate name");
-            dlclose(proto->handle);
-            WSS_free((void **) &proto->name);
-            WSS_free((void **) &proto);
-            return;
-        }
+        /**
+         * TODO: Find out what is necessary to invoke python shared object
+         *
+         * char *pyname;
+         * if ( unlikely(NULL == (pyname = WSS_malloc(7+name_length+1))) ) {
+         *     WSS_log_error("Unable to allocate name");
+         *     dlclose(proto->handle);
+         *     WSS_free((void **) &proto->name);
+         *     WSS_free((void **) &proto);
+         *     return;
+         * }
 
-        sprintf(pyname, "PyInit_%s", name); 
-        if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
-            proto->pyinit(); 
-        }
-        WSS_free((void **) &pyname);
+         * sprintf(pyname, "PyInit_%s", name); 
+         * if ( unlikely((*(void**)(&proto->pyinit) = dlsym(proto->handle, name)) != NULL) ) {
+         *     proto->pyinit(); 
+         * }
+         * WSS_free((void **) &pyname);
+        */
 
-        memcpy(proto->name, name, name_length);
+        memcpy(&proto->name[0], name, name_length);
 
         HASH_ADD_KEYPTR(hh, subprotocols, proto->name, name_length, proto);
 
@@ -152,6 +155,8 @@ void WSS_load_subprotocols(wss_config_t *config)
 
         WSS_log_info("Successfully loaded %s extension", proto->name);
     }
+
+    return HASH_COUNT(subprotocols);
 }
 
 /**
@@ -184,7 +189,6 @@ void WSS_destroy_subprotocols() {
         HASH_DEL(subprotocols, proto);
         proto->destroy();
         dlclose(proto->handle);
-        WSS_free((void **) &proto->name);
         WSS_free((void **) &proto);
     }
 }

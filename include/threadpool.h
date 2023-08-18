@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright (c) 2013, Mathias Brossard <mathias@brossard.org>.
  * All rights reserved.
@@ -47,6 +49,8 @@ typedef enum {
 typedef enum {
     threadpool_graceful       = 1
 } threadpool_destroy_flags_t;
+
+long long unsigned int threadpool_get_stack_size(threadpool_t *pool);
 
 /**
  * @function threadpool_create

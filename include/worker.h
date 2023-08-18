@@ -1,5 +1,7 @@
-#ifndef wss_comm_h
-#define wss_comm_h
+#pragma once
+
+#ifndef WSS_WORKER_H
+#define WSS_WORKER_H
 
 #if !defined(uthash_malloc) || !defined(uthash_free)
 #include "alloc.h"
@@ -86,11 +88,10 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session);
  * associates the sessions filedescriptor to the epoll instance such that we can
  * start communicating with the session.
  *
- * @param 	server	[wss_server_t *] 	"The server structure"
- * @param 	session	[wss_session_t *] 	"The session structure"
+ * @param 	args	[void *] 	"Is a args_t structure holding server_t, filedescriptor, and the state"
  * @return          [void]
  */
-//void WSS_connect(void *arg);
+void WSS_connect(void *args);
 
 /**
  * Function that reads information from a session.

@@ -29,7 +29,7 @@
 #include <pthread.h>
 
 #include "log.h"
-#include "predict.h"
+#include "core.h"
 
 static struct {
     void *udata;

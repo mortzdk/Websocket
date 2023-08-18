@@ -1,5 +1,7 @@
-#ifndef wss_subprotocols_h
-#define wss_subprotocols_h
+#pragma once
+
+#ifndef WSS_SUBPROTOCOLS_H
+#define WSS_SUBPROTOCOLS_H
 
 #if !defined(uthash_malloc) || !defined(uthash_free)
 #include "alloc.h"
@@ -18,11 +20,13 @@
 #include "message.h"
 #include "config.h"
 
-typedef void (*pyInit)(void);
+//typedef void (*pyInit)(void);
+//
+#define MAX_SUBPROTOCOL_NAME_LENGTH 256
 
 typedef struct {
     int *handle;
-    char *name;
+    char name[MAX_SUBPROTOCOL_NAME_LENGTH];
     subAlloc alloc; 
     subInit init; 
     subConnect connect; 
@@ -30,7 +34,7 @@ typedef struct {
     subWrite write; 
     subClose close;
     subDestroy destroy;
-    pyInit pyinit;
+    //pyInit pyinit;
     UT_hash_handle hh;
 } wss_subprotocol_t;
 
@@ -43,9 +47,9 @@ typedef struct {
  * subprotocols/echo/echo.so 
  *
  * @param 	config	[wss_config_t *config] 	"The configuration of the server"
- * @return 	      	[void]
+ * @return 	      	[unsigned int]  "The number of subprotocols loaded"
  */
-void WSS_load_subprotocols(wss_config_t *config);
+unsigned int WSS_load_subprotocols(wss_config_t *config);
 
 /**
  * Function that looks for a subprotocol implementation of the name given.

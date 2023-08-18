@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * Copyright (c) 2017 rxi
  *

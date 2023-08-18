@@ -14,15 +14,17 @@
 #include "session.h"
 #include "alloc.h"
 #include "socket.h"
-#include "pool.h"               /* threadpool_add, threadpool_strerror */
 #include "worker.h"
 #include "http.h"
 #include "error.h"
 #include "config.h"
 #include "subprotocols.h"
 #include "extensions.h"
-#include "predict.h"
+#include "core.h"
 #include "ssl.h"
+
+#define B_STACKTRACE_IMPL
+#include "b_stacktrace.h"
 
 /**
  * Global state of server
@@ -39,7 +41,7 @@ wss_servers_t servers;
  */
 struct timespec now;
 
-static inline void write_control_frame(wss_frame_t *frame, wss_session_t *session) {
+static inline void write_control_frame(wss_memorypool_t *frame_pool, wss_frame_t *frame, wss_session_t *session) {
     size_t j;
     char *message;
     size_t message_length;
@@ -47,24 +49,24 @@ static inline void write_control_frame(wss_frame_t *frame, wss_session_t *sessio
     int fd = session->fd;
 
     // Use extensions
-    for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
-        session->header->ws_extensions[j]->ext->outframes(
+    for (j = 0; likely(j < session->header.ws_extensions_count); j++) {
+        session->header.ws_extensions[j]->ext->outframes(
                 fd,
                 &frame,
                 1);
-
-        session->header->ws_extensions[j]->ext->outframe(
-                fd,
-                frame);
     }
 
-    if (0 == (message_length = WSS_stringify_frame(frame, &message))) {
-        WSS_log_fatal("Unable to represent frame as bytes");
+    if ( unlikely(0 == (message_length = WSS_stringify_frame(frame, &message))) ) {
+        WSS_log_error("Unable to represent frame as bytes");
+
         WSS_free_frame(frame);
+        WSS_memorypool_dealloc(frame_pool, frame);
+
         return;
     }
 
     WSS_free_frame(frame);
+    WSS_memorypool_dealloc(frame_pool, frame);
 
     if (session->ssl_connected) {
         WSS_ssl_write(session, message, message_length);
@@ -92,7 +94,7 @@ static void cleanup_session(wss_session_t *session) {
     wss_frame_t *frame;
     long unsigned int ms;
     int fd = session->fd;
-    wss_server_t *server = servers.http;
+    wss_server_t *server = &servers.http;
     bool dc;
 
     if (! session->handshaked) {
@@ -100,7 +102,7 @@ static void cleanup_session(wss_session_t *session) {
     }
 
     if (NULL != session->ssl && session->ssl_connected) {
-        server = servers.https;
+        server = &servers.https;
     }
 
     ms = (((now.tv_sec - session->alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session->alive.tv_nsec/1000000);
@@ -129,9 +131,9 @@ static void cleanup_session(wss_session_t *session) {
 
         WSS_log_trace("Informing subprotocol of client with file descriptor %d disconnecting", session->fd);
 
-        if ( NULL != session->header && session->header->ws_protocol != NULL ) {
+        if ( likely(session->header.ws_protocol != NULL) ) {
             WSS_log_trace("Informing subprotocol about session close");
-            session->header->ws_protocol->close(session->fd);
+            session->header.ws_protocol->close(session->fd);
         }
 
         WSS_log_trace("Removing poll filedescriptor from eventlist");
@@ -140,23 +142,40 @@ static void cleanup_session(wss_session_t *session) {
 
         WSS_log_trace("Sending close frame", fd);
 
-        frame = WSS_closing_frame(CLOSE_TRY_AGAIN, NULL);
+        frame = WSS_memorypool_alloc(server->frame_pool);
+        if ( unlikely(WSS_SUCCESS != WSS_closing_frame(CLOSE_TRY_AGAIN, NULL, frame)) ) {
+            WSS_log_error("Unable to create closing frame");
 
-        write_control_frame(frame, session);
+            WSS_free_frame(frame);
+            WSS_memorypool_dealloc(server->frame_pool, frame);
+
+            return;
+        }
+
+        write_control_frame(server->frame_pool, frame, session);
 
         WSS_log_trace("Deleting client session");
 
         if ( unlikely(WSS_SUCCESS != (err = WSS_session_delete_no_lock(session))) ) {
             switch (err) {
                 case WSS_SSL_SHUTDOWN_READ_ERROR:
-                        WSS_poll_set_read(server, fd);
+                    WSS_poll_set_read(server, fd);
+
+                    WSS_free_frame(frame);
+                    WSS_memorypool_dealloc(server->frame_pool, frame);
+
                     return;
                 case WSS_SSL_SHUTDOWN_WRITE_ERROR:
-                        WSS_poll_set_write(server, fd);
+                    WSS_poll_set_write(server, fd);
+
+                    WSS_free_frame(frame);
+                    WSS_memorypool_dealloc(server->frame_pool, frame);
+
                     return;
                 default:
                     break;
             }
+
             WSS_log_error("Unable to delete client session, received error code: %d", err);
             return;
         }
@@ -164,24 +183,22 @@ static void cleanup_session(wss_session_t *session) {
         WSS_log_info("Client with session %d disconnected", fd);
 
     // Ping session to keep it alive
-    } else if (server->config->timeout_pings > 0 ) {
+    } else
+
+    if (server->config->timeout_pings > 0 ) {
         WSS_log_info("Pinging session %d", fd);
 
-        frame = WSS_ping_frame();
-        if (session->pong != NULL) {
-            WSS_free((void **) &session->pong);
-            session->pong_length = 0;
-        }
+        frame = WSS_memorypool_alloc(server->frame_pool);
+        if ( unlikely(WSS_SUCCESS != WSS_ping_frame(frame)) ) {
+            WSS_log_error("Unable to create ping frame");
 
-        if (NULL == (session->pong = WSS_malloc(frame->applicationDataLength))) {
             WSS_free_frame(frame);
+            WSS_memorypool_dealloc(server->frame_pool, frame);
+
             return;
         }
-        session->pong_length = frame->applicationDataLength;
 
-        memcpy(session->pong, frame->payload+frame->extensionDataLength, frame->applicationDataLength);
-
-        write_control_frame(frame, session);
+        write_control_frame(server->frame_pool, frame, session);
     }
 }
 
@@ -222,7 +239,7 @@ void *WSS_cleanup() {
     int n;
     wss_error_t err;
     struct pollfd fds[1];
-    wss_server_t *server = servers.http;
+    wss_server_t *server = &servers.http;
     long int timeout = server->config->timeout_client;
 
 #ifdef USE_RPMALLOC
@@ -322,13 +339,24 @@ void *WSS_server_run(void *arg) {
 static void WSS_server_interrupt(int sig) {
     int n;
     switch (sig) {
-        case SIGINT:
         case SIGSEGV:
         case SIGILL:
+        case SIGBUS:
+        case SIGHUP:
         case SIGFPE:
+            {
+                char* stacktrace = b_stacktrace_get_string();
+                WSS_log_fatal(stacktrace);
+                free(stacktrace);
+            }
+            fallthrough;
+        case SIGINT:
+            WSS_log_trace("Received closing signal");
+
             if (state.state != HALTING && state.state != HALT_ERROR) {
-                WSS_log_trace("Server is shutting down gracefully");
                 WSS_server_set_state(HALTING);
+
+                WSS_log_trace("Server is shutting down gracefully");
                 if (close_pipefd[0] != -1 && close_pipefd[1] != -1) {
                     do {
                         errno = 0;
@@ -343,7 +371,7 @@ static void WSS_server_interrupt(int sig) {
             }
             break;
         case SIGPIPE:
-            break;
+            return;
         default:
             return;
     }
@@ -365,13 +393,6 @@ static int WSS_server_free(wss_server_t *server) {
         result = EXIT_FAILURE;
     }
 
-    /**
-     * Freeing memory from server instance
-     */
-    if ( likely(NULL != server) ) {
-        WSS_free((void **) &server);
-    }
-
     return result;
 }
 
@@ -385,10 +406,9 @@ int WSS_server_start(wss_config_t *config) {
     int err;
     struct rlimit limits;
     struct sigaction sa;
+    unsigned int loaded;
     int ret = EXIT_SUCCESS;
-    wss_server_t *http = NULL;
     pthread_t cleanup_thread_id;
-    wss_server_t *https = NULL;
     bool ssl = NULL != config->ssl_cert && NULL != config->ssl_key && (NULL != config->ssl_ca_file || NULL != config->ssl_ca_path);
 
     if ( unlikely(0 != (err = pthread_mutex_init(&state.lock, NULL))) ) {
@@ -397,7 +417,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if ( getrlimit(RLIMIT_NOFILE, &limits) < 0 ) {
+    if ( unlikely(getrlimit(RLIMIT_NOFILE, &limits) < 0) ) {
         WSS_log_fatal("Failed to get kernel file descriptor limits: %s", strerror(err));
 
         return EXIT_FAILURE;
@@ -406,7 +426,7 @@ int WSS_server_start(wss_config_t *config) {
     WSS_log_info("Setting max amount of filedescriptors available for server to: %d", limits.rlim_max);
     limits.rlim_cur = limits.rlim_max;
 
-    if ( setrlimit(RLIMIT_NOFILE, &limits) < 0 ) {
+    if ( unlikely(setrlimit(RLIMIT_NOFILE, &limits) < 0) ) {
         WSS_log_fatal("Failed to set kernel file descriptor limits: %s", strerror(err));
 
         return EXIT_FAILURE;
@@ -416,7 +436,15 @@ int WSS_server_start(wss_config_t *config) {
     WSS_load_extensions(config);
 
     // Load subprotocols available
-    WSS_load_subprotocols(config);
+    loaded = WSS_load_subprotocols(config);
+    if ( unlikely(loaded == 0) ) {
+        WSS_log_fatal("No subprotocols loaded");
+
+        WSS_destroy_extensions();
+        pthread_mutex_destroy(&state.lock);
+
+        return EXIT_FAILURE;
+    }
 
     // Setting starting state
     WSS_log_trace("Starting server");
@@ -431,7 +459,7 @@ int WSS_server_start(wss_config_t *config) {
     sa.sa_handler = WSS_server_interrupt;
     sa.sa_flags = 0;
 
-    if (sigaction (SIGINT, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGINT, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGINT signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -441,7 +469,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if (sigaction (SIGSEGV, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGSEGV, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGSEGV signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -451,7 +479,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if (sigaction (SIGILL, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGILL, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGILL signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -461,7 +489,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if (sigaction (SIGHUP, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGHUP, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGHUB signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -471,7 +499,17 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if (sigaction (SIGFPE, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGBUS, &sa, NULL) == -1) ) {
+        WSS_log_fatal("Unable to listen for SIGBUS signal: %s", strerror(errno));
+
+        WSS_destroy_subprotocols();
+        WSS_destroy_extensions();
+        pthread_mutex_destroy(&state.lock);
+
+        return EXIT_FAILURE;
+    }
+
+    if ( unlikely(sigaction (SIGFPE, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGFPE signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -481,7 +519,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    if (sigaction (SIGPIPE, &sa, NULL) == -1) {
+    if ( unlikely(sigaction (SIGPIPE, &sa, NULL) == -1) ) {
         WSS_log_fatal("Unable to listen for SIGPIPE signal: %s", strerror(errno));
 
         WSS_destroy_subprotocols();
@@ -502,23 +540,7 @@ int WSS_server_start(wss_config_t *config) {
         return EXIT_FAILURE;
     }
 
-    WSS_log_trace("Allocating memory for HTTP instance");
-
-    if ( unlikely(NULL == (http = WSS_malloc(sizeof(wss_server_t)))) ) {
-        WSS_log_fatal("Unable to allocate server structure");
-
-        WSS_session_destroy_lock();
-        WSS_destroy_subprotocols();
-        WSS_destroy_extensions();
-        pthread_mutex_destroy(&state.lock);
-
-        return EXIT_FAILURE;
-    }
-    servers.http = http;
-    servers.https = NULL;
-
-    if ( unlikely(0 != (err = pthread_mutex_init(&http->lock, NULL))) ) {
-        WSS_server_free(http);
+    if ( unlikely(0 != (err = pthread_mutex_init(&servers.http.lock, NULL))) ) {
         WSS_session_destroy_lock();
         WSS_destroy_subprotocols();
         WSS_destroy_extensions();
@@ -531,12 +553,11 @@ int WSS_server_start(wss_config_t *config) {
 
     WSS_log_trace("Creating HTTP Instance");
 
-    http->config       = config;
-    http->port         = config->port_http;
-    if ( unlikely(WSS_SUCCESS != WSS_http_server(http)) ) {
+    servers.http.config = config;
+    servers.http.port   = config->port_http;
+    if ( unlikely(WSS_SUCCESS != WSS_http_server(&servers.http)) ) {
         WSS_log_fatal("Unable to initialize http server");
 
-        WSS_server_free(http);
         WSS_session_destroy_lock();
         WSS_destroy_subprotocols();
         WSS_destroy_extensions();
@@ -546,29 +567,11 @@ int WSS_server_start(wss_config_t *config) {
     }
 
     if (ssl) {
-        WSS_log_trace("Allocating memory for HTTPS instance");
-
-        if ( unlikely(NULL == (https = (wss_server_t *) WSS_malloc(sizeof(wss_server_t)))) ) {
-            WSS_server_free(http);
-            WSS_session_destroy_lock();
-            WSS_destroy_subprotocols();
-            WSS_destroy_extensions();
-            pthread_mutex_destroy(&state.lock);
-
-            WSS_log_fatal("Unable to allocate https server structure");
-
-            return EXIT_FAILURE;
-        }
-
-        servers.https = https;
-
         WSS_log_trace("Creating HTTPS Instance");
 
-        https->config = config;
-        https->port   = config->port_https;
-        if ( unlikely(WSS_SUCCESS != WSS_http_ssl(https)) ) {
-            WSS_server_free(https);
-            WSS_server_free(http);
+        servers.https.config = config;
+        servers.https.port   = config->port_https;
+        if ( unlikely(WSS_SUCCESS != WSS_http_ssl(&servers.https)) ) {
             WSS_session_destroy_lock();
             WSS_destroy_subprotocols();
             WSS_destroy_extensions();
@@ -579,9 +582,7 @@ int WSS_server_start(wss_config_t *config) {
             return EXIT_FAILURE;
         }
 
-        if ( unlikely(WSS_SUCCESS != WSS_http_server(https)) ) {
-            WSS_server_free(https);
-            WSS_server_free(http);
+        if ( unlikely(WSS_SUCCESS != WSS_http_server(&servers.https)) ) {
             WSS_session_destroy_lock();
             WSS_destroy_subprotocols();
             WSS_destroy_extensions();
@@ -596,10 +597,6 @@ int WSS_server_start(wss_config_t *config) {
     WSS_log_trace("Creating HTTP cleanup thread");
     
     if ( unlikely(pthread_create(&cleanup_thread_id, NULL, WSS_cleanup, NULL) != 0) ) {
-        if (ssl) {
-            WSS_server_free(https);
-        }
-        WSS_server_free(http);
         WSS_session_destroy_lock();
         WSS_destroy_subprotocols();
         WSS_destroy_extensions();
@@ -619,7 +616,7 @@ int WSS_server_start(wss_config_t *config) {
 
     WSS_log_trace("Cleanup thread has shutdown");
 
-    pthread_join(http->thread_id, (void **) &err);
+    pthread_join(servers.http.thread_id, (void **) &err);
     if ( unlikely(WSS_SUCCESS != err) ) {
         WSS_log_error("HTTP Server thread returned with error: %s", strerror(err));
         WSS_server_set_state(HALT_ERROR);
@@ -628,7 +625,7 @@ int WSS_server_start(wss_config_t *config) {
     WSS_log_trace("HTTP server thread has shutdown");
 
     if (ssl) {
-        pthread_join(https->thread_id, (void **) &err);
+        pthread_join(servers.https.thread_id, (void **) &err);
         if ( unlikely(WSS_SUCCESS != err) ) {
             WSS_log_error("HTTPS Server thread returned with error: %s", strerror(err));
             WSS_server_set_state(HALT_ERROR);
@@ -637,24 +634,24 @@ int WSS_server_start(wss_config_t *config) {
         WSS_log_trace("HTTPS server thread has shutdown");
     }
 
-    pthread_join(http->thread_id, (void **) &err);
+    pthread_join(servers.http.thread_id, (void **) &err);
 
-    if ( unlikely(WSS_poll_close(http) != WSS_SUCCESS) ) {
+    if ( unlikely(WSS_poll_close(&servers.http) != WSS_SUCCESS) ) {
         WSS_server_set_state(HALT_ERROR);
     }
 
-    if ( unlikely(WSS_server_free(http) != 0) ) {
+    if ( unlikely(WSS_server_free(&servers.http) != 0) ) {
         WSS_server_set_state(HALT_ERROR);
     }
 
     WSS_log_trace("Freed memory associated with HTTP server instance");
 
     if (ssl) {
-        if ( unlikely(WSS_poll_close(https) != WSS_SUCCESS) ) {
+        if ( unlikely(WSS_poll_close(&servers.https) != WSS_SUCCESS) ) {
             WSS_server_set_state(HALT_ERROR);
         }
 
-        if ( unlikely(WSS_server_free(https) != 0) ) {
+        if ( unlikely(WSS_server_free(&servers.https) != 0) ) {
             WSS_server_set_state(HALT_ERROR);
         }
 
@@ -679,9 +676,15 @@ int WSS_server_start(wss_config_t *config) {
 
     WSS_destroy_subprotocols();
 
+    WSS_log_trace("Destroyed subprotocols");
+
     WSS_destroy_extensions();
+
+    WSS_log_trace("Destroyed extensions");
     
     pthread_mutex_destroy(&state.lock);
+
+    WSS_log_trace("Destroyed state lock");
 
     return ret;
 }

@@ -1,16 +1,21 @@
-#ifndef wss_string_h
-#define wss_string_h
+#pragma once
+
+#ifndef WSS_STRING_H
+#define WSS_STRING_H
 
 #include <stddef.h>
 
 /**
- * Function that converts a binary representation into a hexidecimal one.
+ * Function that converts a binary representation into a hexidecimal one. 
+ *
+ * Output must be of size len*2+1.
  *
  * @param 	bin	    [const unsigned char *]     "The binary value"
  * @param 	len     [size_t] 	                "The length of the binary value"
- * @return 	        [char *]                    "The hexidecimal representation of the binary value in a new memory block"
+ * @param 	output  [char **]                   "The output string to write to"
+ * @return          [size_t]                    "The length of the output string"
  */
-char *bin2hex(const unsigned char *bin, size_t len);
+size_t bin2hex(const unsigned char *bin, size_t len, char **output);
 
 /**
  * Function that looks for a value in a char * array.

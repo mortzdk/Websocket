@@ -1,3 +1,4 @@
+#pragma once
 
 /* vim: set et ts=3 sw=3 sts=3 ft=c:
  *

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "extension.h"
+#include "core.h"
 
 /**
  * Event called when extension is initialized.
@@ -15,7 +16,7 @@
  * @param 	config	[char *]     "The configuration of the extension"
  * @return 	        [void]
  */
-void __attribute__((visibility("default"))) onInit(char *config);
+void visible onInit(char *config);
 
 /**
  * Sets the allocators to use instead of the default ones
@@ -25,7 +26,7 @@ void __attribute__((visibility("default"))) onInit(char *config);
  * @param 	extfree	    [WSS_free_t]       "The free function"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree);
+void visible setAllocators(WSS_malloc_t extmalloc, WSS_realloc_t extrealloc, WSS_free_t extfree);
 
 /**
  * Event called when parameters are available for the pcme i.e. when the
@@ -37,45 +38,27 @@ void __attribute__((visibility("default"))) setAllocators(WSS_malloc_t extmalloc
  * @param 	valid	    [bool *]     "A pointer to a boolean, that should state whether the parameters are accepted"
  * @return 	            [void]
  */
-void __attribute__((visibility("default"))) onOpen(int fd, char *param, char **accepted, bool *valid);
-
-/**
- * Event called when a frame_t of data is received.
- *
- * @param 	fd	    [int]               "The filedescriptor of the session"
- * @param 	frame	[wss_frame_t *]     "A websocket frame"
- * @return 	        [void]
- */
-void __attribute__((visibility("default"))) inFrame(int fd, wss_frame_t *frame);
+void visible onOpen(int fd, char *param, char **accepted, bool *valid);
 
 /**
  * Event called when a full set of frames are received.
  *
- * @param 	fd	      [int]             "The filedescriptor of the session"
- * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
- * @param 	len	      [size_t]          "The amount of frames"
- * @return 	          [void]
+ * @param 	fd	            [int]             "The filedescriptor of the session"
+ * @param 	frames	        [wss_frame_t **]  "The websocket frames received"
+ * @param 	frames_count    [size_t]          "The amount of frames"
+ * @return 	                [void]
  */
-void __attribute__((visibility("default"))) inFrames(int fd, wss_frame_t **frames, size_t len);
-
-/**
- * Event called when a frame_t of data is about to be sent.
- *
- * @param 	fd	    [int]               "The filedescriptor of the session"
- * @param 	frame	[wss_frame_t *]     "A websocket frame"
- * @return 	        [void]
- */
-void __attribute__((visibility("default"))) outFrame(int fd, wss_frame_t *frame);
+void visible inFrames(int fd, wss_frame_t **frames, size_t frames_count);
 
 /**
  * Event called when a full set of frames are about to be sent.
  *
- * @param 	fd	      [int]             "The filedescriptor of the session"
- * @param 	frames	  [wss_frame_t **]  "The websocket frames received"
- * @param 	len	      [size_t]          "The amount of frames"
- * @return 	          [void]
+ * @param 	fd	            [int]             "The filedescriptor of the session"
+ * @param 	frames	        [wss_frame_t **]  "The websocket frames received"
+ * @param 	frames_count	[size_t]          "The amount of frames"
+ * @return 	                [void]
  */
-void __attribute__((visibility("default"))) outFrames(int fd, wss_frame_t **frames, size_t len);
+void visible outFrames(int fd, wss_frame_t **frames, size_t frames_count);
 
 /**
  * Event called when a session disconnects from the WSS server.
@@ -83,13 +66,13 @@ void __attribute__((visibility("default"))) outFrames(int fd, wss_frame_t **fram
  * @param 	fd	[int]     "A filedescriptor of the disconnecting session"
  * @return 	    [void]
  */
-void __attribute__((visibility("default"))) onClose(int fd);
+void visible onClose(int fd);
 
 /**
  * Event called when the subprotocol should be destroyed.
  *
  * @return 	    [void]
  */
-void __attribute__((visibility("default"))) onDestroy();
+void visible onDestroy();
 
 #endif

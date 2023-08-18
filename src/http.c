@@ -18,7 +18,7 @@
 #include "error.h"
 #include "log.h"
 #include "socket.h"
-#include "predict.h"
+#include "core.h"
 #include "ssl.h"
 
 /**
@@ -45,17 +45,17 @@ static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
     for (i = 0; i < config->hosts_length; i++) {
         sum_host_length += strlen(config->hosts[i]); 
     }
-    sum_host_length += MAX(config->hosts_length-1, 0);
+    sum_host_length += WSS_MAX(config->hosts_length-1, 0);
 
     for (j = 0; j < config->paths_length; j++) {
         sum_path_length += strlen(config->paths[j]); 
     }
-    sum_path_length += MAX(config->paths_length-1, 0);
+    sum_path_length += WSS_MAX(config->paths_length-1, 0);
 
     for (k = 0; k < config->queries_length; k++) {
         sum_query_length += strlen(config->queries[k]); 
     }
-    sum_query_length += MAX(config->queries_length-1, 0);
+    sum_query_length += WSS_MAX(config->queries_length-1, 0);
 
     if (sum_host_length+sum_path_length+sum_query_length == 0) {
         return NULL;
@@ -143,19 +143,11 @@ static char *generate_request_uri(wss_config_t * config, bool ssl, int port) {
 wss_error_t WSS_http_regex_init(wss_server_t *server) {
     int err;
     char *request_uri;
-    bool ssl = false;
 
-    if (NULL != server->ssl_ctx) {
-        ssl = true;
-    }
-
-    request_uri = generate_request_uri(server->config, ssl, server->port);
+    request_uri = generate_request_uri(server->config, (NULL != server->ssl_ctx), server->port);
     if ( likely(request_uri != NULL) ) {
-        if ( NULL == (server->re = WSS_malloc(sizeof(regex_t)))) {
-            return WSS_MEMORY_ERROR;
-        }
-
-        if ( unlikely((err = regcomp(server->re, request_uri, REG_EXTENDED|REG_NOSUB)) != 0) ) {
+        if ( unlikely((err = regcomp(&server->re, request_uri, REG_EXTENDED|REG_NOSUB)) != 0) ) {
+            WSS_free((void **) &request_uri);
             return WSS_REGEX_ERROR;
         }
 
@@ -220,14 +212,50 @@ wss_error_t WSS_http_server(wss_server_t *server) {
         return err;
     }
 
+    WSS_log_trace("Creating wss_thread_args_t memory pool");
+    server->thread_args_pool = WSS_memorypool_create(
+            server->config->pool_connect_tasks*server->config->pool_connect_workers+
+            server->config->pool_io_tasks*server->config->pool_io_workers,
+            sizeof(wss_thread_args_t)
+            );
+    if (unlikely(NULL == server->thread_args_pool)) {
+        return WSS_MEMORY_ERROR;
+    }
+
     WSS_log_trace("Creating threadpool");
-    if ( unlikely((err = WSS_socket_threadpool(server)) != WSS_SUCCESS) ) {
+    if ( unlikely((err = WSS_socket_threadpool(server->config->pool_connect_workers, 
+                        server->config->pool_connect_tasks, 
+                        server->config->size_thread, 
+                        &server->pool_connect)) != WSS_SUCCESS) ) {
+        return err;
+    }
+
+    WSS_log_trace("Creating IO threadpool");
+    if ( unlikely((err = WSS_socket_threadpool(server->config->pool_io_workers, 
+                        server->config->pool_io_tasks, 
+                        server->config->size_thread, 
+                        &server->pool_io)) != WSS_SUCCESS) ) {
         return err;
     }
 
     WSS_log_trace("Initializing server regexp");
     if ( unlikely((err = WSS_http_regex_init(server)) != WSS_SUCCESS) ) {
         return err;
+    }
+
+    WSS_log_trace("Creating wss_frame_t memory pool");
+    server->frame_pool = WSS_memorypool_create(server->config->pool_io_workers * server->config->max_frames, sizeof(wss_frame_t));
+    if (unlikely(NULL == server->frame_pool)) {
+        return WSS_MEMORY_ERROR;
+    }
+
+    WSS_log_trace("Creating wss_message_t memory pool");
+    server->message_pool = WSS_memorypool_create(
+            server->config->size_ringbuffer*server->config->pool_io_workers,
+            sizeof(wss_message_t)
+            );
+    if (unlikely(NULL == server->message_pool)) {
+        return WSS_MEMORY_ERROR;
     }
 
     WSS_log_trace("Initializing server poll");
@@ -260,6 +288,7 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
          * Shutting down socket, such that no more reads is allowed.
          */
         if ( likely(server->fd > -1) ) {
+            WSS_log_trace("Shutting down reads for server socket");
             if ( unlikely(shutdown(server->fd, SHUT_RD) != 0) ) {
                 WSS_log_error("Unable to shutdown for reads of server socket: %s", strerror(errno));
                 res = WSS_SOCKET_SHUTDOWN_ERROR;
@@ -269,8 +298,9 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
         /**
          * Shutting down threadpool gracefully
          */
-        if ( likely(NULL != server->pool) ) {
-            if ( unlikely((err = threadpool_destroy(server->pool, threadpool_graceful)) != 0) ) {
+        if ( likely(NULL != server->pool_io) ) {
+            WSS_log_trace("Shutting down io threadpool gracefully");
+            if ( unlikely((err = threadpool_destroy(server->pool_io, threadpool_graceful)) != 0) ) {
                 WSS_log_error("Unable to destroy threadpool gracefully: %s", threadpool_strerror(errno));
 
                 switch (err) {
@@ -296,19 +326,72 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
             }
         }
 
-        if ( NULL != server->re ) {
-            regfree(server->re);
-            WSS_free((void **) &server->re);
+        /**
+         * Shutting down threadpool gracefully
+         */
+        if ( likely(NULL != server->pool_connect) ) {
+            WSS_log_trace("Shutting down connect threadpool gracefully");
+            if ( unlikely((err = threadpool_destroy(server->pool_connect, threadpool_graceful)) != 0) ) {
+                WSS_log_error("Unable to destroy threadpool gracefully: %s", threadpool_strerror(errno));
+
+                switch (err) {
+                    case threadpool_invalid:
+                        res = WSS_THREADPOOL_LOCK_ERROR;
+                        break;
+                    case threadpool_lock_failure:
+                        res = WSS_THREADPOOL_LOCK_ERROR;
+                        break;
+                    case threadpool_queue_full:
+                        res = WSS_THREADPOOL_FULL_ERROR;
+                        break;
+                    case threadpool_shutdown:
+                        res = WSS_THREADPOOL_SHUTDOWN_ERROR;
+                        break;
+                    case threadpool_thread_failure:
+                        res = WSS_THREADPOOL_THREAD_ERROR;
+                        break;
+                    default:
+                        res = WSS_THREADPOOL_ERROR;
+                        break;
+                }
+            }
         }
+
+        /**
+         * Destroying thread_args memory pool
+         */
+        WSS_log_trace("Waiting for thread args memory pool to be empty");
+        WSS_memorypool_destroy(server->thread_args_pool);
+
+
+        /**
+         * Destroying frame memory pool
+         */
+        WSS_log_trace("Waiting for frame memory pool to be empty");
+        WSS_memorypool_destroy(server->frame_pool);
+
+        /**
+         * Destroying message memory pool
+         */
+        WSS_log_trace("Waiting for message memory pool to be empty");
+        WSS_memorypool_destroy(server->message_pool);
+
+        /**
+         * Freeing regexp
+         */
+        WSS_log_trace("Free server regexp");
+        regfree(&server->re);
 
         /**
          * Freeing epoll structures
          */
+        WSS_log_trace("Free server events");
         WSS_free((void **) &server->events);
 
         /**
          * Closing epoll
          */
+        WSS_log_trace("Closing poll file descriptors");
         if ( likely(server->poll_fd > -1) ) {
             if ( unlikely(close(server->poll_fd) != 0) ) {
                 WSS_log_error("Unable to close servers epoll filedescriptor: %s", strerror(errno));
@@ -321,6 +404,7 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
         /**
          * Closing socket
          */
+        WSS_log_trace("Closing socket");
         if ( likely(server->fd > -1)) {
             if ( unlikely(close(server->fd) != 0) ) {
                 WSS_log_error("Unable to close servers filedescriptor: %s", strerror(errno));
@@ -330,6 +414,7 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
         }
 
         if (NULL != server->ssl_ctx) {
+            WSS_log_trace("Cleaning up SSL");
             WSS_http_ssl_free(server);
         }
     }

@@ -1,5 +1,7 @@
-#ifndef wss_error_h
-#define wss_error_h
+#pragma once 
+
+#ifndef WSS_ERROR_H
+#define WSS_ERROR_H
 
 typedef enum {
     /**************************************************************************
@@ -154,6 +156,18 @@ typedef enum {
 
     // Regex creation failed
     WSS_REGEX_ERROR                  = -57,
+
+    // No payload to parse into frame
+    WSS_FRAME_NO_PAYLOAD_ERROR       = -58,
+
+    // No unknown closing reason
+    WSS_FRAME_UNKNOWN_REASON_ERROR   = -59,
+
+    // No frame
+    WSS_FRAME_NULL_ERROR             = -60,
+
+    // No access to file 
+    WSS_FILE_ACCESS_ERROR            = -61,
 } wss_error_t;
 
 #endif

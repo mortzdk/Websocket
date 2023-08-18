@@ -1,3 +1,5 @@
+#pragma once
+
 /*-
  * Copyright (c) 2016-2017 Mindaugas Rasiukevicius <rmind at noxt eu>
  * All rights reserved.

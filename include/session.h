@@ -1,5 +1,7 @@
-#ifndef wss_session_h
-#define wss_session_h
+#pragma once
+
+#ifndef WSS_SESSION_H
+#define WSS_SESSION_H
 
 #if !defined(uthash_malloc) || !defined(uthash_free)
 #include "alloc.h"
@@ -22,6 +24,7 @@
 #include "ringbuf.h"
 #include "frame.h"
 #include "message.h"
+#include "memorypool.h"
 #include "error.h"
 
 typedef enum {
@@ -72,9 +75,11 @@ typedef struct {
     // Which event the session should continue listening for
     wss_session_event_t event;
     // The HTTP header of the session
-    wss_header_t *header;
+    wss_header_t header;
     // A ringbuffer containing references to the messages that the session shall receive
     ringbuf_t *ringbuf;
+    // Memorypool where messages are stored
+    wss_memorypool_t *message_pool;
     // The actual messages
     wss_message_t **messages;
     // The size the messages/ringbuffer
@@ -82,9 +87,7 @@ typedef struct {
     // Store the lastest activity of the session
     struct timespec alive;
     // Store pong application data if a ping was sent to the session
-    char *pong;
-    // Length of the pong application data
-    unsigned int pong_length;
+    // char pong[FRAME_PONG_LENGTH];
     // If not all data was read, store the payload temporarily
     char *payload;
     // The size of the temporarily payload

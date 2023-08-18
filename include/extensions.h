@@ -1,5 +1,7 @@
-#ifndef wss_extensions_h
-#define wss_extensions_h
+#pragma once
+
+#ifndef WSS_EXTENSIONS_H
+#define WSS_EXTENSIONS_H
 
 #if !defined(uthash_malloc) || !defined(uthash_free)
 #include "alloc.h"
@@ -19,21 +21,23 @@
 
 #include <stdbool.h>
 
-typedef void (*pyInit)(void);
+//typedef void (*pyInit)(void);
+
+#define MAX_EXTENSION_NAME_LENGTH 256
 
 typedef struct {
     int *handle;
-    char *name;
+    char name[MAX_EXTENSION_NAME_LENGTH];
     extAlloc alloc; 
     extInit init; 
     extOpen open; 
-    extInFrame inframe; 
+    //extInFrame inframe; 
     extInFrames inframes;
-    extOutFrame outframe;
+    //extOutFrame outframe;
     extOutFrames outframes;
     extClose close;
     extDestroy destroy;
-    pyInit pyinit;
+    //pyInit pyinit;
     UT_hash_handle hh;
 } wss_extension_t;
 
@@ -52,9 +56,9 @@ typedef struct {
  * extensions/permessage-deflate/permessage-deflate.so 
  *
  * @param 	config	[wss_config_t *] 	"The configuration of the server"
- * @return 	      	[void]
+ * @return 	      	[unsigned int]      "The number of extensions loaded"
  */
-void WSS_load_extensions(wss_config_t *config);
+unsigned int WSS_load_extensions(wss_config_t *config);
 
 /**
  * Function that looks for a extension implementation of the name given.

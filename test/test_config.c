@@ -185,10 +185,13 @@ Test(WSS_config_load, valid_config_empty_arrays) {
     cr_expect(conf->max_frames == 1048576); 
 
     // Pool
-    cr_expect(conf->pool_workers == 4); 
-    cr_expect(conf->pool_retries == 5); 
+    cr_expect(conf->pool_io_workers == 6); 
+    cr_expect(conf->pool_io_tasks == 32768); 
+    cr_expect(conf->pool_connect_workers == 2); 
+    cr_expect(conf->pool_connect_tasks == 32768); 
 
     // Subprotocols
+    cr_expect(conf->subprotocols_default == 1); 
     cr_expect(conf->subprotocols_length == 0); 
     cr_expect(conf->subprotocols == NULL);
 
@@ -261,10 +264,13 @@ Test(WSS_config_load, valid_config) {
     cr_expect(conf->max_frames == 1048576); 
 
     // Pool
-    cr_expect(conf->pool_workers == 4); 
-    cr_expect(conf->pool_retries == 5); 
+    cr_expect(conf->pool_io_workers == 6); 
+    cr_expect(conf->pool_io_tasks == 32768); 
+    cr_expect(conf->pool_connect_workers == 2); 
+    cr_expect(conf->pool_connect_tasks == 32768); 
 
     // Subprotocols
+    cr_expect(conf->subprotocols_default == 1); 
     cr_expect(conf->subprotocols_length == 2); 
     cr_expect(strinarray("subprotocols/echo/echo.so", (const char **)conf->subprotocols, conf->subprotocols_length) == 0);
     cr_expect(strinarray("subprotocols/broadcast/broadcast.so", (const char **)conf->subprotocols, conf->subprotocols_length) == 0);

@@ -8,12 +8,13 @@
 #include "log.h"
 #include "alloc.h"
 #include "error.h"
-#include "predict.h"
+#include "core.h"
 
 #include <time.h>
+#include <math.h>
 
 void WSS_message_send_frames(void *serv, void *sess, wss_frame_t **frames, size_t frames_count) {
-    size_t j, k;
+    size_t j;
     ssize_t off;
     char *out;
     uint64_t out_length;
@@ -24,16 +25,12 @@ void WSS_message_send_frames(void *serv, void *sess, wss_frame_t **frames, size_
     wss_session_t *session = (wss_session_t *)sess;
 
     // Use extensions
-    if ( NULL != session->header->ws_extensions ) {
-        for (j = 0; likely(j < session->header->ws_extensions_count); j++) {
-            session->header->ws_extensions[j]->ext->outframes(
+    if ( NULL != session->header.ws_extensions ) {
+        for (j = 0; likely(j < session->header.ws_extensions_count); j++) {
+            session->header.ws_extensions[j]->ext->outframes(
                     session->fd,
                     frames,
                     frames_count);
-
-            for (k = 0; likely(k < frames_count); k++) {
-                session->header->ws_extensions[j]->ext->outframe(session->fd, frames[k]);
-            }
         }
     }
 
@@ -43,16 +40,10 @@ void WSS_message_send_frames(void *serv, void *sess, wss_frame_t **frames, size_
         return;
     }
 
-    if ( unlikely(NULL == (m = WSS_malloc(sizeof(wss_message_t)))) ) {
-        WSS_log_error("Unable to allocate message structure");
-
-        WSS_free((void **) &out);
-
-        return;
-    }
+    m = WSS_memorypool_alloc(server->message_pool);
     m->msg = out;
     m->length = out_length;
-    m->framed = true;
+    m->framed = 1;
 
     WSS_log_trace("Putting message into ringbuffer");
 
@@ -101,10 +92,8 @@ void WSS_message_send_frames(void *serv, void *sess, wss_frame_t **frames, size_
 
 void WSS_message_send(int fd, wss_opcode_t opcode, char *message, uint64_t message_length) {
     size_t k;
-    size_t frames_count;
     wss_session_t *session;
-    wss_frame_t **frames;
-    wss_server_t *server = servers.http;
+    wss_server_t *server = &servers.http;
 
     if ( unlikely(NULL == (session = WSS_session_find(fd))) ) {
         WSS_log_error("Unable to find session to send message to");
@@ -114,26 +103,36 @@ void WSS_message_send(int fd, wss_opcode_t opcode, char *message, uint64_t messa
     WSS_session_jobs_inc(session);
 
     if (NULL != session->ssl && session->ssl_connected) {
-        server = servers.https;
+        server = &servers.https;
     }
 
     WSS_log_trace("Creating frames");
 
-    frames_count = WSS_create_frames(server->config, opcode, message, message_length, &frames);
+    // Store frames array on stack 
+    size_t frames_count; 
+    size_t frames_length = WSS_MAX(1, (size_t)ceil((double)message_length/(double)server->config->size_frame));
+    wss_frame_t *frames[frames_length];
+    wss_frame_t **frames_ptr = &frames[0];
 
-    WSS_message_send_frames(server, session, frames, frames_count);
-
-    for (k = 0; likely(k < frames_count); k++) {
-        WSS_free_frame(frames[k]);
+    for (k = 0; likely(k < frames_length); k++) {
+        frames[k] = WSS_memorypool_alloc(server->frame_pool);
     }
-    WSS_free((void **) &frames);
+
+    frames_count = WSS_create_frames(server->config, opcode, message, message_length, &frames_ptr, frames_length);
+    if ( likely(frames_count > 0)) {
+        WSS_message_send_frames(server, session, frames, frames_count);
+    }
+
+    for (k = 0; likely(k < frames_length); k++) {
+        WSS_free_frame(frames[k]);
+        WSS_memorypool_dealloc(server->frame_pool, frames[k]);
+    }
 }
 
 void WSS_message_free(wss_message_t *msg) {
-    if (NULL != msg) {
-        if (NULL != msg->msg) {
+    if ( likely(NULL != msg) ) {
+        if ( likely(NULL != msg->msg) ) {
             WSS_free((void **)&msg->msg); 
         }
-        WSS_free((void **)&msg);
     }
 }

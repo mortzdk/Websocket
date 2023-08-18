@@ -35,7 +35,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "pool.h"
+#include "threadpool.h"
 #include "alloc.h"
 
 typedef enum {
@@ -115,8 +115,10 @@ char *threadpool_strerror(int err) {
 
 threadpool_t *threadpool_create(int thread_count, int queue_size,
         int thread_size, int flags) {
+    (void)flags;
     threadpool_t *pool;
     int i;
+
 
     /* TODO: Check for negative or otherwise very big input parameters */
 
@@ -163,7 +165,13 @@ err:
     if (pool) {
         threadpool_free(pool);
     }
-    return NULL;
+   return NULL;
+}
+
+long long unsigned int threadpool_get_stack_size(threadpool_t *pool) {
+    size_t stack_size;
+    pthread_attr_getstacksize(&pool->attr, &stack_size);
+    return stack_size;
 }
 
 int threadpool_add(threadpool_t *pool, void (*function)(void *),
@@ -274,7 +282,7 @@ int threadpool_free(threadpool_t *pool) {
         /* Because we allocate pool->threads after initializing the
            mutex and condition variable, we're sure they're
            initialized. Let's lock the mutex just in case. */
-        pthread_mutex_lock(&(pool->lock));
+        pthread_mutex_unlock(&(pool->lock));
         pthread_mutex_destroy(&(pool->lock));
         pthread_cond_destroy(&(pool->notify));
     }
@@ -316,6 +324,7 @@ static void *threadpool_thread(void *arguments) {
 
         /* Unlock */
         pthread_mutex_unlock(&(pool->lock));
+
         /* Get to work */
         (*(task.function))(task.argument);
     }

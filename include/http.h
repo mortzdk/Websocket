@@ -1,8 +1,9 @@
-#ifndef wss_http_h
-#define wss_http_h
+#pragma once
+
+#ifndef WSS_HTTP_H
+#define WSS_HTTP_H
 
 #define REQUEST_URI "^(ws%s://(%s)(:%d)?)?/(%s)?(\\?(%s)(&(%s))*)?$"
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 #include "server.h"
 

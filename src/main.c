@@ -10,7 +10,7 @@
 #include "subprotocols.h"       /* wss_subprotocol_t */
 #include "alloc.h"              /* WSS_malloc() */
 #include "log.h"                /* WSS_log_*() */
-#include "predict.h"
+#include "core.h"
 
 static void log_mutex(void *udata, int lock) {
     int err;
@@ -41,7 +41,8 @@ int main(int argc, char *argv[]) {
     wss_config_t config;
     FILE *file;
     pthread_mutex_t log_lock;
-    char *echo = "subprotocols/echo/echo.so", *broadcast = "subprotocols/broadcast/broadcast.so";
+    char *echo = "subprotocols/echo/echo.so";
+    char *broadcast = "subprotocols/broadcast/broadcast.so";
 
 #ifdef USE_RPMALLOC
     rpmalloc_initialize();
@@ -55,9 +56,11 @@ int main(int argc, char *argv[]) {
     
     // Default values
     config.subprotocols         = NULL;
+    config.subprotocols_config  = NULL;
     config.subprotocols_length  = 0;
     config.extensions           = NULL;
     config.extensions_length    = 0;
+    config.extensions_config    = NULL;
     config.favicon              = NULL;
     config.origins              = NULL;
     config.origins_length       = 0;
@@ -85,8 +88,10 @@ int main(int argc, char *argv[]) {
     config.size_thread          = 2097152;
     config.size_frame           = 1048576;
     config.max_frames           = 1048576;
-    config.pool_workers         = 4;
-    config.pool_retries         = 5;
+    config.pool_io_workers      = 3;
+    config.pool_io_tasks        = 1024;
+    config.pool_connect_workers = 1;
+    config.pool_connect_tasks   = 1024;
     config.timeout_pings        = 1;     // Times that a client will be pinged before timeout occurs
     config.timeout_poll         = -1;    // Infinite
     config.timeout_read         = 1000;  // 1 Second
@@ -180,6 +185,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    WSS_log_info("Pool io workers %d", config.pool_io_workers);
+    WSS_log_info("Pool io tasks %d", config.pool_io_tasks);
+    WSS_log_info("Pool connect workers %d", config.pool_connect_workers);
+    WSS_log_info("Pool connect tasks %d", config.pool_connect_tasks);
+
     // If in production mode do not print to stdout
 #ifdef NDEBUG
     WSS_log_info("Log is in quiet mode");
@@ -198,16 +208,21 @@ int main(int argc, char *argv[]) {
                 config.subprotocols_config[0] = NULL;
                 config.subprotocols_config[1] = NULL;
                 config.subprotocols_length = 2;
+                config.subprotocols_default = 0;
             }
         }
     }
 
     res = WSS_server_start(&config);
 
+    WSS_log_trace("Server stopped");
+
     if ( unlikely((err = pthread_mutex_destroy(&log_lock)) != 0) ) {
         WSS_log_error("Unable to initialize log lock: %s", strerror(err));
         res = EXIT_FAILURE;
     }
+
+    WSS_log_trace("Log mutex destoyed");
 
     if ( unlikely(WSS_SUCCESS != WSS_config_free(&config)) ) {
         res = EXIT_FAILURE;
@@ -215,8 +230,11 @@ int main(int argc, char *argv[]) {
 
     fclose(file);
 
+    WSS_log_trace("Config freed");
+
 #ifdef USE_RPMALLOC
     rpmalloc_finalize();
+    WSS_log_trace("rpmalloc finalized");
 #endif
 
     return res;
