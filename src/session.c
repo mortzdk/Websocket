@@ -90,6 +90,7 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
     if ( unlikely((err = pthread_mutexattr_settype(&session->lock_attr, PTHREAD_MUTEX_RECURSIVE)) != 0) ) {
         WSS_log_error("Unable to initialize session locks attributes: %s", strerror(err));
         WSS_free((void **) &session);
+        return NULL;
     }
 
     if ( unlikely((err = pthread_mutex_init(&session->lock, &session->lock_attr)) != 0) ) {
@@ -119,31 +120,21 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
         return NULL;
     }
 
-    session->fd = fd;
-    session->port = port;
-    session->header.ws_protocol = NULL;
-    session->header.ws_upgrade = NULL;
+    session->fd                   = fd;
+    session->port                 = port;
+    session->header.ws_protocol   = NULL;
+    session->header.ws_upgrade    = NULL;
     session->header.ws_connection = NULL;
     session->header.ws_extensions = NULL;
-    session->header.ws_origin = NULL;
-    session->header.ws_key = NULL;
-    session->header.ws_key1 = NULL;
-    session->header.ws_key2 = NULL;
-    session->header.ws_key3 = NULL;
+    session->header.ws_origin     = NULL;
+    session->header.ws_key        = NULL;
+    session->header.ws_key1       = NULL;
+    session->header.ws_key2       = NULL;
+    session->header.ws_key3       = NULL;
 
     length = strlen(ip);
-    if ( unlikely(NULL == (session->ip = (char *) WSS_malloc( (length+1)*sizeof(char)))) ) {
-        WSS_log_error("Unable to allocate memory for IP");
-        pthread_mutex_destroy(&session->lock);
-        pthread_mutex_destroy(&session->lock_jobs);
-        pthread_mutex_destroy(&session->lock_disconnecting);
-        pthread_mutexattr_destroy(&session->lock_attr);
-        WSS_free((void **) &session);
-        pthread_rwlock_unlock(&lock);
-        return NULL;
-    }
-
     memcpy(session->ip, ip, length);
+    session->ip[length] = '\0';
 
     HASH_ADD_INT(sessions, fd, session);
 
@@ -173,9 +164,6 @@ static wss_error_t session_delete(wss_session_t *session) {
         if ( unlikely((err = pthread_mutex_destroy(&session->lock_disconnecting)) != 0) ) {
             err = WSS_SESSION_LOCK_DESTROY_ERROR;
         }
-
-        WSS_log_trace("Free ip string");
-        WSS_free((void **) &session->ip);
 
         WSS_log_trace("Free payload");
         WSS_free((void **) &session->payload);

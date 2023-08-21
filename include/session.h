@@ -27,6 +27,8 @@
 #include "memorypool.h"
 #include "error.h"
 
+#define IP_V6_LENGTH 16
+
 typedef enum {
     NONE,
     READ,
@@ -47,7 +49,7 @@ typedef struct {
     // The port of the session
     int port;
     // The IP of the session
-    char *ip;
+    char ip[IP_V6_LENGTH+1];
     // Whether session has been WSS handshaked
     bool handshaked;
     // The ssl object used to communicate with session
