@@ -15,6 +15,7 @@
 #endif
 #endif
 
+#include <arpa/inet.h>          /* htonl, htons, inet_ntoa */
 #include <time.h>
 #include <stdbool.h>
 #include <pthread.h> 			/* pthread_create, pthread_t, pthread_attr_t
@@ -26,8 +27,6 @@
 #include "message.h"
 #include "memorypool.h"
 #include "error.h"
-
-#define IP_V6_LENGTH 16
 
 typedef enum {
     NONE,
@@ -49,7 +48,7 @@ typedef struct {
     // The port of the session
     int port;
     // The IP of the session
-    char ip[IP_V6_LENGTH+1];
+    char ip[INET6_ADDRSTRLEN];
     // Whether session has been WSS handshaked
     bool handshaked;
     // The ssl object used to communicate with session

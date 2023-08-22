@@ -557,8 +557,27 @@ void WSS_free_header(wss_header_t *header) {
                 WSS_free((void **) &header->ws_extensions[i]);
             }
         }
-        header->ws_extensions_count = 0;
         WSS_free((void **) &header->ws_extensions);
         WSS_free((void **) &header->content);
+
+        // Reset header
+        header->method              = NULL;
+        header->version             = NULL;
+        header->path                = NULL;
+        header->host                = NULL;
+        header->payload             = NULL;
+        header->cookies             = NULL;
+        header->ws_protocol         = NULL;
+        header->ws_upgrade          = NULL;
+        header->ws_connection       = NULL;
+        header->ws_origin           = NULL;
+        header->ws_key              = NULL;
+        header->ws_key1             = NULL;
+        header->ws_key2             = NULL;
+        header->ws_key3             = NULL;
+        header->ws_extensions_count = 0;
+        header->ws_type             = 0;
+        header->ws_version          = 0;
+        header->length              = 0;
     }
 }

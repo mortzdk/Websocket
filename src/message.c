@@ -134,5 +134,9 @@ void WSS_message_free(wss_message_t *msg) {
         if ( likely(NULL != msg->msg) ) {
             WSS_free((void **)&msg->msg); 
         }
+
+        msg->length = 0;
+        msg->msg    = NULL;
+        msg->framed = 0;
     }
 }

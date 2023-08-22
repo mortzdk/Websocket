@@ -453,10 +453,11 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session) {
  */
 void WSS_connect(void *args) {
     int client_fd;
-    struct sockaddr_in client;
+    struct sockaddr_in6 client;
     size_t ringbuf_obj_size;
     wss_session_t *session;
     ringbuf_t *ringbuf;
+    char ip[INET6_ADDRSTRLEN];
     wss_thread_args_t *arguments = (wss_thread_args_t *) args;
     wss_server_t *server = (wss_server_t *) arguments->server;
     size_t workers = server->config->pool_connect_workers+server->config->pool_io_workers+1;
@@ -484,7 +485,7 @@ void WSS_connect(void *args) {
     WSS_log_trace("Client filedescriptor was set to non-blocking");
 
     if ( unlikely(NULL == (session = WSS_session_add(client_fd,
-                    inet_ntoa(client.sin_addr), ntohs(client.sin_port)))) ) {
+                    (char *)inet_ntop(server->info.sin6_family, &client.sin6_addr, (char *)&ip, client_size), ntohs(client.sin6_port)))) ) {
         return;
     }
 
@@ -614,7 +615,7 @@ static int read_internal(wss_server_t *server, wss_session_t *session, char *buf
  */
 static void handshake(wss_server_t *server, wss_session_t *session) {
     int n, j;
-    char *name;
+    char *name, *tmp_content;
     wss_error_t err;
     size_t name_length = 0;
     wss_header_t *header = &session->header;
@@ -631,19 +632,59 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     do {
         n = read_internal(server, session, buffer);
 
-        switch (n) {
+
+        if ( unlikely(-2 == n) ) {
             // Wait for IO for either read or write on the filedescriptor
-            case -2:
-                //session->header = header;
-                session->event = WRITE;
+            //session->header = header;
+            session->event = WRITE;
+
+            return;
+        } else if ( unlikely(-1 == n) ) {
+            // An error occured, notify client by writing back to it
+            WSS_log_trace("Rejecting HTTP request due to being unable to read from client");
+
+            err = http_response(header, HttpStatus_InternalServerError, "Unable to read from client", message);
+
+            WSS_free_header(header);
+
+            if ( unlikely(err != WSS_SUCCESS) ) {
+                WSS_log_error("Unable to create HTTP response");
+
+                WSS_message_free(message);
+                WSS_memorypool_dealloc(server->message_pool, message);
 
                 return;
-            // An error occured, notify client by writing back to it
-            case -1:
-                WSS_log_trace("Rejecting HTTP request due to being unable to read from client");
+            }
 
-                err = http_response(header, HttpStatus_InternalServerError, "Unable to read from client", message);
+            if ( likely(WSS_SUCCESS == write_internal(session, server->message_pool, message)) ) {
+                session->state = WRITING;
+                session->event = READ;
+                WSS_write(server, session);
+            }
 
+            return;
+        } else if ( unlikely(0 == n) ) {
+            // Read finished, break out of loop
+            break;
+        } else {
+            // Reallocate space for the header and copy buffer into it
+            if ( unlikely(NULL == (tmp_content = WSS_realloc((void **) &header->content, header->length*sizeof(char), (header->length+n+1)*sizeof(char)))) ) {
+                WSS_free((void **) &header->content);
+                WSS_log_error("Unable to realloc header content");
+                return;
+            }
+            header->content = tmp_content;
+            memcpy(header->content+header->length, buffer, n);
+            header->length += n;
+            memset(buffer, '\0', server->config->size_buffer);
+
+            // Check if payload from client is too large for the server to handle.
+            // If so write error back to the client
+            if ( unlikely(header->length > (server->config->size_header+server->config->size_uri+server->config->size_payload)) ) {
+                WSS_log_trace("Rejecting HTTP request as client payload is too large for the server to handle");
+
+                err = http_response(header, HttpStatus_PayloadTooLarge,
+                        "The given payload is too large for the server to handle", message);
                 WSS_free_header(header);
 
                 if ( unlikely(err != WSS_SUCCESS) ) {
@@ -662,45 +703,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
                 }
 
                 return;
-            case 0:
-                break;
-            default:
-                // Reallocate space for the header and copy buffer into it
-                if ( unlikely(NULL == (header->content = WSS_realloc((void **) &header->content, header->length*sizeof(char), (header->length+n+1)*sizeof(char)))) ) {
-                    WSS_log_error("Unable to realloc header content");
-                    return;
-                }
-                memcpy(header->content+header->length, buffer, n);
-                header->length += n;
-                memset(buffer, '\0', server->config->size_buffer);
-
-                // Check if payload from client is too large for the server to handle.
-                // If so write error back to the client
-                if ( unlikely(header->length > (server->config->size_header+server->config->size_uri+server->config->size_payload)) ) {
-                    WSS_log_trace("Rejecting HTTP request as client payload is too large for the server to handle");
-
-                    err = http_response(header, HttpStatus_PayloadTooLarge,
-                            "The given payload is too large for the server to handle", message);
-                    WSS_free_header(header);
-
-                    if ( unlikely(err != WSS_SUCCESS) ) {
-                        WSS_log_error("Unable to create HTTP response");
-
-                        WSS_message_free(message);
-                        WSS_memorypool_dealloc(server->message_pool, message);
-
-                        return;
-                    }
-
-                    if ( likely(WSS_SUCCESS == write_internal(session, server->message_pool, message)) ) {
-                        session->state = WRITING;
-                        session->event = READ;
-                        WSS_write(server, session);
-                    }
-
-                    return;
-                }
-                break;
+            }
         }
     } while ( likely(n != 0) );
 
@@ -835,7 +838,7 @@ static void handshake(wss_server_t *server, wss_session_t *session) {
     }
 
     // Use default protocol if none was chosen
-    if (NULL == header->ws_protocol) {
+    if ( NULL == header->ws_protocol ) {
         name = basename(server->config->subprotocols[server->config->subprotocols_default]);
         for (j = 0; name[j] != '.' && name[j] != '\0'; j++) {
             name_length++;

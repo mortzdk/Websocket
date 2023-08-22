@@ -716,6 +716,23 @@ wss_error_t WSS_pong_frame(wss_frame_t *frame) {
  */
 void WSS_free_frame(wss_frame_t *frame) {
     if ( likely(NULL != frame) ) {
-        WSS_free((void **) &frame->payload);
+        if ( likely(NULL != frame->payload) ) {
+            WSS_free((void **) &frame->payload);
+        }
+
+        // Reset frame
+        frame->fin    = 0;
+        frame->rsv1   = 0;
+        frame->rsv2   = 0;
+        frame->rsv3   = 0;
+        frame->opcode = 0;
+        frame->mask   = 0;
+        frame->payloadLength = 0;
+        frame->maskingKey[0] = 0;
+        frame->maskingKey[1] = 0;
+        frame->maskingKey[2] = 0;
+        frame->maskingKey[3] = 0;
+        frame->extensionDataLength = 0;
+        frame->applicationDataLength = 0;
     }
 }

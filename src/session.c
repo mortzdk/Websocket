@@ -134,7 +134,6 @@ wss_session_t *WSS_session_add(int fd, char* ip, int port) {
 
     length = strlen(ip);
     memcpy(session->ip, ip, length);
-    session->ip[length] = '\0';
 
     HASH_ADD_INT(sessions, fd, session);
 
