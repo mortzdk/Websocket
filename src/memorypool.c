@@ -81,6 +81,12 @@ void *WSS_memorypool_alloc(wss_memorypool_t *pool) {
 
 void WSS_memorypool_dealloc(wss_memorypool_t *pool, void *ptr) {
     pthread_mutex_lock(&pool->mutex);
+
+    if ( unlikely(pool->blocks_free == pool->block_amount) ) {
+        pthread_mutex_unlock(&pool->mutex);
+        return;
+    }
+
     if ( unlikely(pool->next == NULL) ) {
         *((unsigned int *) ptr) = pool->block_amount;
         pool->next = (uintptr_t *)ptr;

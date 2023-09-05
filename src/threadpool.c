@@ -165,7 +165,7 @@ err:
     if (pool) {
         threadpool_free(pool);
     }
-   return NULL;
+    return NULL;
 }
 
 long long unsigned int threadpool_get_stack_size(threadpool_t *pool) {

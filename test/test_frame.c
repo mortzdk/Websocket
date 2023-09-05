@@ -44,28 +44,33 @@ static inline uint64_t htons64(uint64_t value) {
 TestSuite(WSS_parse_frame, .init = setup, .fini = teardown);
 
 Test(WSS_parse_frame, null_payload) {
+    wss_frame_t frame;
     size_t offset = 0;
-    cr_assert(NULL == WSS_parse_frame(NULL, 0, &offset));
+    cr_assert(WSS_FRAME_NO_PAYLOAD_ERROR == WSS_parse_frame(NULL, 0, &offset, &frame));
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_parse_frame, empty_payload) {
+    wss_frame_t frame;
     size_t offset = 0;
-    cr_assert(NULL != WSS_parse_frame("", 0, &offset));
+    cr_assert(WSS_SUCCESS == WSS_parse_frame("", 0, &offset, &frame));
     cr_assert(offset == 2);
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_parse_frame, small_client_frame) {
+    wss_frame_t frame;
     size_t offset = 0;
     char *payload = "\x81\x85\x37\xfa\x21\x3d\x7f\x9f\x4d\x51\x58";
     uint16_t length = strlen(payload);
-    wss_frame_t *frame = WSS_parse_frame(payload, length, &offset);
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload, length, &offset, &frame));
     cr_assert(offset == length);
-    cr_assert(strncmp(frame->payload, "Hello", frame->payloadLength) == 0);
-    WSS_free_frame(frame);
+    cr_assert(strncmp(frame.payload, "Hello", frame.payloadLength) == 0);
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_parse_frame, medium_client_frame) {
+    wss_frame_t frame;
     size_t offset = 0;
     char header[2] = "\x81\xFE";
     char key[4] = "\x37\xfa\x21\x3d";
@@ -78,16 +83,16 @@ Test(WSS_parse_frame, medium_client_frame) {
     memcpy(payload_frame+2, &len, 2);
     memcpy(payload_frame+2+2, key, 4);
     memcpy(payload_frame+2+2+4, mask(key, payload_copy, length), length);
-    wss_frame_t *frame = WSS_parse_frame(payload_frame, length+8, &offset);
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload_frame, length+8, &offset, &frame));
     cr_assert(offset == 208);
-    cr_assert(strncmp(frame->payload, payload, frame->payloadLength) == 0);
-    WSS_free_frame(frame);
+    cr_assert(strncmp(frame.payload, payload, frame.payloadLength) == 0);
+    WSS_free_frame(&frame);
     WSS_free((void **)&payload_copy);
     WSS_free((void **)&payload_frame);
 }
 
 Test(WSS_parse_frame, large_client_frame) {
+    wss_frame_t frame;
     int i;
     size_t offset = 0;
     char header[2] = "\x81\xFF";
@@ -108,11 +113,10 @@ Test(WSS_parse_frame, large_client_frame) {
     memcpy(payload_frame+2, &len, sizeof(uint64_t));
     memcpy(payload_frame+2+sizeof(uint64_t), key, 4);
     memcpy(payload_frame+2+sizeof(uint64_t)+4, mask(key, payload_copy, length), length);
-    wss_frame_t *frame = WSS_parse_frame(payload_frame, length+6+sizeof(uint64_t), &offset);
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload_frame, length+6+sizeof(uint64_t), &offset, &frame));
     cr_assert(offset == 66014);
-    cr_assert(strncmp(frame->payload, payload, frame->payloadLength) == 0);
-    WSS_free_frame(frame);
+    cr_assert(strncmp(frame.payload, payload, frame.payloadLength) == 0);
+    WSS_free_frame(&frame);
     WSS_free((void **)&payload);
     WSS_free((void **)&payload_copy);
     WSS_free((void **)&payload_frame);
@@ -127,54 +131,53 @@ Test(WSS_stringify_frame, null_frame) {
 }
 
 Test(WSS_stringify_frame, small_client_frame) {
+    wss_frame_t frame;
     size_t offset = 0;
     char *message;
     char *payload = "\x81\x85\x37\xfa\x21\x3d\x7f\x9f\x4d\x51\x58";
     uint16_t length = strlen(payload);
 
-    wss_frame_t *frame = WSS_parse_frame(payload, length, &offset);
-
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload, length, &offset, &frame));
     cr_assert(offset == length);
-    cr_assert(strncmp(frame->payload, "Hello", frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, "Hello", frame.payloadLength) == 0);
 
-    offset = WSS_stringify_frame(frame, &message);
+    offset = WSS_stringify_frame(&frame, &message);
 
     cr_assert(offset == (size_t)length-4);
     cr_assert(strncmp(message, "\x81\x05", 2) == 0);
-    cr_assert(strncmp(frame->payload, message+2, 5) == 0);
+    cr_assert(strncmp(frame.payload, message+2, 5) == 0);
 
     WSS_free((void **)&message);
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_stringify_frame, small_client_frame_rsv) {
+    wss_frame_t frame;
     size_t offset = 0;
     char *message;
     char *payload = "\x81\x85\x37\xfa\x21\x3d\x7f\x9f\x4d\x51\x58";
     uint16_t length = strlen(payload);
 
-    wss_frame_t *frame = WSS_parse_frame(payload, length, &offset);
-
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload, length, &offset, &frame));
     cr_assert(offset == length);
-    cr_assert(strncmp(frame->payload, "Hello", frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, "Hello", frame.payloadLength) == 0);
 
-    frame->rsv1 = true;
-    frame->rsv2 = true;
-    frame->rsv3 = true;
+    frame.rsv1 = true;
+    frame.rsv2 = true;
+    frame.rsv3 = true;
 
-    offset = WSS_stringify_frame(frame, &message);
+    offset = WSS_stringify_frame(&frame, &message);
 
     cr_assert(offset == (size_t)length-4);
     cr_assert(strncmp(message, "\xF1\x05", 2) == 0);
-    cr_assert(strncmp(frame->payload, message+2, 5) == 0);
+    cr_assert(strncmp(frame.payload, message+2, 5) == 0);
 
     WSS_free((void **)&message);
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_stringify_frame, medium_client_frame) {
+    wss_frame_t frame;
     size_t offset = 0;
     char header[2] = "\x81\xFE";
     char *message;
@@ -188,27 +191,27 @@ Test(WSS_stringify_frame, medium_client_frame) {
     memcpy(payload_frame+2, &len, 2);
     memcpy(payload_frame+2+2, key, 4);
     memcpy(payload_frame+2+2+4, mask(key, payload_copy, length), length);
-    wss_frame_t *frame = WSS_parse_frame(payload_frame, length+8, &offset);
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload_frame, length+8, &offset, &frame));
     cr_assert(offset == 208);
-    cr_assert(strncmp(frame->payload, payload, frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, payload, frame.payloadLength) == 0);
 
-    offset = WSS_stringify_frame(frame, &message);
+    offset = WSS_stringify_frame(&frame, &message);
 
     cr_assert(offset == (size_t)length+2+sizeof(uint16_t));
     cr_assert(strncmp(message, "\x81\x7E", 2) == 0);
     uint16_t str_len;
     memcpy(&str_len, message+2, sizeof(uint16_t));
     cr_assert(str_len == len);
-    cr_assert(strncmp(frame->payload, message+2+sizeof(uint16_t), length) == 0);
+    cr_assert(strncmp(frame.payload, message+2+sizeof(uint16_t), length) == 0);
 
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
     WSS_free((void **)&message);
     WSS_free((void **)&payload_copy);
     WSS_free((void **)&payload_frame);
 }
 
 Test(WSS_stringify_frame, large_client_frame) {
+    wss_frame_t frame;
     int i;
     size_t offset = 0;
     char *message;
@@ -230,40 +233,65 @@ Test(WSS_stringify_frame, large_client_frame) {
     memcpy(payload_frame+2, &len, sizeof(uint64_t));
     memcpy(payload_frame+2+sizeof(uint64_t), key, 4);
     memcpy(payload_frame+2+sizeof(uint64_t)+4, mask(key, payload_copy, length), length);
-    wss_frame_t *frame = WSS_parse_frame(payload_frame, length+6+sizeof(uint64_t), &offset);
-    cr_assert(NULL != frame);
+    ;
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload_frame, length+6+sizeof(uint64_t), &offset, &frame));
     cr_assert(offset == 66014);
-    cr_assert(strncmp(frame->payload, payload, frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, payload, frame.payloadLength) == 0);
 
-    offset = WSS_stringify_frame(frame, &message);
+    offset = WSS_stringify_frame(&frame, &message);
 
     cr_assert(offset == (size_t)length+2+sizeof(uint64_t));
     cr_assert(strncmp(message, "\x81\x7F", 2) == 0);
     uint64_t str_len;
     memcpy(&str_len, message+2, sizeof(uint64_t));
     cr_assert(str_len == len);
-    cr_assert(strncmp(frame->payload, message+2+sizeof(uint64_t), length) == 0);
+    cr_assert(strncmp(frame.payload, message+2+sizeof(uint64_t), length) == 0);
 
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
     WSS_free((void **)&message);
     WSS_free((void **)&payload);
     WSS_free((void **)&payload_copy);
     WSS_free((void **)&payload_frame);
 }
 
+TestSuite(WSS_ping_frame, .init = setup, .fini = teardown);
+
+Test(WSS_ping_frame, null_frame) {
+    cr_assert(WSS_FRAME_NULL_ERROR == WSS_ping_frame(NULL));
+}
+
+Test(WSS_ping_frame, ping) {
+    wss_frame_t ping;
+    cr_assert(WSS_SUCCESS == WSS_ping_frame(&ping));
+    cr_assert(true == ping.fin);
+    cr_assert(false == ping.rsv1);
+    cr_assert(false == ping.rsv2);
+    cr_assert(false == ping.rsv3);
+    cr_assert(PING_FRAME == ping.opcode);
+    cr_assert(0 == ping.mask);
+    cr_assert(0 == ping.maskingKey[0]);
+    cr_assert(0 == ping.maskingKey[1]);
+    cr_assert(0 == ping.maskingKey[2]);
+    cr_assert(0 == ping.maskingKey[3]);
+    cr_assert(ping.payloadLength == FRAME_PONG_LENGTH);
+    WSS_free_frame(&ping);
+}
+
 TestSuite(WSS_pong_frame, .init = setup, .fini = teardown);
 
 Test(WSS_pong_frame, null_frame) {
-    cr_assert(NULL == WSS_pong_frame(NULL));
+    cr_assert(WSS_FRAME_NULL_ERROR == WSS_pong_frame(NULL));
 }
 
 Test(WSS_pong_frame, pong_from_ping) {
-    wss_frame_t *ping = WSS_ping_frame();
-    size_t ping_payload_len = ping->payloadLength;
-    char *ping_payload = WSS_copy(ping->payload, ping_payload_len);
-    wss_frame_t *pong = WSS_pong_frame(ping);
+    wss_frame_t ping;
+    wss_frame_t *pong = &ping;
+    cr_assert(WSS_SUCCESS == WSS_ping_frame(&ping));
 
-    cr_assert(NULL != pong);
+    size_t ping_payload_len = ping.payloadLength;
+    char *ping_payload = WSS_copy(ping.payload, ping_payload_len);
+
+    cr_assert(WSS_SUCCESS == WSS_pong_frame(pong));
     cr_assert(true == pong->fin);
     cr_assert(false == pong->rsv1);
     cr_assert(false == pong->rsv2);
@@ -278,6 +306,7 @@ Test(WSS_pong_frame, pong_from_ping) {
     cr_assert(strncmp(pong->payload, ping_payload, ping_payload_len) == 0);
     
     WSS_free((void **)&ping_payload);
+    WSS_free_frame(pong);
 }
 
 TestSuite(WSS_stringify_frames, .init = setup, .fini = teardown);
@@ -289,84 +318,94 @@ Test(WSS_stringify_frames, null_frame) {
 }
 
 Test(WSS_stringify_frames, null_last_frame) {
+    wss_frame_t frame;
     size_t offset = 0;
     char *message;
     char *payload = "\x81\x85\x37\xfa\x21\x3d\x7f\x9f\x4d\x51\x58";
     uint16_t length = strlen(payload);
     wss_frame_t *frames[2];
-    wss_frame_t *frame = WSS_parse_frame(payload, length, &offset);
 
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload, length, &offset, &frame));
     cr_assert(offset == length);
-    cr_assert(strncmp(frame->payload, "Hello", frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, "Hello", frame.payloadLength) == 0);
 
-    frames[0] = frame;
+    frames[0] = &frame;
     frames[1] = NULL;
 
     cr_assert(0 == WSS_stringify_frames(frames, 2, &message));
     cr_assert(NULL == message);
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
 }
 
 Test(WSS_stringify_frames, small_client_frame) {
+    wss_frame_t frame;
+    wss_frame_t *frames = &frame;
     size_t offset = 0;
     char *message;
     char *payload = "\x81\x85\x37\xfa\x21\x3d\x7f\x9f\x4d\x51\x58";
     uint16_t length = strlen(payload);
 
-    wss_frame_t *frame = WSS_parse_frame(payload, length, &offset);
-
-    cr_assert(NULL != frame);
+    cr_assert(WSS_SUCCESS == WSS_parse_frame(payload, length, &offset, &frame));
     cr_assert(offset == length);
-    cr_assert(strncmp(frame->payload, "Hello", frame->payloadLength) == 0);
+    cr_assert(strncmp(frame.payload, "Hello", frame.payloadLength) == 0);
 
-    offset = WSS_stringify_frames(&frame, 1, &message);
+    offset = WSS_stringify_frames(&frames, 1, &message);
 
     cr_assert(offset == (size_t)length-4);
     cr_assert(strncmp(message, "\x81\x05", 2) == 0);
-    cr_assert(strncmp(frame->payload, message+2, 5) == 0);
+    cr_assert(strncmp(frame.payload, message+2, 5) == 0);
 
     WSS_free((void **)&message);
-    WSS_free_frame(frame);
+    WSS_free_frame(&frame);
 }
 
 TestSuite(WSS_create_frames, .init = setup, .fini = teardown);
 
 Test(WSS_create_frames, null_config) {
-    wss_frame_t **frames;
-    cr_assert(0 == WSS_create_frames(NULL, CLOSE_FRAME, "", 0, &frames));
+    wss_frame_t **frames = NULL;
+    cr_assert(0 == WSS_create_frames(NULL, CLOSE_FRAME, "", 0, &frames, 0));
     cr_assert(NULL == frames);
 }
 
 Test(WSS_create_frames, null_message_with_length) {
-    wss_frame_t **frames;
+    wss_frame_t **frames = NULL;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(0 == WSS_create_frames(conf, CLOSE_FRAME, NULL, 1, &frames));
+    cr_assert(0 == WSS_create_frames(conf, CLOSE_FRAME, NULL, 1, &frames, 0));
     cr_assert(NULL == frames);
     WSS_config_free(conf);
     WSS_free((void**) &conf);
 }
 
 Test(WSS_create_frames, zero_length) {
-    wss_frame_t **frames;
+    size_t frames_length = 1;
+    wss_frame_t frame[frames_length];
+    wss_frame_t *frame_ptr = &frame[0];
+    wss_frame_t **frames = &frame_ptr;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(1 == WSS_create_frames(conf, TEXT_FRAME, "", 0, &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, TEXT_FRAME, "", 0, &frames, frames_length));
     cr_assert(frames[0]->payloadLength == 0);
     WSS_config_free(conf);
     WSS_free((void**) &conf);
 }
 
 Test(WSS_create_frames, multiple_frames) {
+    size_t frames_length = 2;
     char *message = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin hendrerit ornare tortor ut euismod. Nunc finibus convallis sem, at imperdiet ligula commodo id. Nam bibendum nec augue in posuere mauris.";
-    wss_frame_t **frames;
+    wss_frame_t frame1;
+    wss_frame_t frame2;
+    wss_frame_t *frames[frames_length];
+    frames[0] = &frame1;
+    frames[1] = &frame2;
+    wss_frame_t **frames_ptr = &frames[0];
+
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(2 == WSS_create_frames(conf, TEXT_FRAME, message, strlen(message), &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, TEXT_FRAME, message, strlen(message), &frames_ptr, frames_length));
     cr_expect(frames[0]->payloadLength == conf->size_frame);
     cr_expect(frames[1]->payloadLength == strlen(message)-conf->size_frame);
     cr_expect(strncmp(frames[0]->payload, message, frames[0]->payloadLength) == 0);
@@ -378,11 +417,14 @@ Test(WSS_create_frames, multiple_frames) {
 
 Test(WSS_create_frames, empty_close_frame) {
     char *message = "";
-    wss_frame_t **frames;
+    size_t frames_length = 1;
+    wss_frame_t frame[frames_length];
+    wss_frame_t *frame_ptr = &frame[0];
+    wss_frame_t **frames = &frame_ptr;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(1 == WSS_create_frames(conf, CLOSE_FRAME, message, 0, &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, CLOSE_FRAME, message, 0, &frames, frames_length));
     cr_assert(frames[0]->payloadLength == 2);
     cr_assert(frames[0]->opcode == CLOSE_FRAME);
     cr_assert(memcmp(frames[0]->payload, "\x03\xE8", frames[0]->payloadLength) == 0);
@@ -393,11 +435,14 @@ Test(WSS_create_frames, empty_close_frame) {
 
 Test(WSS_create_frames, protocol_error_close_frame) {
     char *message = "\x03";
-    wss_frame_t **frames;
+    size_t frames_length = 1;
+    wss_frame_t frame[frames_length];
+    wss_frame_t *frame_ptr = &frame[0];
+    wss_frame_t **frames = &frame_ptr;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(1 == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames, frames_length));
     cr_assert(frames[0]->payloadLength == 2);
     cr_assert(frames[0]->opcode == CLOSE_FRAME);
     cr_assert(memcmp(frames[0]->payload, "\x03\xEA", frames[0]->payloadLength) == 0);
@@ -408,11 +453,14 @@ Test(WSS_create_frames, protocol_error_close_frame) {
 
 Test(WSS_create_frames, close_frame_with_opcode) {
     char *message = "\x03\xEA";
-    wss_frame_t **frames;
+    size_t frames_length = 1;
+    wss_frame_t frame[frames_length];
+    wss_frame_t *frame_ptr = &frame[0];
+    wss_frame_t **frames = &frame_ptr;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(1 == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames, frames_length));
     cr_assert(frames[0]->payloadLength == 2);
     cr_assert(frames[0]->opcode == CLOSE_FRAME);
     cr_assert(memcmp(frames[0]->payload, message, strlen(message)) == 0);
@@ -423,11 +471,14 @@ Test(WSS_create_frames, close_frame_with_opcode) {
 
 Test(WSS_create_frames, close_frame_with_opcode_and_reason) {
     char *message = "\x03\xEDThis is a test";
-    wss_frame_t **frames;
+    size_t frames_length = 1;
+    wss_frame_t frame[frames_length];
+    wss_frame_t *frame_ptr = &frame[0];
+    wss_frame_t **frames = &frame_ptr;
     wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
     cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
 
-    cr_assert(1 == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames));
+    cr_assert(frames_length == WSS_create_frames(conf, CLOSE_FRAME, message, strlen(message), &frames, frames_length));
     cr_assert(frames[0]->payloadLength == 16);
     cr_assert(frames[0]->opcode == CLOSE_FRAME);
     cr_assert(memcmp(frames[0]->payload, message, strlen(message)) == 0);
@@ -438,25 +489,28 @@ Test(WSS_create_frames, close_frame_with_opcode_and_reason) {
 
 TestSuite(WSS_closing_frame, .init = setup, .fini = teardown);
 
+Test(WSS_closing_frame, null_frame) {
+    cr_assert(WSS_FRAME_NULL_ERROR == WSS_closing_frame(CLOSE_NORMAL, NULL, NULL));
+}
+
 Test(WSS_closing_frame, create_different_closing_frames) {
     uint16_t code, nw_code;
-    wss_frame_t *frame;
+    wss_frame_t frame;
 
     for (int i = 0; i <= 15; i++) {
         code = CLOSE_NORMAL+i;
         nw_code = htons(code);
-        frame = WSS_closing_frame(code, NULL);
 
         if (i == 4) {
-            cr_assert(frame == NULL);
+            cr_assert(WSS_FRAME_UNKNOWN_REASON_ERROR == WSS_closing_frame(code, NULL, &frame));
         } else {
-            cr_assert(frame != NULL);
-            cr_expect(frame->opcode == CLOSE_FRAME);
-            cr_expect(memcmp(frame->payload, &nw_code, sizeof(nw_code)) == 0);
-            cr_expect(frame->payloadLength > 2);
+            cr_assert(WSS_SUCCESS == WSS_closing_frame(code, NULL, &frame));
+            cr_expect(frame.opcode == CLOSE_FRAME);
+            cr_expect(memcmp(frame.payload, &nw_code, sizeof(nw_code)) == 0);
+            cr_expect(frame.payloadLength > 2);
         }
 
-        WSS_free_frame(frame);
+        WSS_free_frame(&frame);
     }
 }
 

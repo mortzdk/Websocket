@@ -43,9 +43,9 @@ TestSuite(bin2hex, .init = setup, .fini = teardown);
 
 Test(bin2hex, zero_length) {
     char output[1];
+    char *out = &output[0];
     char *string = "";
-    size_t len = bin2hex((const char unsigned *) string, 0, (char **)&output);
-
+    size_t len = bin2hex((const char unsigned *) string, strlen(string), &out);
     cr_assert(len == 0);
     cr_assert(output[0] == '\0'); 
 }
@@ -53,10 +53,11 @@ Test(bin2hex, zero_length) {
 Test(bin2hex, simple_string) {
     size_t len;
     char output[11];
+    char *out = &output[0];
     const char unsigned *string = (const char unsigned *)WSS_malloc(6);
     sprintf((char *)string, "%s", "12345");
 
-    len = bin2hex(string, strlen((char *)string), (char **)&output);
+    len = bin2hex(string, strlen((char *)string), &out);
 
     cr_assert(len == 10); 
     cr_assert(strncmp(output, "3132333435", len) == 0); 
@@ -68,6 +69,7 @@ Test(bin2hex, simple_string) {
 Test(bin2hex, sha1_string) {
     size_t len;
     char output[2*SHA_DIGEST_LENGTH+1];
+    char *out = &output[0];
     char sha1Key[SHA_DIGEST_LENGTH];
     const char unsigned *string = (const char unsigned *)WSS_malloc(6);
     sprintf((char *)string, "%s", "12345");
@@ -93,7 +95,7 @@ Test(bin2hex, sha1_string) {
         }
     }
 #endif
-    len = bin2hex((const unsigned char *)sha1Key, SHA_DIGEST_LENGTH, (char **)&output);
+    len = bin2hex((const unsigned char *)sha1Key, SHA_DIGEST_LENGTH, &out);
 
     cr_assert(len == 2*SHA_DIGEST_LENGTH); 
     cr_assert(strncmp(output, "8cb2237d0679ca88db6464eac60da96345513964", 2*SHA_DIGEST_LENGTH));

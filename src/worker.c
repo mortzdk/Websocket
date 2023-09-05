@@ -413,8 +413,6 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session) {
 
     WSS_poll_remove(server, session->fd);
 
-    WSS_log_trace("Deleting client session");
-
     if (NULL == server->ssl_ctx) {
         WSS_log_info("Session %d disconnected from ip: %s:%d using HTTP request", session->fd, session->ip, session->port);
     } else {
@@ -424,6 +422,8 @@ void WSS_disconnect(wss_server_t *server, wss_session_t *session) {
     for (i = 0; i < session->jobs; i++) {
         pthread_mutex_unlock(&session->lock);
     }
+
+    WSS_log_trace("Deleting client session");
 
     if ( unlikely(WSS_SUCCESS != (err = WSS_session_delete(session))) ) {
         switch (err) {
@@ -470,76 +470,78 @@ void WSS_connect(void *args) {
 
     WSS_log_trace("Accepting incoming connection");
 
-    if ( (client_fd = accept(server->fd, (struct sockaddr *) &client, &client_size)) < 0 ) {
-        if ( unlikely(EAGAIN != errno && EWOULDBLOCK != errno) ) {
-            WSS_log_error("Accept failed: %s", strerror(errno));
+    do {
+        if ( (client_fd = accept(server->fd, (struct sockaddr *) &client, &client_size)) < 0 ) {
+            if ( unlikely(EAGAIN != errno && EWOULDBLOCK != errno) ) {
+                WSS_log_error("Accept failed: %s", strerror(errno));
+            }
+
+            break;
         }
 
-        return;
-    }
+        WSS_log_trace("Received incoming connection");
 
-    WSS_log_trace("Received incoming connection");
+        WSS_socket_non_blocking(client_fd);
 
-    WSS_socket_non_blocking(client_fd);
+        WSS_log_trace("Client filedescriptor was set to non-blocking");
 
-    WSS_log_trace("Client filedescriptor was set to non-blocking");
-
-    if ( unlikely(NULL == (session = WSS_session_add(client_fd,
-                    (char *)inet_ntop(server->info.sin6_family, &client.sin6_addr, (char *)&ip, client_size), ntohs(client.sin6_port)))) ) {
-        return;
-    }
-
-    pthread_mutex_lock(&session->lock);
-    WSS_session_jobs_inc(session);
-
-    session->state = CONNECTING;
-    WSS_log_trace("Created client session: %d", client_fd);
-
-    // Creating ringbuffer for session
-    ringbuf_get_sizes(0, workers, &ringbuf_obj_size, NULL);
-    if ( unlikely(NULL == (ringbuf = WSS_malloc(ringbuf_obj_size))) ) {
-        WSS_log_error("Failed to allocate memory for ringbuffer");
-        WSS_disconnect(server, session);
-        return;
-    }
-
-    session->message_pool = server->message_pool;
-    if ( unlikely(NULL == (session->messages = WSS_malloc(server->config->size_ringbuffer*sizeof(wss_message_t *)))) ) {
-        WSS_log_error("Failed to allocate memory for ringbuffer messages");
-        WSS_free((void **)&ringbuf);
-        WSS_disconnect(server, session);
-        return;
-    }
-    session->messages_count = server->config->size_ringbuffer;
-
-    ringbuf_setup(ringbuf, 0, workers, server->config->size_ringbuffer);
-    session->ringbuf = ringbuf;
-
-    if (NULL == server->ssl_ctx) {
-        WSS_log_trace("User connected from ip: %s:%d using HTTP request", session->ip, session->port);
-    } else {
-        WSS_log_trace("User connected from ip: %s:%d using HTTPS request", session->ip, session->port);
-    }
-
-    if (NULL != server->ssl_ctx) {
-        if (unlikely(! WSS_session_ssl(server, session))) {
-            WSS_free((void **)&ringbuf);
+        if ( unlikely(NULL == (session = WSS_session_add(client_fd,
+                        (char *)inet_ntop(server->info.sin6_family, &client.sin6_addr, (char *)&ip, client_size), ntohs(client.sin6_port)))) ) {
             return;
         }
 
-        WSS_ssl_handshake(server, session);
-    } else {
-        session->state = IDLE;
+        pthread_mutex_lock(&session->lock);
+        WSS_session_jobs_inc(session);
 
-        clock_gettime(CLOCK_MONOTONIC, &session->alive);
+        session->state = CONNECTING;
+        WSS_log_trace("Created client session: %d", client_fd);
 
-        WSS_poll_set_read(server, session->fd);
+        // Creating ringbuffer for session
+        ringbuf_get_sizes(0, workers, &ringbuf_obj_size, NULL);
+        if ( unlikely(NULL == (ringbuf = WSS_malloc(ringbuf_obj_size))) ) {
+            WSS_log_error("Failed to allocate memory for ringbuffer");
+            WSS_disconnect(server, session);
+            return;
+        }
 
-        WSS_log_info("Client with session %d connected", session->fd);
-    }
+        session->message_pool = server->message_pool;
+        if ( unlikely(NULL == (session->messages = WSS_malloc(server->config->size_ringbuffer*sizeof(wss_message_t *)))) ) {
+            WSS_log_error("Failed to allocate memory for ringbuffer messages");
+            WSS_free((void **)&ringbuf);
+            WSS_disconnect(server, session);
+            return;
+        }
+        session->messages_count = server->config->size_ringbuffer;
 
-    WSS_session_jobs_dec(session);
-    pthread_mutex_unlock(&session->lock);
+        ringbuf_setup(ringbuf, 0, workers, server->config->size_ringbuffer);
+        session->ringbuf = ringbuf;
+
+        if (NULL == server->ssl_ctx) {
+            WSS_log_trace("User connected from ip: %s:%d using HTTP request", session->ip, session->port);
+        } else {
+            WSS_log_trace("User connected from ip: %s:%d using HTTPS request", session->ip, session->port);
+        }
+
+        if (NULL != server->ssl_ctx) {
+            if (unlikely(! WSS_session_ssl(server, session))) {
+                WSS_free((void **)&ringbuf);
+                return;
+            }
+
+            WSS_ssl_handshake(server, session);
+        } else {
+            session->state = IDLE;
+
+            clock_gettime(CLOCK_MONOTONIC, &session->alive);
+
+            WSS_poll_set_read(server, session->fd);
+
+            WSS_log_info("Client with session %d connected", session->fd);
+        }
+
+        WSS_session_jobs_dec(session);
+        pthread_mutex_unlock(&session->lock);
+    } while (1);
 
     WSS_log_trace("Finished accepting incoming connections");
 }

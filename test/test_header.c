@@ -957,6 +957,7 @@ Test(WSS_upgrade_header, upgrade_required_for_http_path) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTPS_HTTP_PATH);
 
@@ -972,11 +973,13 @@ Test(WSS_upgrade_header, upgrade_required_for_http_path) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
 
     WSS_config_free(conf);
@@ -993,6 +996,7 @@ Test(WSS_upgrade_header, unsupported_http_path) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_WRONG_HTTP_PATH);
 
@@ -1008,14 +1012,16 @@ Test(WSS_upgrade_header, unsupported_http_path) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotFound);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotFound);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
 
     WSS_config_free(conf);
@@ -1032,6 +1038,7 @@ Test(WSS_upgrade_header, unsupported_http_path_query) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_WRONG_HTTP_PATH_QUERY);
 
@@ -1047,14 +1054,15 @@ Test(WSS_upgrade_header, unsupported_http_path_query) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotFound);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotFound);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1070,6 +1078,7 @@ Test(WSS_upgrade_header, supported_http_path_missing_host) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP_PATH);
 
@@ -1085,14 +1094,15 @@ Test(WSS_upgrade_header, supported_http_path_missing_host) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1108,6 +1118,7 @@ Test(WSS_upgrade_header, supported_http_path_query_missing_host) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP_PATH_QUERY);
 
@@ -1123,14 +1134,15 @@ Test(WSS_upgrade_header, supported_http_path_query_missing_host) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1146,6 +1158,7 @@ Test(WSS_upgrade_header, wrong_host) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1162,14 +1175,15 @@ Test(WSS_upgrade_header, wrong_host) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_BadRequest);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1185,6 +1199,7 @@ Test(WSS_upgrade_header, supported_host_missing_upgrade) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1201,14 +1216,15 @@ Test(WSS_upgrade_header, supported_host_missing_upgrade) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1224,6 +1240,7 @@ Test(WSS_upgrade_header, too_short_upgrade) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1241,14 +1258,15 @@ Test(WSS_upgrade_header, too_short_upgrade) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1264,6 +1282,7 @@ Test(WSS_upgrade_header, supported_upgrade_missing_connection) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1281,14 +1300,15 @@ Test(WSS_upgrade_header, supported_upgrade_missing_connection) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1304,6 +1324,7 @@ Test(WSS_upgrade_header, too_short_connection) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1322,14 +1343,15 @@ Test(WSS_upgrade_header, too_short_connection) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1345,6 +1367,7 @@ Test(WSS_upgrade_header, connection_comma) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1363,14 +1386,15 @@ Test(WSS_upgrade_header, connection_comma) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1386,6 +1410,7 @@ Test(WSS_upgrade_header, wrong_connection) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1405,14 +1430,15 @@ Test(WSS_upgrade_header, wrong_connection) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1429,6 +1455,7 @@ Test(WSS_upgrade_header, supported_connection_missing_origin) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1448,14 +1475,15 @@ Test(WSS_upgrade_header, supported_connection_missing_origin) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1472,6 +1500,7 @@ Test(WSS_upgrade_header, wrong_origin) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1492,14 +1521,15 @@ Test(WSS_upgrade_header, wrong_origin) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_Forbidden);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1516,6 +1546,7 @@ Test(WSS_upgrade_header, supported_origin_missing_type) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1536,14 +1567,15 @@ Test(WSS_upgrade_header, supported_origin_missing_type) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1560,6 +1592,7 @@ Test(WSS_upgrade_header, wrong_type) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1581,14 +1614,15 @@ Test(WSS_upgrade_header, wrong_type) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1605,6 +1639,7 @@ Test(WSS_upgrade_header, supported_type_missing_key) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1626,14 +1661,15 @@ Test(WSS_upgrade_header, supported_type_missing_key) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1650,6 +1686,7 @@ Test(WSS_upgrade_header, wrong_key_length) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1672,14 +1709,15 @@ Test(WSS_upgrade_header, wrong_key_length) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_UpgradeRequired);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1696,6 +1734,7 @@ Test(WSS_upgrade_header, supported_key_switching_protocols) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HTTP);
 
@@ -1718,14 +1757,15 @@ Test(WSS_upgrade_header, supported_key_switching_protocols) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1742,6 +1782,7 @@ Test(WSS_upgrade_header, valid_rfc6455) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_RFC6455);
 
@@ -1764,14 +1805,15 @@ Test(WSS_upgrade_header, valid_rfc6455) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_destroy_extensions();
@@ -1789,6 +1831,7 @@ Test(WSS_upgrade_header, valid_hybi10) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HYBI10);
 
@@ -1807,14 +1850,15 @@ Test(WSS_upgrade_header, valid_hybi10) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
@@ -1831,6 +1875,7 @@ Test(WSS_upgrade_header, valid_hybi07) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HYBI07);
 
@@ -1849,14 +1894,15 @@ Test(WSS_upgrade_header, valid_hybi07) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_SwitchingProtocols);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
@@ -1873,6 +1919,7 @@ Test(WSS_upgrade_header, valid_hybi06) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HYBI06);
 
@@ -1891,14 +1938,15 @@ Test(WSS_upgrade_header, valid_hybi06) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
@@ -1915,6 +1963,7 @@ Test(WSS_upgrade_header, valid_hybi05) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HYBI05);
 
@@ -1930,14 +1979,15 @@ Test(WSS_upgrade_header, valid_hybi05) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1953,6 +2003,7 @@ Test(WSS_upgrade_header, valid_hybi04) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HYBI04);
 
@@ -1968,14 +2019,15 @@ Test(WSS_upgrade_header, valid_hybi04) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -1991,6 +2043,7 @@ Test(WSS_upgrade_header, valid_hixie76) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HIXIE76);
 
@@ -2006,14 +2059,15 @@ Test(WSS_upgrade_header, valid_hixie76) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -2029,6 +2083,7 @@ Test(WSS_upgrade_header, valid_hixie75) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HIXIE75);
 
@@ -2047,14 +2102,15 @@ Test(WSS_upgrade_header, valid_hixie75) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 
@@ -2071,6 +2127,7 @@ Test(WSS_upgrade_header, valid_hixie75_reverse_protocol) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HIXIE75_REVERSE_PROTOCOL);
 
@@ -2088,14 +2145,15 @@ Test(WSS_upgrade_header, valid_hixie75_reverse_protocol) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_destroy_subprotocols();
     WSS_config_free(conf);
@@ -2112,6 +2170,7 @@ Test(WSS_upgrade_header, valid_hixie75_with_no_protocol_not_impletented) {
     char *h = WSS_malloc(l*sizeof(char)+1);
     enum HttpStatus_Code code;
     int fd = -1;
+    regex_t *re;
 
     sprintf(h, "%s", HEADER_HIXIE75_NO_PROTOCOL);
 
@@ -2127,14 +2186,15 @@ Test(WSS_upgrade_header, valid_hixie75_with_no_protocol_not_impletented) {
     server->config = conf;
     server->port = conf->port_http;
     WSS_http_regex_init(server);
-    code = WSS_upgrade_header(header, conf, server->re);
+    re = &server->re;
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    code = WSS_upgrade_header(header, conf, server->re);
+    code = WSS_upgrade_header(header, conf, re);
     cr_assert(code == HttpStatus_NotImplemented);
 
-    regfree(server->re);
-    WSS_free((void **)&server->re);
+    regfree(re);
+    WSS_free((void **)&re);
     WSS_free((void **)&server);
     WSS_config_free(conf);
 

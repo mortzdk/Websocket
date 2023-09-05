@@ -143,10 +143,18 @@ wss_error_t WSS_socket_threadpool(unsigned int workers, unsigned int tasks, size
     pthread_attr_t attr;
     threadpool_t *p;
 
+    if (pool == NULL) {
+        return WSS_THREADPOOL_CREATE_ERROR;
+    }
+
     pthread_attr_init(&attr);
     pthread_attr_getstacksize(&attr, &default_stack_size);
     WSS_log_info("Default thread stack size %d", default_stack_size);
     pthread_attr_destroy(&attr);
+
+    if (stack_size == 0) {
+        stack_size = default_stack_size;
+    }
 
     /**
      * Creating threadpool

@@ -195,6 +195,7 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
     int i, n;
     wss_error_t err;
     struct epoll_event *events = server->events;
+    bool conn = false;
 
     if (server->ssl_ctx != NULL) {
         WSS_log_trace("Listening for HTTPS epoll events");
@@ -219,6 +220,8 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
     }
 
     for (i = 0; i < n; i++) {
+        WSS_log_debug("Event from %d", events[i].data.fd);
+
         if ( unlikely((events[i].events & EPOLLHUP) ||
                     (events[i].events & EPOLLERR) ||
                     (events[i].events & EPOLLRDHUP)) ) {
@@ -244,7 +247,10 @@ wss_error_t WSS_poll_delegate(wss_server_t *server) {
                 WSS_free((void **)&args);
                 return err;
             }
-        } else if ( events[i].data.fd == server->fd ) {
+        } else if ( events[i].data.fd == server->fd && !conn ) {
+            // Only spawn one accepting thread per epoll_wait
+            conn = true;
+
             WSS_log_trace("New session connecting");
 
             wss_thread_args_t *args = (wss_thread_args_t *) WSS_memorypool_alloc(server->thread_args_pool);

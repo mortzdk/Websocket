@@ -65,27 +65,39 @@ TestSuite(wss_memorypool_alloc, .init = setup, .fini = teardown);
 
 Test(wss_memorypool_alloc, alloc_without_expand) {
     wss_memorypool_t *p = WSS_memorypool_create(block_amount, sizeof(wss_memorypool_test_t));
-    for (uint64_t i = 0; i < block_amount-1; i += 1) {
-        cr_assert(WSS_memorypool_alloc(p) != NULL);
+    wss_memorypool_test_t *tests[block_amount];
+    for (uint64_t i = 0; i < block_amount; i += 1) {
+        cr_assert((tests[i] = WSS_memorypool_alloc(p)) != NULL);
     }
+
+    for (uint64_t i = 0; i < block_amount; i += 1) {
+        WSS_memorypool_dealloc(p, tests[i]);
+    }
+
     WSS_memorypool_destroy(p);
 }
 
 Test(wss_memorypool_alloc, alloc_with_expand) {
     wss_memorypool_t *p = WSS_memorypool_create(block_amount, sizeof(wss_memorypool_test_t));
+    wss_memorypool_test_t *tests[block_amount*2+1];
     for (uint64_t j = 0; j < 2; j += 1) {
-        for (uint64_t i = 0; i < block_amount; i += 1) {
-            cr_assert(WSS_memorypool_alloc(p) != NULL);
+        for (uint64_t i = j; i <= block_amount; i += 1) {
+            cr_assert((tests[i+(j*block_amount)] = WSS_memorypool_alloc(p)) != NULL);
         }
         cr_assert(p->block_amount == (2 << j) * block_amount); 
-        cr_assert(p->blocks_free == (1 << j) * block_amount); 
+        cr_assert(p->blocks_free == (1 << j) * block_amount - 1); 
     }
+
+    for (uint64_t i = 0; i < block_amount*2+1; i += 1) {
+        WSS_memorypool_dealloc(p, tests[i]);
+    }
+
     WSS_memorypool_destroy(p);
 }
 
 Test(wss_memorypool_alloc, alloc_dealloc) {
     wss_memorypool_t *p = WSS_memorypool_create(block_amount, sizeof(wss_memorypool_test_t));
-    wss_memorypool_test_t *tests[block_amount*2];
+    wss_memorypool_test_t *tests[block_amount];
     for (uint64_t i = 0; i < block_amount-1; i += 1) {
         tests[i] = (wss_memorypool_test_t *) WSS_memorypool_alloc(p);
         cr_assert(tests[i] != NULL);
@@ -110,6 +122,10 @@ Test(wss_memorypool_alloc, alloc_dealloc) {
 
     cr_assert(p->block_amount == block_amount); 
     cr_assert(p->blocks_free == 1); 
+
+    for (uint64_t i = 0; i < block_amount; i += 1) {
+        WSS_memorypool_dealloc(p, tests[i]);
+    }
 
     WSS_memorypool_destroy(p);
 }

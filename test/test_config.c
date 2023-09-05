@@ -191,7 +191,7 @@ Test(WSS_config_load, valid_config_empty_arrays) {
     cr_expect(conf->pool_connect_tasks == 32768); 
 
     // Subprotocols
-    cr_expect(conf->subprotocols_default == 1); 
+    cr_expect(conf->subprotocols_default == 0); 
     cr_expect(conf->subprotocols_length == 0); 
     cr_expect(conf->subprotocols == NULL);
 

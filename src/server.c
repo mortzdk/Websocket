@@ -93,9 +93,18 @@ static void cleanup_session(wss_session_t *session) {
     wss_error_t err;
     wss_frame_t *frame;
     long unsigned int ms;
-    int fd = session->fd;
     wss_server_t *server = &servers.http;
+    int fd;
     bool dc;
+
+    if ( NULL == session ) {
+        return;
+    }
+
+    WSS_session_is_disconnecting(session, &dc);
+    if (dc) {
+        return;
+    }
 
     if (! session->handshaked) {
         return;
@@ -105,17 +114,14 @@ static void cleanup_session(wss_session_t *session) {
         server = &servers.https;
     }
 
+    fd = session->fd;
+
     ms = (((now.tv_sec - session->alive.tv_sec)*1000)+(now.tv_nsec/1000000)) - (session->alive.tv_nsec/1000000);
 
     WSS_log_info("Check timeout %d ms", ms);
 
     // Session timed out
     if ( unlikely(server->config->timeout_client >= 0 && ms >= (long unsigned int)server->config->timeout_client) ) {
-        WSS_session_is_disconnecting(session, &dc);
-        if (dc) {
-            return;
-        }
-
         WSS_session_jobs_wait(session);
 
         WSS_log_info("Session %d has timedout last active %d ms ago", fd, ms);
@@ -124,16 +130,16 @@ static void cleanup_session(wss_session_t *session) {
         session->state = CLOSING;
 
         if (! session->ssl_connected) {
-            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTP request, due to timing out", session->fd, session->ip, session->port);
+            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTP request, due to timing out", fd, session->ip, session->port);
         } else {
-            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTPS request, due to timing out", session->fd, session->ip, session->port);
+            WSS_log_trace("Session %d disconnected from ip: %s:%d using HTTPS request, due to timing out", fd, session->ip, session->port);
         }
 
-        WSS_log_trace("Informing subprotocol of client with file descriptor %d disconnecting", session->fd);
+        WSS_log_trace("Informing subprotocol of client with file descriptor %d disconnecting", fd);
 
         if ( likely(session->header.ws_protocol != NULL) ) {
             WSS_log_trace("Informing subprotocol about session close");
-            session->header.ws_protocol->close(session->fd);
+            session->header.ws_protocol->close(fd);
         }
 
         WSS_log_trace("Removing poll filedescriptor from eventlist");
@@ -346,6 +352,7 @@ static void WSS_server_interrupt(int sig) {
         case SIGFPE:
             {
                 char* stacktrace = b_stacktrace_get_string();
+                printf("STACKTRACE: %s\n", stacktrace);
                 WSS_log_fatal(stacktrace);
                 free(stacktrace);
             }

@@ -363,7 +363,6 @@ wss_error_t WSS_http_server_free(wss_server_t *server) {
         WSS_log_trace("Waiting for thread args memory pool to be empty");
         WSS_memorypool_destroy(server->thread_args_pool);
 
-
         /**
          * Destroying frame memory pool
          */

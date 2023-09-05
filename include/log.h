@@ -26,8 +26,13 @@ enum {
     WSS_LOG_TRACE
 };
 
+#ifdef NDEBUG
+#define WSS_log_trace(...) (void) 0;
+#define WSS_log_debug(...) (void) 0;
+#else
 #define WSS_log_trace(...) log_log(WSS_LOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
 #define WSS_log_debug(...) log_log(WSS_LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#endif
 #define WSS_log_info(...)  log_log(WSS_LOG_INFO,  __FILE__, __LINE__, __VA_ARGS__)
 #define WSS_log_warn(...)  log_log(WSS_LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
 #define WSS_log_error(...) log_log(WSS_LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)

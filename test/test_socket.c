@@ -30,8 +30,7 @@ Test(WSS_socket_create, creating_socket) {
     cr_assert(WSS_SUCCESS == WSS_socket_create(server));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -48,8 +47,7 @@ Test(WSS_socket_reuse, reuse_socket) {
     cr_assert(WSS_SUCCESS == WSS_socket_reuse(server->fd));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -66,8 +64,7 @@ Test(WSS_socket_bind, invalid_server_port) {
     cr_assert(WSS_SOCKET_BIND_ERROR == WSS_socket_bind(server));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -79,8 +76,7 @@ Test(WSS_socket_bind, invalid_server_fd) {
     cr_assert(WSS_SOCKET_BIND_ERROR == WSS_socket_bind(server));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -93,8 +89,7 @@ Test(WSS_socket_bind, bind_socket) {
     cr_assert(WSS_SUCCESS == WSS_socket_bind(server));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -114,8 +109,7 @@ Test(WSS_socket_non_blocking, non_blocking_socket) {
     cr_assert(WSS_SUCCESS == WSS_socket_non_blocking(server->fd));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
@@ -136,63 +130,38 @@ Test(WSS_socket_listen, listen_socket) {
     cr_assert(WSS_SUCCESS == WSS_socket_listen(server->fd));
 
     // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
+    close(server->fd);
     WSS_free((void **) &server);
 }
 
 TestSuite(WSS_socket_threadpool, .init = setup, .fini = teardown);
 
-Test(WSS_socket_threadpool, null_server) {
-    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(NULL));
+Test(WSS_socket_threadpool, zero_workers) {
+    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(0, 0, 0, NULL));
 }
 
-Test(WSS_socket_threadpool, null_config) {
-    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
-    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(server));
+Test(WSS_socket_threadpool, zero_queues) {
+    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(1, 0, 0, NULL));
 }
 
-Test(WSS_socket_threadpool, invalid_create_threadpool_params) {
-    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
-    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
-
-    server->port = conf->port_http;
-    server->config = conf;
-
-    cr_assert(WSS_SUCCESS == WSS_socket_create(server));
-    cr_assert(WSS_SUCCESS == WSS_socket_reuse(server->fd));
-    cr_assert(WSS_SUCCESS == WSS_socket_bind(server));
-    cr_assert(WSS_SUCCESS == WSS_socket_non_blocking(server->fd));
-    cr_assert(WSS_SUCCESS == WSS_socket_listen(server->fd));
-    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(server));
-
-    // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
-    WSS_free((void **) &server);
-    WSS_free((void**) &conf);
+Test(WSS_socket_threadpool, null_pool) {
+    cr_assert(WSS_THREADPOOL_CREATE_ERROR == WSS_socket_threadpool(1, 1, 0, NULL));
 }
 
-Test(WSS_socket_threadpool, threadpool_socket) {
-    wss_server_t *server = (wss_server_t *) WSS_malloc(sizeof(wss_server_t));
-    wss_config_t *conf = (wss_config_t *) WSS_malloc(sizeof(wss_config_t));
+Test(WSS_socket_threadpool, default_stack_size) {
+    size_t default_stack_size;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_getstacksize(&attr, &default_stack_size);
+    threadpool_t *pool;
+    cr_assert(WSS_SUCCESS == WSS_socket_threadpool(1, 1, 0, &pool));
+    cr_assert(default_stack_size == threadpool_get_stack_size(pool));
+}
 
-    cr_assert(WSS_SUCCESS == WSS_config_load(conf, "resources/test_wss.json"));
+Test(WSS_socket_threadpool, stack_size_set) {
+    size_t stack_size = 1024*1024*4;
+    threadpool_t *pool;
+    cr_assert(WSS_SUCCESS == WSS_socket_threadpool(1, 1, stack_size, &pool));
+    cr_assert(stack_size == threadpool_get_stack_size(pool));
 
-    server->port = conf->port_http;
-    server->config = conf;
-
-    cr_assert(WSS_SUCCESS == WSS_socket_create(server));
-    cr_assert(WSS_SUCCESS == WSS_socket_reuse(server->fd));
-    cr_assert(WSS_SUCCESS == WSS_socket_bind(server));
-    cr_assert(WSS_SUCCESS == WSS_socket_non_blocking(server->fd));
-    cr_assert(WSS_SUCCESS == WSS_socket_listen(server->fd));
-    cr_assert(WSS_SUCCESS == WSS_socket_threadpool(server));
-
-    // Cleanup
-    WSS_http_server_free(server);
-    pthread_mutex_destroy(&server->lock);
-    WSS_free((void **) &server);
-    WSS_config_free(conf);
-    WSS_free((void**) &conf);
 }

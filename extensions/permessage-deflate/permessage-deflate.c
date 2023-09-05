@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -233,10 +231,12 @@ static char * negotiate(char *param, wss_comp_t *comp) {
 }
 
 static void *zalloc(void *opaque, unsigned items, unsigned size) {
+    WSS_UNUSED(opaque);
     return allocs.malloc(size*items);
 }
 
 static void zfree(void *opaque, void *address) {
+    WSS_UNUSED(opaque);
     allocs.free(address);
 }
 
